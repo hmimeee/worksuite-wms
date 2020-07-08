@@ -1,0 +1,15 @@
+{
+    "name": "Article",
+    "alias": "article",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 2,
+    "providers": [
+        "Modules\\Article\\Providers\\ArticleServiceProvider"
+    ],
+    "aliases":{},
+    "files": [
+        "start.php"
+    ]
+}
