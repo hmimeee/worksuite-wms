@@ -538,6 +538,15 @@ public function review(Request $request, Article $article)
 
     if (isset($request->status)) {
 
+        if ($request->status == 'completed' && is_null($request->rating) && is_null($request->word_count)) {
+            return Reply::error('Please fill the required fields!');
+        } elseif($request->status == 'completed' && !is_null($request->rating) && !is_null($request->word_count)) {
+            $article = Article::find($article->id);
+            $article->rating = $request->rating;
+            $article->word_count = $request->word_count;
+            $article->save();
+        }
+
         if(is_null($article_review)){
             $result = ArticleDetails::create([
                 'article_id' => $article->id,
@@ -551,15 +560,15 @@ public function review(Request $request, Article $article)
             $article_review = ArticleDetails::find($article_review->id);
             $article_review->value = $request->status;
             
-            if ($request->status == 0) {
-                $article_review->description = 'return the article for review again';
-            } else {
+            if ($request->status == 'completed') {
                 $article_review->description = 'completed article review';
+            } else {
+                $article_review->description = 'return the article for check again';
             }
 
             $article_review->save();
 
-        //For activity description
+            //For activity description
             $result = $article_review;
         }
 
@@ -567,7 +576,7 @@ public function review(Request $request, Article $article)
             $notifyTo = User::find($article->creator);
             Notification::send($notifyTo, new ArticleReviewComplete($article));
         } elseif($request->status =='incomplete'){
-            $notifyTo = User::find($article_editor->id);
+            $notifyTo = User::find($article_editor->value);
             Notification::send($notifyTo, new ArticleReviewReturn($article));
         }
     }

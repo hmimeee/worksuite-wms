@@ -165,6 +165,31 @@
 
             @if($article->writing_status ==1 && (is_null($article->reviewStatus) || $article->reviewStatus->value != 'completed') && (!is_null($article->reviewWriter) && ($article->reviewWriter->value == auth()->id() || $writerHead == auth()->id() || auth()->user()->hasRole('admin'))))
             <a href="javascript:;" class="btn btn-success btn-sm m-b-10 btn-rounded pull-left m-r-5"  onclick="reviewStatus('completed')"><i class="fa fa-check"></i> Review Complete</a>
+
+            @if(is_null($article->reviewStatus) || $article->reviewStatus->value !='completed')
+            <div class="form-group row m-l-5">
+                <div class="col-md-2 col-sm-12">
+                    <label class="control-label required" style="display: block;">Rate This Article</label>
+                    <label class="control-label" for="rating"></label>
+                    <div class="rate" id="rating">
+                        <input type="radio" id="star5" name="rate" value="5" />
+                        <label for="star5" title="5">5 stars</label>
+                        <input type="radio" id="star4" name="rate" value="4" />
+                        <label for="star4" title="4">4 stars</label>
+                        <input type="radio" id="star3" name="rate" value="3" />
+                        <label for="star3" title="3">3 stars</label>
+                        <input type="radio" id="star2" name="rate" value="2" />
+                        <label for="star2" title="2">2 stars</label>
+                        <input type="radio" id="star1" name="rate" value="1" />
+                        <label for="star1" title="1">1 star</label>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-12">
+                    <label class="control-label required">Word Count</label>
+                    <input type="number" name="wordCount" id="wordCount" class="form-control">
+                </div>
+            </div>
+            @endif
             @endif
 
             @if(($article->writing_status ==1 || $article->writing_status ==2) && ($writerHead == auth()->user()->id || auth()->user()->hasRole('admin')))
@@ -184,6 +209,7 @@
             <a href="javascript:;" id="finishButton" class="btn btn-success btn-sm m-b-10 m-r-5 btn-rounded pull-left"  onclick="markComplete('finish')"><i class="fa fa-check"></i> Accept and Finish</a>
 
             <div class="form-group row m-l-5">
+                @if(is_null($article->reviewWriter))
                 <div class="col-md-2">
                     <label class="control-label required" style="display: block;">Rate This Article</label>
                     <label class="control-label" for="rating"></label>
@@ -204,6 +230,7 @@
                     <label class="control-label required">Word Count</label>
                     <input type="number" name="wordCount" id="wordCount" class="form-control">
                 </div>
+                @endif
                 @if($article->publishing ==1)
                 <div class="col-md-2">
                     <label class="control-label required">Publishing Due Date</label>
@@ -707,12 +734,31 @@ $('#editorTransfer').on('click', function(){
 function reviewStatus(status) {
     var url = '{{route('member.article.review', $article->id)}}';
     var id = '{{$article->id}}';
+
+    var one = $('#star1:checked').val();
+    var two = $('#star2:checked').val();
+    var three = $('#star3:checked').val();
+    var four = $('#star4:checked').val();
+    var five = $('#star5:checked').val();
+
+    if (typeof one !='undefined') {var rating = 1;}
+    if (typeof two !='undefined') {var rating = 2;}
+    if (typeof three !='undefined') {var rating = 3;}
+    if (typeof four !='undefined') {var rating = 4;}
+    if (typeof five !='undefined') {var rating = 5;}
+    var wordCount = $('#wordCount').val();
+
+    if (status =='completed' && (wordCount == '' || typeof rating == 'undefined')) {
+        $.showToastr('Please check rating and enter word count!', 'error');
+        return false;
+    }
+
     $.easyAjax({
         type: 'POST',
         url: url,
-        data: {'status': status, '_token': '{{csrf_token()}}'},
+        data: {'status': status, 'rating': rating, 'word_count': wordCount, '_token': '{{csrf_token()}}'},
         success: function(response){
-          var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
+          var location = "{{route('member.article.show', ':id')}}";
           var location = location.replace(':id', id);
           document.location.href = location;
       }
@@ -736,30 +782,43 @@ function markComplete(status) {
         if (typeof four !='undefined') {var rating = 4;}
         if (typeof five !='undefined') {var rating = 5;}
 
-        if (typeof rating =='undefined') {$.showToastr('Please check rating!', 'error');} else {
+        @if (!is_null($article->reviewStatus) && $article->reviewStatus->value =='completed')
+        var rating = '{{$article->rating}}';
+        @endif
 
-            var publisher = $('#publishers').val();
-            var deadline = $('#publishing_deadline').val();
-            var wordCount = $('#wordCount').val();
-            var website = $('#website').val();
-            if ($.isNumeric(wordCount) == false) {$.showToastr('Please enter word count!', 'error');} else {
-
-                var url = "{{ route('member.article.updateStatus',['id' => ':id', 'status' => ':status']) }}";
-                var url = url.replace(':id', id).replace(':status', status);
-                $.easyAjax({
-                    type: 'POST',
-                    url: url,
-                    data: {'wordCount': wordCount, 'publisher': publisher, 'deadline': deadline,'rating': rating, 'website': website, '_token': '{{csrf_token()}}'},
-                    success: function (response) {
-                        if (response.status ==='success') {
-                           var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
-                           var location = location.replace(':id', id);
-                           document.location.href = location;
-                       }
-                   }
-               });
-            }
+        if (typeof rating =='undefined') {
+            $.showToastr('Please check rating!', 'error');
+            return false;
         }
+
+        var publisher = $('#publishers').val();
+        var deadline = $('#publishing_deadline').val();
+        var wordCount = $('#wordCount').val();
+        var website = $('#website').val();
+
+        @if (!is_null($article->reviewStatus) && $article->reviewStatus->value =='completed')
+        var wordCount = '{{$article->word_count}}';
+        @endif
+
+        if ($.isNumeric(wordCount) == false) {
+            $.showToastr('Please enter word count!', 'error');
+            return false;
+        }
+
+        var url = "{{ route('member.article.updateStatus',['id' => ':id', 'status' => ':status']) }}";
+        var url = url.replace(':id', id).replace(':status', status);
+        $.easyAjax({
+            type: 'POST',
+            url: url,
+            data: {'wordCount': wordCount, 'publisher': publisher, 'deadline': deadline,'rating': rating, 'website': website, '_token': '{{csrf_token()}}'},
+            success: function (response) {
+                if (response.status ==='success') {
+                   var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
+                   var location = location.replace(':id', id);
+                   document.location.href = location;
+               }
+           }
+       });
 
     } else {
 

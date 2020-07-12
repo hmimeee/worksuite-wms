@@ -91,7 +91,7 @@
 }
 
 
-  /* Modified from: https://github.com/mukulkant/Star-rating-using-pure-css */
+/* Modified from: https://github.com/mukulkant/Star-rating-using-pure-css */
 </style>
 <link rel="stylesheet" href="{{ asset('plugins/bower_components/summernote/dist/summernote.css') }}">
 <link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.css') }}">
@@ -116,14 +116,14 @@
 <div class="row">
     <div class="col-xs-12">
         <div class="white-box" style="padding: 10px;"> 
-            @if (auth()->user()->id == $article->creator || auth()->user()->hasRole('admin'))
             @if(auth()->user()->hasRole('admin'))
             <a href="javascript:;" class="btn btn-danger btn-sm m-b-10 btn-rounded btn-outline pull-right m-l-5" onclick="deleteArticle('{{$article->id}}')"> <i class="fa fa-trash"></i> Delete</a>
             @endif
+            @if (auth()->user()->id == $article->creator || auth()->user()->hasRole('admin'))
             <a href="javascript:;" class="btn btn-info btn-sm m-b-10 btn-rounded btn-outline pull-right m-l-5" onclick="editArticle('{{$article->id}}')"> <i class="fa fa-edit"></i> Edit</a>
             @endif
             <!-- ## Copy Link Starts ## -->
-            <textarea id="copyText" style="display: none;">{{route('admin.article.show', $article->id)}}</textarea>
+            <textarea id="copyText" style="display: none;">{{route('member.article.show', $article->id)}}</textarea>
             <a href="javascript:;" id="copyLink" onclick="copyLink()" class="btn btn-info btn-sm m-b-10 btn-rounded btn-outline pull-right" title="Copy Link" style="margin-left: 5px;"><i class="fa fa-link"></i> Copy Link</a>
             <!-- ## Copy Link Ends ## -->
 
@@ -133,8 +133,14 @@
 
             @if($article->writing_status == 0 && $article->working_status == 1)
             <div class="btn btn-outline btn-default btn-sm pull-right m-l-5 m-r-5"><span class="text-info"> Working </span></div>
-            @elseif($article->writing_status == 0 && $article->working_status == null)
+            @endif
+
+            @if($article->writing_status == 0 && $article->working_status == null)
             <div class="btn btn-outline btn-default btn-sm pull-right m-l-5 m-r-5"><span class="text-primary"> Not started</span></div>
+            @endif
+
+            @if($article->writing_status == 1 && $article->assignee == auth()->id() && (auth()->user()->hasRole($writerRole) || auth()->user()->hasRole($inhouseWriterRole)))
+            <div class="pull-right m-l-5 m-r-5" style="border: 1px solid #fec107; padding: 5px; border-radius: 3px;"><span class="text-warning"> Pending for Aproval </span></div>
             @endif
 
             @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || auth()->user()->hasRole('admin')) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
@@ -157,8 +163,33 @@
             <a href="javascript:;" id="completedButton" class="btn btn-success btn-sm m-b-10 btn-rounded"  onclick="markComplete('complete')" ><i class="fa fa-check"></i> Submit for Approval</a>
             @endif
 
-            @if($article->writing_status == 1 && $article->assignee == auth()->id() && (auth()->user()->hasRole($writerRole) || auth()->user()->hasRole($inhouseWriterRole)))
-            <div class="pull-left m-l-5 m-r-5" style="border: 1px solid #fec107; padding: 5px; border-radius: 3px;"><span class="text-warning"> Pending for Aproval </span></div>
+            @if($article->writing_status ==1 && (is_null($article->reviewStatus) || $article->reviewStatus->value != 'completed') && (!is_null($article->reviewWriter) && ($article->reviewWriter->value == auth()->id() || $writerHead == auth()->id() || auth()->user()->hasRole('admin'))))
+            <a href="javascript:;" class="btn btn-success btn-sm m-b-10 btn-rounded pull-left m-r-5"  onclick="reviewStatus('completed')"><i class="fa fa-check"></i> Review Complete</a>
+
+            @if(is_null($article->reviewStatus) || $article->reviewStatus->value !='completed')
+            <div class="form-group row m-l-5">
+                <div class="col-md-2 col-sm-12">
+                    <label class="control-label required" style="display: block;">Rate This Article</label>
+                    <label class="control-label" for="rating"></label>
+                    <div class="rate" id="rating">
+                        <input type="radio" id="star5" name="rate" value="5" />
+                        <label for="star5" title="5">5 stars</label>
+                        <input type="radio" id="star4" name="rate" value="4" />
+                        <label for="star4" title="4">4 stars</label>
+                        <input type="radio" id="star3" name="rate" value="3" />
+                        <label for="star3" title="3">3 stars</label>
+                        <input type="radio" id="star2" name="rate" value="2" />
+                        <label for="star2" title="2">2 stars</label>
+                        <input type="radio" id="star1" name="rate" value="1" />
+                        <label for="star1" title="1">1 star</label>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-12">
+                    <label class="control-label required">Word Count</label>
+                    <input type="number" name="wordCount" id="wordCount" class="form-control">
+                </div>
+            </div>
+            @endif
             @endif
 
             @if(($article->writing_status ==1 || $article->writing_status ==2) && ($writerHead == auth()->user()->id || auth()->user()->hasRole('admin')))
@@ -174,14 +205,11 @@
             </div>
             @endif
 
-            @if($article->writing_status ==1 && (is_null($article->reviewStatus) || $article->reviewStatus->value != 'completed') && (!is_null($article->reviewWriter) && ($article->reviewWriter->value == auth()->id() || $writerHead == auth()->id() || auth()->user()->hasRole('admin'))))
-            <a href="javascript:;" class="btn btn-success btn-sm m-b-10 btn-rounded pull-left m-r-5"  onclick="reviewStatus('completed')"><i class="fa fa-check"></i> Review Complete</a>
-            @endif
-
-            @if($article->writing_status ==1 && ($writerHead == auth()->id() || auth()->user()->hasRole('admin')) && (!is_null($article->reviewStatus) && $article->reviewStatus->value == 'completed'))
+            @if($article->writing_status ==1 && ($writerHead == auth()->id() || auth()->user()->hasRole('admin')))
             <a href="javascript:;" id="finishButton" class="btn btn-success btn-sm m-b-10 m-r-5 btn-rounded pull-left"  onclick="markComplete('finish')"><i class="fa fa-check"></i> Accept and Finish</a>
 
             <div class="form-group row m-l-5">
+                @if(is_null($article->reviewWriter))
                 <div class="col-md-2">
                     <label class="control-label required" style="display: block;">Rate This Article</label>
                     <label class="control-label" for="rating"></label>
@@ -202,6 +230,7 @@
                     <label class="control-label required">Word Count</label>
                     <input type="number" name="wordCount" id="wordCount" class="form-control">
                 </div>
+                @endif
                 @if($article->publishing ==1)
                 <div class="col-md-2">
                     <label class="control-label required">Publishing Due Date</label>
@@ -271,11 +300,11 @@
 
             @if ($article->rating !=null && (!auth()->user()->hasRole($writerRole) || !auth()->user()->hasRole($inhouseWriterRole)))
             <p><i class="fa fa-thumbs-up"></i> Rating: 
-                <span class="fa fa-star @if ($article->rating+1 > 1) checked @endif"></span>
-                <span class="fa fa-star @if ($article->rating+1 > 2) checked @endif"></span>
-                <span class="fa fa-star @if ($article->rating+1 > 3) checked @endif"></span>
-                <span class="fa fa-star @if ($article->rating+1 > 4) checked @endif"></span>
-                <span class="fa fa-star @if ($article->rating+1 > 5) checked @endif"></span>
+                <span class="fa fa-star @if ($article->rating > 0) checked @endif"></span>
+                <span class="fa fa-star @if ($article->rating > 1) checked @endif"></span>
+                <span class="fa fa-star @if ($article->rating > 2) checked @endif"></span>
+                <span class="fa fa-star @if ($article->rating > 3) checked @endif"></span>
+                <span class="fa fa-star @if ($article->rating > 4) checked @endif"></span>
             </p>
             @endif
 
@@ -344,27 +373,27 @@
                         <div role="tabpanel" class="tab-pane fade active in" id="main">
                             <div class="col-xs-12 col-md-12 task-description b-all p-10">
                                 <div style="font-size: 14px;">Files:</div> 
-                                 @forelse ($article->files as $file)
+                                @forelse ($article->files as $file)
                                 @php
                                 $size = filesize(public_path('/user-uploads/article-files/').$file->hashname)/1024
                                 @endphp
                                 <div class="col-md-12 col-xs-12 m-t-5" id="file-{{$file->id}}">
-                                 <a href="javascript:;" onclick="downloadFile('{{$file->id}}')" class="btn btn-default btn-sm btn-rounded btn-outline"><i class="fa fa-paperclip"></i> {{$file->filename}} 
-                                     @if($size < 1024)
-                                     ({{number_format($size, 2)}} KB)
-                                     @elseif($size > 1024)
-                                     ({{number_format($size/1024, 2)}} MB)
-                                     @endif
-                                 </a> 
-                                 @if($article->creator == auth()->user()->id || auth()->user()->hasRole('admin'))
-                                 <a href="javascript:;" class="btn btn-danger btn-sm btn-rounded btn-outline" onclick="deleteFile('{{$file->id}}')" id="btn-{{$file->id}}"><i class="fa fa-trash"></i></a>
-                                 @endif
-                             </div>
-                             @empty
-                             No attachments.
-                             @endforelse
-                         </div>
-                         <div class="col-xs-12 col-md-12 task-description b-all p-10 m-t-5">
+                                   <a href="javascript:;" onclick="downloadFile('{{$file->id}}')" class="btn btn-default btn-sm btn-rounded btn-outline"><i class="fa fa-paperclip"></i> {{$file->filename}} 
+                                       @if($size < 1024)
+                                       ({{number_format($size, 2)}} KB)
+                                       @elseif($size > 1024)
+                                       ({{number_format($size/1024, 2)}} MB)
+                                       @endif
+                                   </a> 
+                                   @if($article->creator == auth()->user()->id || auth()->user()->hasRole('admin'))
+                                   <a href="javascript:;" class="btn btn-danger btn-sm btn-rounded btn-outline" onclick="deleteFile('{{$file->id}}')" id="btn-{{$file->id}}"><i class="fa fa-trash"></i></a>
+                                   @endif
+                               </div>
+                               @empty
+                               No attachments.
+                               @endforelse
+                           </div>
+                           <div class="col-xs-12 col-md-12 task-description b-all p-10 m-t-5">
                             {!! $article->description !!}
                         </div>
                     </div>
@@ -631,16 +660,16 @@ $('#comment-file').change(function() {
                 var files = files.indexOf(',') == 0 ? files.substring(1) : files;
                 $('#uploaded-files').val(files);
                 for (var i = 0; i < result.count; i++) {
-                 $('#commentFiles').append('<h5 data="'+result.files[i]+'"><a href="javascript:;" style="padding: 10px;"><i class="fa fa-paperclip"></i> '+result.files[i]+'</a> <a href="javascript:;" onclick="delete_comment_file(\''+result.files[i]+'\')"><i class="fa fa-trash"></i></a></h5>');
-             }
+                   $('#commentFiles').append('<h5 data="'+result.files[i]+'"><a href="javascript:;" style="padding: 10px;"><i class="fa fa-paperclip"></i> '+result.files[i]+'</a> <a href="javascript:;" onclick="delete_comment_file(\''+result.files[i]+'\')"><i class="fa fa-trash"></i></a></h5>');
+               }
 
-             $('#comment-file').val('');
-             $('.btn-upload').html('<i class="fa fa-paperclip"></i> Drag and Drop Your Files');
+               $('#comment-file').val('');
+               $('.btn-upload').html('<i class="fa fa-paperclip"></i> Drag and Drop Your Files');
 
-             $.showToastr(result.message, 'success');
-         }
-     }
- })
+               $.showToastr(result.message, 'success');
+           }
+       }
+   })
 })
 
 function downloadFile(id) {
@@ -699,10 +728,29 @@ $('#editorTransfer').on('click', function(){
 function reviewStatus(status) {
     var url = '{{route('member.article.review', $article->id)}}';
     var id = '{{$article->id}}';
+
+    var one = $('#star1:checked').val();
+    var two = $('#star2:checked').val();
+    var three = $('#star3:checked').val();
+    var four = $('#star4:checked').val();
+    var five = $('#star5:checked').val();
+
+    if (typeof one !='undefined') {var rating = 1;}
+    if (typeof two !='undefined') {var rating = 2;}
+    if (typeof three !='undefined') {var rating = 3;}
+    if (typeof four !='undefined') {var rating = 4;}
+    if (typeof five !='undefined') {var rating = 5;}
+    var wordCount = $('#wordCount').val();
+
+    if (status =='completed' && (wordCount == '' || typeof rating == 'undefined')) {
+        $.showToastr('Please check rating and enter word count!', 'error');
+        return false;
+    }
+
     $.easyAjax({
         type: 'POST',
         url: url,
-        data: {'status': status, '_token': '{{csrf_token()}}'},
+        data: {'status': status, 'rating': rating, 'word_count': wordCount, '_token': '{{csrf_token()}}'},
         success: function(response){
           var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
           var location = location.replace(':id', id);
@@ -728,31 +776,43 @@ function markComplete(status) {
         if (typeof four !='undefined') {var rating = 4;}
         if (typeof five !='undefined') {var rating = 5;}
 
-        if (typeof rating =='undefined') {$.showToastr('Please check rating!', 'error');} else {
+        @if (!is_null($article->reviewStatus) && $article->reviewStatus->value =='completed')
+        var rating = '{{$article->rating}}';
+        @endif
 
-            var publisher = $('#publishers').val();
-            var deadline = $('#publishing_deadline').val();
-            var wordCount = $('#wordCount').val();
-            var website = $('#website').val();
-
-            if ($.isNumeric(wordCount) == false) {$.showToastr('Please enter word count!', 'error');} else {
-
-                var url = "{{ route('member.article.updateStatus',['id' => ':id', 'status' => ':status']) }}";
-                var url = url.replace(':id', id).replace(':status', status);
-                $.easyAjax({
-                    type: 'POST',
-                    url: url,
-                    data: {'wordCount': wordCount, 'publisher': publisher, 'deadline': deadline,'rating': rating, 'website': website, '_token': '{{csrf_token()}}'},
-                    success: function (response) {
-                        if (response.status ==='success') {
-                         var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
-                         var location = location.replace(':id', id);
-                         document.location.href = location;
-                     }
-                 }
-             });
-            }
+        if (typeof rating =='undefined') {
+            $.showToastr('Please check rating!', 'error');
+            return false;
         }
+
+        var publisher = $('#publishers').val();
+        var deadline = $('#publishing_deadline').val();
+        var wordCount = $('#wordCount').val();
+        var website = $('#website').val();
+
+        @if (!is_null($article->reviewStatus) && $article->reviewStatus->value =='completed')
+        var wordCount = '{{$article->word_count}}';
+        @endif
+
+        if ($.isNumeric(wordCount) == false) {
+            $.showToastr('Please enter word count!', 'error');
+            return false;
+        }
+
+        var url = "{{ route('member.article.updateStatus',['id' => ':id', 'status' => ':status']) }}";
+        var url = url.replace(':id', id).replace(':status', status);
+        $.easyAjax({
+            type: 'POST',
+            url: url,
+            data: {'wordCount': wordCount, 'publisher': publisher, 'deadline': deadline,'rating': rating, 'website': website, '_token': '{{csrf_token()}}'},
+            success: function (response) {
+                if (response.status ==='success') {
+                   var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
+                   var location = location.replace(':id', id);
+                   document.location.href = location;
+               }
+           }
+       });
 
     } else {
 
