@@ -649,6 +649,18 @@
         autoclose: true,
         todayHighlight: true
     });
+
+    //Copy link
+    function copyLink(){
+        var button = document.getElementById('copyLink');
+        var copyText = document.getElementById("copyText");
+        copyText.style.display ='inline';
+        copyText.select();
+        copyText.setSelectionRange(0, 99999)
+        document.execCommand("copy");
+        copyText.style.display ='none';
+        button.innerHTML = '<i class="fa fa-link"></i> Copied';
+    }
 </script>
 <script type="text/javascript">
     $('.summernote').summernote({

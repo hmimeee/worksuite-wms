@@ -378,22 +378,22 @@
                                 $size = filesize(public_path('/user-uploads/article-files/').$file->hashname)/1024
                                 @endphp
                                 <div class="col-md-12 col-xs-12 m-t-5" id="file-{{$file->id}}">
-                                   <a href="javascript:;" onclick="downloadFile('{{$file->id}}')" class="btn btn-default btn-sm btn-rounded btn-outline"><i class="fa fa-paperclip"></i> {{$file->filename}} 
-                                       @if($size < 1024)
-                                       ({{number_format($size, 2)}} KB)
-                                       @elseif($size > 1024)
-                                       ({{number_format($size/1024, 2)}} MB)
-                                       @endif
-                                   </a> 
-                                   @if($article->creator == auth()->user()->id || auth()->user()->hasRole('admin'))
-                                   <a href="javascript:;" class="btn btn-danger btn-sm btn-rounded btn-outline" onclick="deleteFile('{{$file->id}}')" id="btn-{{$file->id}}"><i class="fa fa-trash"></i></a>
-                                   @endif
-                               </div>
-                               @empty
-                               No attachments.
-                               @endforelse
-                           </div>
-                           <div class="col-xs-12 col-md-12 task-description b-all p-10 m-t-5">
+                                 <a href="javascript:;" onclick="downloadFile('{{$file->id}}')" class="btn btn-default btn-sm btn-rounded btn-outline"><i class="fa fa-paperclip"></i> {{$file->filename}} 
+                                     @if($size < 1024)
+                                     ({{number_format($size, 2)}} KB)
+                                     @elseif($size > 1024)
+                                     ({{number_format($size/1024, 2)}} MB)
+                                     @endif
+                                 </a> 
+                                 @if($article->creator == auth()->user()->id || auth()->user()->hasRole('admin'))
+                                 <a href="javascript:;" class="btn btn-danger btn-sm btn-rounded btn-outline" onclick="deleteFile('{{$file->id}}')" id="btn-{{$file->id}}"><i class="fa fa-trash"></i></a>
+                                 @endif
+                             </div>
+                             @empty
+                             No attachments.
+                             @endforelse
+                         </div>
+                         <div class="col-xs-12 col-md-12 task-description b-all p-10 m-t-5">
                             {!! $article->description !!}
                         </div>
                     </div>
@@ -666,16 +666,16 @@ $('#comment-file').change(function() {
                 var files = files.indexOf(',') == 0 ? files.substring(1) : files;
                 $('#uploaded-files').val(files);
                 for (var i = 0; i < result.count; i++) {
-                   $('#commentFiles').append('<h5 data="'+result.files[i]+'"><a href="javascript:;" style="padding: 10px;"><i class="fa fa-paperclip"></i> '+result.files[i]+'</a> <a href="javascript:;" onclick="delete_comment_file(\''+result.files[i]+'\')"><i class="fa fa-trash"></i></a></h5>');
-               }
+                 $('#commentFiles').append('<h5 data="'+result.files[i]+'"><a href="javascript:;" style="padding: 10px;"><i class="fa fa-paperclip"></i> '+result.files[i]+'</a> <a href="javascript:;" onclick="delete_comment_file(\''+result.files[i]+'\')"><i class="fa fa-trash"></i></a></h5>');
+             }
 
-               $('#comment-file').val('');
-               $('.btn-upload').html('<i class="fa fa-paperclip"></i> Drag and Drop Your Files');
+             $('#comment-file').val('');
+             $('.btn-upload').html('<i class="fa fa-paperclip"></i> Drag and Drop Your Files');
 
-               $.showToastr(result.message, 'success');
-           }
-       }
-   })
+             $.showToastr(result.message, 'success');
+         }
+     }
+ })
 })
 
 function downloadFile(id) {
@@ -813,12 +813,12 @@ function markComplete(status) {
             data: {'wordCount': wordCount, 'publisher': publisher, 'deadline': deadline,'rating': rating, 'website': website, '_token': '{{csrf_token()}}'},
             success: function (response) {
                 if (response.status ==='success') {
-                   var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
-                   var location = location.replace(':id', id);
-                   document.location.href = location;
-               }
-           }
-       });
+                 var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
+                 var location = location.replace(':id', id);
+                 document.location.href = location;
+             }
+         }
+     });
 
     } else {
 
@@ -917,6 +917,18 @@ function deleteArticle(id) {
         }
         if (isConfirm ==='') {swal("Empty!", "You must enter your password!", "warning");}
     });
+}
+
+//Copy link
+function copyLink(){
+    var button = document.getElementById('copyLink');
+    var copyText = document.getElementById("copyText");
+    copyText.style.display ='inline';
+    copyText.select();
+    copyText.setSelectionRange(0, 99999)
+    document.execCommand("copy");
+    copyText.style.display ='none';
+    button.innerHTML = '<i class="fa fa-link"></i> Copied';
 }
 
 // if ($("#subTaskModal").modal('toggle')) {location.reload(true);}
