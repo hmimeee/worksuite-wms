@@ -190,7 +190,7 @@
 
             @if ($article->publishing ==1 && $article->writing_status ==2 && $article->publisher !=null && !auth()->user()->hasRole($writerRole) && $article->publish_website !=null)
             <p><i class="fa fa-globe"></i> Publish Website:
-            <b>{{$article->publish_website ? $article->publish_website->value : ''}}</b>
+                <b>{{$article->publish_website ? $article->publish_website->value : ''}}</b>
             </p>
             @endif
 
@@ -264,22 +264,22 @@
                             $size = filesize(public_path('/user-uploads/article-files/').$file->hashname)/1024
                             @endphp
                             <div class="col-xs-12 m-t-10" id="file-{{$file->id}}">
-                             <a href="javascript:;" onclick="downloadFile('{{$file->id}}')" class="btn btn-default btn-sm btn-rounded btn-outline"><i class="fa fa-paperclip"></i> {{$file->filename}} 
-                                 @if($size < 1024)
-                                 ({{number_format($size, 2)}} KB)
-                                 @elseif($size > 1024)
-                                 ({{number_format($size/1024, 2)}} MB)
-                                 @endif
-                             </a> 
-                             @if($article->creator == auth()->user()->id || auth()->user()->hasRole('admin'))
-                             <a href="javascript:;" class="btn btn-danger btn-sm btn-rounded btn-outline" onclick="deleteFile('{{$file->id}}')" id="btn-{{$file->id}}"><i class="fa fa-trash"></i></a>
-                             @endif
-                         </div>
-                         @endforeach
-                     </div>
-                 </div>
+                               <a href="javascript:;" onclick="downloadFile('{{$file->id}}')" class="btn btn-default btn-sm btn-rounded btn-outline"><i class="fa fa-paperclip"></i> {{$file->filename}} 
+                                   @if($size < 1024)
+                                   ({{number_format($size, 2)}} KB)
+                                   @elseif($size > 1024)
+                                   ({{number_format($size/1024, 2)}} MB)
+                                   @endif
+                               </a> 
+                               @if($article->creator == auth()->user()->id || auth()->user()->hasRole('admin'))
+                               <a href="javascript:;" class="btn btn-danger btn-sm btn-rounded btn-outline" onclick="deleteFile('{{$file->id}}')" id="btn-{{$file->id}}"><i class="fa fa-trash"></i></a>
+                               @endif
+                           </div>
+                           @endforeach
+                       </div>
+                   </div>
 
-                 <div role="tabpanel" class="tab-pane" id="comments">
+                   <div role="tabpanel" class="tab-pane" id="comments">
 
                     <div class="col-xs-12 m-b-10" id="comments-list">
                         @foreach ($article->comments as $comment)
@@ -383,6 +383,12 @@
 <script src="{{ asset('plugins/bower_components/peity/jquery.peity.init.js') }}"></script>
 
 <script>
+    function editArticle(id) {
+        var url = "{{ route('member.article.edit',':id') }}?ref=show";
+        url = url.replace(':id', id);
+        $.ajaxModal('#subTaskModal', url);
+    }
+
      //Download comment files
      function sendReminder(id) {
         var url = "{{ route('member.article.sendReminder',':id') }}";
@@ -400,7 +406,7 @@
     }
 
     //Start publishing
-     function startPublishing(status) {
+    function startPublishing(status) {
         var url = "{{ route('member.article.startPublishing', $article->id) }}";
         $.easyAjax({
             url:  url,
@@ -490,16 +496,16 @@
                     var files = files.indexOf(',') == 0 ? files.substring(1) : files;
                     $('#uploaded-files').val(files);
                     for (var i = 0; i < result.count; i++) {
-                     $('#commentFiles').append('<h5 data="'+result.files[i]+'"><a href="javascript:;" style="padding: 10px;"><i class="fa fa-paperclip"></i> '+result.files[i]+'</a> <a href="javascript:;" onclick="delete_comment_file(\''+result.files[i]+'\')"><i class="fa fa-trash"></i></a></h5>');
-                 }
+                       $('#commentFiles').append('<h5 data="'+result.files[i]+'"><a href="javascript:;" style="padding: 10px;"><i class="fa fa-paperclip"></i> '+result.files[i]+'</a> <a href="javascript:;" onclick="delete_comment_file(\''+result.files[i]+'\')"><i class="fa fa-trash"></i></a></h5>');
+                   }
 
-                 $('#comment-file').val('');
-                 $('.btn-upload').html('<i class="fa fa-paperclip"></i> Drag and Drop Your Files');
+                   $('#comment-file').val('');
+                   $('.btn-upload').html('<i class="fa fa-paperclip"></i> Drag and Drop Your Files');
 
-                 $.showToastr(result.message, 'success');
-             }
-         }
-     })
+                   $.showToastr(result.message, 'success');
+               }
+           }
+       })
     })
 
     function downloadFile(id) {
@@ -547,9 +553,9 @@
             url: url,
             data: {'_token': '{{csrf_token()}}'},
             success: function(response){
-               viewTask();
-           }
-       });
+             viewTask();
+         }
+     });
     }
 
     function markComplete(status) {

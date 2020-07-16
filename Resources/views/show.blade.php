@@ -436,7 +436,7 @@
                             @endforeach
                         </div>
 
-                        @if(auth()->id() == $article->assignee || auth()->id() == $article->creator || auth()->id() == $article->publisher || auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
+                        @if(auth()->id() == $article->assignee || auth()->id() == $article->reviewWriter->value || auth()->id() == $article->creator || auth()->id() == $article->publisher || auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
                         <div class="form-group" id="comment-box">
                             <form id='Comment' method='POST' enctype="multipart/form-data">
                                 @csrf
