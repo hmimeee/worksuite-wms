@@ -35,7 +35,6 @@ class Articles extends Migration
             $table->string('publish_link')->nullable();
             $table->date('writing_deadline')->nullable();
             $table->date('publishing_deadline')->nullable();
-            $table->unsignedBigInteger('invoice_id')->nullable();
             $table->timestamps();
 
             $table->foreign('project_id')->references('id')->on('projects');
@@ -43,7 +42,6 @@ class Articles extends Migration
             $table->foreign('assignee')->references('id')->on('users');
             $table->foreign('creator')->references('id')->on('users');
             $table->foreign('publisher')->references('id')->on('users');
-            $table->foreign('invoice_id')->references('id')->on('article_invoices');
         });
     }
 

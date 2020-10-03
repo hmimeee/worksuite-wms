@@ -178,6 +178,10 @@
 
             <p><i class="ti-write"></i> @if($article->writing_status ==2) Word Count: @else Assigned Word: @endif {{$article->word_count}}</p>
 
+            @if($article->writing_status != 0)
+            <p><i class="icon-clock"></i> Writing Deadline: {{\Carbon\Carbon::create($article->writing_deadline)->format('d M Y')}} </p>
+            @endif
+
             @if ($article->rating !=null && (!auth()->user()->hasRole($writerRole) || !auth()->user()->hasRole($inhouseWriterRole)))
             <p><i class="fa fa-thumbs-up"></i> Rating: 
                 <span class="fa fa-star @if ($article->rating+1 > 1) checked @endif"></span>

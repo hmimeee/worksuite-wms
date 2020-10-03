@@ -41,6 +41,7 @@ use App\Role;
 use App\Task;
 use App\Project;
 use Pusher\Pusher;
+use Carbon\Carbon;
 
 class ArticleController extends MemberBaseController
 {
@@ -93,6 +94,8 @@ public function index(Request $request)
     $orderBy = Schema::hasColumn('articles', $request->orderBy) ? $request->orderBy : 'writing_deadline';
     $orderType = $request->orderType =='desc' ? 'desc' : 'asc';
     $paginate = is_numeric($request->entries) ? $request->entries : 10;
+    $this->startDate = $request->startDate ?? Carbon::today()->subDays(15)->format('Y-m-d');
+    $this->endDate = $request->endDate ?? Carbon::today()->addDays(15)->format('Y-m-d');
 
     $this->articles = Article::join('projects', 'projects.id', '=', 'articles.project_id')
     ->join('users', 'users.id', '=', 'articles.assignee')
@@ -101,17 +104,15 @@ public function index(Request $request)
     //Editable articles
     $this->editable_articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
     ->select('articles.*', 'article_details.label', 'article_details.value')
-    ->where('articles.writing_status', 1)
     ->where('article_details.label', 'article_review_writer');
+
+    if ($request->startDate != null || $request->endDate != null) {
+        $this->articles = $this->articles->whereBetween(\DB::raw('DATE(articles.`writing_deadline`)'), [$this->startDate, $this->endDate]);
+    }
 
     if (auth()->user()->hasRole($this->inhouseWriterRole)) {
         $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id());
     }
-
-    if ($request->type =='editable') {
-        $this->articles = $this->editable_articles;
-    }
-
 
     if (auth()->id() == $this->outreachHead) {
         $this->articles = $this->articles->where('publisher', auth()->id());
@@ -133,100 +134,115 @@ public function index(Request $request)
         $this->articles = $this->articles->where('articles.writing_status', '<>', 2);
     }
 
-    if(auth()->user()->hasRole($this->writerRole)) {
+    if(auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)) {
         $this->articles = $this->articles->where('assignee', auth()->id());
     }
 
     if (auth()->id() == $this->publisher) {
-     $this->articles = $this->articles->where('publisher', auth()->id());
- }
-
- if ($type == "myArticles") {
-    if (auth()->id() != $this->publisher && auth()->id() != $this->outreachHead) {
-        $this->articles = $this->articles->where('assignee', auth()->id())->where('writing_status', 0);
-    } else {
-        $this->articles = $this->articles->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
-    }
-} 
-
-if ($type == "assignByMe") {
-    $this->articles = $this->articles->where('creator', auth()->id())->where('writing_status', 0);
-} 
-
-if ($type == "pendingAproval") {
-    if (auth()->user()->hasRole('admin')) {
-        $this->articles = $this->articles->where('writing_status', 1);
-    } else {
-        $this->articles = $this->articles->where('creator', auth()->id())->where('writing_status', 1);
-    }
-} 
-
-if ($type == "completedArticles") {
-    if(auth()->user()->hasRole($this->writerRole)) {
-        $this->articles = $this->articles->where('article_status', null)->where('writing_status', 2)->where('assignee', auth()->id());
-    } else {
-        $this->articles = $this->articles->where('article_status', null)->where('writing_status', 2);
-    }
-} 
-
-if ($type == "paidUnpaidArticles") {
-    if(auth()->user()->hasRole($this->writerRole)) {
-        $this->articles = $this->articles->where('article_status', 1)->where('writing_status', 2)->where('assignee', auth()->id());
-    } else {
-        $this->articles = $this->articles->where('article_status', 1)->where('writing_status', 2);
-    }
-} 
-
-if ($type == "waitingPublish") {
-    $ids = ArticleDetails::where('label', 'publish_work_status')->pluck('article_id');
-
-    $this->articles = $this->articles->where('publishing_status', null)->where('publisher', '<>', null)->where('writing_status', 2)->whereNotIn('articles.id', $ids);
-}
-
-if ($type == "startedPublish") {
-    $ids = ArticleDetails::where('label', 'publish_work_status')->pluck('article_id');
-
-    $this->articles = $this->articles->where('publishing_status', null)->where('publisher', '<>', null)->where('writing_status', 2)->whereIn('articles.id', $ids);
-} 
-
-if ($type == "completePublish") {
-    $this->articles = $this->articles->where('publishing_status', 1)->where('publisher', '<>', null)->where('writing_status', 2);
-} 
-
-if ($type == "search") {
-    if(auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)){
-        $this->articles = $this->articles->where('articles.assignee', auth()->id())->where('title', 'LIKE', '%'.$request->q.'%');
-    } else {
-        $this->articles = $this->articles->where('articles.id', 'LIKE', '%'.$request->q.'%')->orWhere('title', 'LIKE', '%'.$request->q.'%')->orWhere('projects.project_name', 'LIKE', '%'.$request->q.'%')->orWhere('users.name', 'LIKE', '%'.$request->q.'%');
-    }
-}
-
-if(($type == null || $type == 'All') && $request->writer ==null && $request->project ==null) {
-    if (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)){
-        $this->articles = $this->articles->where('assignee', auth()->id());
-    } elseif(auth()->user()->id == $this->publisher){
         $this->articles = $this->articles->where('publisher', auth()->id());
     }
-    if ($request->hide == 'on') {
-        $this->articles = $this->articles->where('writing_status', '<>', 2);
+
+    if ($type == "writingNotStarted") {
+        $this->articles = $this->articles->where('working_status', null);
     }
-}
 
-//Editable articles
-$this->editable_articles = $this->editable_articles->get();
+    if ($type == "writingStarted") {
+        $this->articles = $this->articles->where('working_status', 1)->where('writing_status', 0);
+    }
 
-//All articles
-$this->all_articles = Article::all();
+    if ($type == "overdueArticles") {
+        $this->articles = $this->articles->where('writing_deadline', '<', date('Y-m-d'))->where('writing_status', 0);
+    }
 
-//Customized articles
-$this->articles = $this->articles->orderBy($orderBy, $orderType)->paginate($paginate);
+    if ($type == "myArticles") {
+        if (auth()->id() != $this->publisher && auth()->id() != $this->outreachHead) {
+            $this->articles = $this->articles->where('assignee', auth()->id())->where('writing_status', 0);
+        } else {
+            $this->articles = $this->articles->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
+        }
+    }
 
-$this->projects = Project::all();
-$this->categories = ArticleType::all();
-$this->writers = $this->getWriters();
-$this->writers = $this->writers->merge($this->getInhouseWriters());
-$this->pageTitle ="Article Management";
-return view('article::index', $this->data);
+    if ($type == "assignByMe") {
+        $this->articles = $this->articles->where('creator', auth()->id())->where('writing_status', 0);
+    }
+
+    if ($type == "pendingAproval") {
+        if (auth()->user()->hasRole('admin')) {
+            $this->articles = $this->articles->where('writing_status', 1);
+        } else {
+            $this->articles = $this->articles->where('creator', auth()->id())->where('writing_status', 1);
+        }
+    }
+
+    if ($type == "completedArticles") {
+        if(auth()->user()->hasRole($this->writerRole)) {
+            $this->articles = $this->articles->where('article_status', null)->where('writing_status', 2)->where('assignee', auth()->id());
+        } else {
+            $this->articles = $this->articles->where('article_status', null)->where('writing_status', 2);
+        }
+    }
+
+    if ($type == "paidArticles") {
+        $this->articles = $this->articles->leftJoin('article_invoices', 'article_invoices.id', '=', 'articles.invoice_id')->where('article_status', 1)->where('article_invoices.status', 1)->where('writing_status', 2);
+        if(auth()->user()->hasRole($this->writerRole)) {
+            $this->articles = $this->articles->where('assignee', auth()->id());
+        }
+    }
+
+    if ($type == "unpaidArticles") {
+        $this->articles = $this->articles->leftJoin('article_invoices', 'article_invoices.id', '=', 'articles.invoice_id')->where('article_status', 1)->where('article_invoices.status', '<>', 1)->where('writing_status', 2);
+        if(auth()->user()->hasRole($this->writerRole)) {
+            $this->articles = $this->articles->where('assignee', auth()->id());
+        }
+    }
+
+    if ($type == "waitingPublish") {
+        $ids = ArticleDetails::where('label', 'publish_work_status')->pluck('article_id');
+
+        $this->articles = $this->articles->where('publishing_status', null)->where('publisher', '<>', null)->where('writing_status', 2)->whereNotIn('articles.id', $ids);
+    }
+
+    if ($type == "startedPublish") {
+        $ids = ArticleDetails::where('label', 'publish_work_status')->pluck('article_id');
+
+        $this->articles = $this->articles->where('publishing_status', null)->where('publisher', '<>', null)->where('writing_status', 2)->whereIn('articles.id', $ids);
+    } 
+
+    if ($type == "completePublish") {
+        $this->articles = $this->articles->where('publishing_status', 1)->where('publisher', '<>', null)->where('writing_status', 2);
+    } 
+
+    if ($type == "search") {
+        if(auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)){
+            $this->articles = $this->articles->where('articles.assignee', auth()->id())->where('title', 'LIKE', '%'.$request->q.'%');
+        } else {
+            $this->articles = $this->articles->where('articles.id', 'LIKE', '%'.$request->q.'%')->orWhere('title', 'LIKE', '%'.$request->q.'%')->orWhere('projects.project_name', 'LIKE', '%'.$request->q.'%')->orWhere('users.name', 'LIKE', '%'.$request->q.'%');
+        }
+    }
+
+    if ($request->type =='editable') {
+        $this->articles = $this->editable_articles->where('articles.writing_status', 1);
+    }
+
+    if ($request->type =='edited') {
+        $this->articles = $this->editable_articles->where('articles.writing_status', 2);
+    }
+
+    //Editable articles
+    $this->editable_articles = $this->editable_articles->where('articles.writing_status', 1)->get();
+
+    //All articles
+    $this->all_articles = Article::all();
+
+    //Customized articles
+    $this->articles = $this->articles->orderBy($orderBy, $orderType)->paginate($paginate);
+
+    $this->projects = Project::all();
+    $this->categories = ArticleType::all();
+    $this->writers = $this->getWriters();
+    $this->writers = $this->writers->merge($this->getInhouseWriters());
+    $this->pageTitle ="Article Management";
+    return view('article::index', $this->data);
 }
 
 /**
@@ -235,16 +251,18 @@ return view('article::index', $this->data);
  */
 public function create()
 {
-    $this->tasks = Task::all();
+    $this->tasks = Task::where('board_column_id', '<>', 2);
     $this->projects = Project::all();
     $this->articleTypes = ArticleType::all();
     $this->writers = $this->getWriters();
+
     return view('article::create', $this->data);
 }
 
 public function projectData($id)
 {
-    $projectTasks = Task::projectTasks($id, null);
+    $projectTasks = Task::projectOpenTasks($id);
+    
     return Reply::dataOnly(['tasks' => $projectTasks]);
 }
 
@@ -266,53 +284,55 @@ public function store(Request $request)
 
     $count = count($request->title);
     for ($i=0; $i < $count; $i++) {
-        if ($request->title[$i] ==null || $request->type[$i] ==null || $request->word_count[$i] ==null || $request->description ==null || $request->writing_deadline[$i] ==null || $request->project ==null || ($request->self == null && $request->assignee ==null) || $request->priority ==null) {
+        if ($request->title[$i] ==null || $request->type[$i] ==null || $request->word_count[$i] ==null || $request->description[$i] ==null || $request->writing_deadline[$i] ==null || $request->project ==null || ($request->self == null && $request->assignee ==null) || $request->priority ==null) {
             return Reply::error('article::app.storeNewArticleError');
+        }
+    }
+
+    for ($i=0; $i < $count; $i++) {
+        if (isset($request->publishing[$i])) {
+            $publishing = 1;
         } else {
-            if (isset($request->publishing[$i])) {
-                $publishing = 1;
-            } else {
-                $publishing = 0;
-            }
-            if ($request->parent !=null){
-                $parent_task = $request->parent_task;
-            } else {
-                $parent_task = null;
-            }
+            $publishing = 0;
+        }
+        if ($request->parent !=null){
+            $parent_task = $request->parent_task;
+        } else {
+            $parent_task = null;
+        }
 
-            $article = new Article([
-                'title' => $request->title[$i],
-                'type' => $request->type[$i],
-                'word_count' => $request->word_count[$i],
-                'rate' => $writerRate,
-                'publishing' => $publishing,
-                'description' => $request->description,
-                'project_id' => $request->project,
-                'parent_task' => $parent_task,
-                'writing_deadline' => $request->writing_deadline[$i],
-                'writing_status' => 0,
-                'assignee' => $request->self? $request->self : $request->assignee,
-                'creator' => auth()->id(),
-                'priority' => $request->priority
+        $article = new Article([
+            'title' => $request->title[$i],
+            'type' => $request->type[$i],
+            'word_count' => $request->word_count[$i],
+            'rate' => $writerRate,
+            'publishing' => $publishing,
+            'description' => $request->description[$i],
+            'project_id' => $request->project,
+            'parent_task' => $parent_task,
+            'writing_deadline' => $request->writing_deadline[$i],
+            'writing_status' => 0,
+            'assignee' => $request->self? $request->self : $request->assignee,
+            'creator' => auth()->id(),
+            'priority' => $request->priority
 
-            ]);
-            $article->save();
+        ]);
+        $article->save();
 
             //Store in log
-            ArticleActivityLog::create([
-                'user_id' => auth()->id(),
-                'type' => 'Article',
-                'article_id' => $article->id,
-                'label' => 'article_create',
-                'details' => 'assigned this article.'
-            ]);
+        ArticleActivityLog::create([
+            'user_id' => auth()->id(),
+            'type' => 'Article',
+            'article_id' => $article->id,
+            'label' => 'article_create',
+            'details' => 'assigned this article.'
+        ]);
 
             //Send notification
-            $notifyTo = User::find($request->self ? $request->self : $request->assignee);
-            Notification::send($notifyTo, new NewArticle($article));
+        $notifyTo = User::find($request->self ? $request->self : $request->assignee);
+        Notification::send($notifyTo, new NewArticle($article));
 
-            $article_id[] = $article->id;
-        }
+        $article_id[] = $article->id;
     }
 
     return  Reply::successWithData('Article assigned, checking attachements!', ['articles' => implode(',',$article_id)]);
@@ -413,13 +433,16 @@ public function update(Request $request, $id)
             $writerRate = Writer::find($assignee)->rate->rate;
         }
         $this->article->rate = $writerRate;
+
+        $message = 'updated the details & changed the writer '.$this->article->getAssignee->name.' to '.Writer::find($assignee)->name;
+        $this->article->assignee = $assignee;
+
     }
 
     if ($request->publishing) {
         $this->article->publisher = $this->publisher;
     }
 
-    $this->article->assignee = $assignee;
     $this->article->writing_deadline = $request->writing_deadline;
     $this->article->priority = $request->priority;
     $this->article->save();
@@ -430,7 +453,7 @@ public function update(Request $request, $id)
         'type' => 'Article',
         'article_id' => $this->article->id,
         'label' => 'article_update',
-        'details' => 'updated the article details.'
+        'details' => $message ?? 'updated the article details.'
     ]);
 
     //Notify about update
@@ -695,13 +718,16 @@ public function updatePublishStatus(Request $request, $id)
 {
     $article = Article::findOrFail($id);
     if ($request->status == 1) {
-        $article->publishing_status = $request->status;
+        $article->publishing_status = 1;
     } else {
         $article->publishing_status = null;
     }
     if (isset($request->link)) {
         $article->publish_link = $request->link;
+    } else {
+        $article->publish_link = null;
     }
+    
     $article->save();
 
     if ($request->status ==1) {
@@ -844,7 +870,44 @@ public function writers(Request $request)
         }
         $this->rating += $article['rating']/count($this->articles->where('writing_status', 2));
     }
-    return view('article::writerView', $this->data);
+
+    request()->startDate = now()->subDays(30)->format('Y-m-d');
+    request()->endDate = now()->format('Y-m-d');
+
+    $this->range_articles = Article::where('assignee', $id)
+    ->whereHas('logs', function($q){
+        return $q->where('label', 'article_writing_status')
+        ->where('details', 'submitted the article for approval.')
+        ->whereBetween('created_at', [request()->startDate, request()->endDate]);
+    })
+    ->get();
+
+    $this->range_words = 0;
+    foreach ($this->range_articles as $article) {
+     $this->range_words = $this->range_words+$article->word_count;
+ }
+
+ return view('article::writerView', $this->data);
+}
+
+public function writerStats($id)
+{
+    $articles = Article::where('assignee', $id)
+    ->whereHas('logs', function($q){
+        return $q->where('label', 'article_writing_status')
+        ->where('details', 'submitted the article for approval.')
+        ->whereBetween('created_at', [request()->startDate, request()->endDate]);
+    })
+    ->get();
+
+    $words = 0;
+    foreach ($articles as $article) {
+     $words = $words+$article->word_count;
+ }
+
+ $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate);
+
+ return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days]);
 }
 
 public function writerPaymentDetails($id)
@@ -927,7 +990,7 @@ public function writerPaymentDetailsStore(Request $request, $id)
     $this->payment = WriterPaymentInfo::create([
         'user_id' => $writer->id,
         'payment_method' => $request->method,
-        'payment_details' => str_replace('</p>', '<br/>', str_replace('<p>', '', $request->details))
+        'payment_details' => str_replace(':break', '<br/>', strip_tags(str_replace('</p>', ':break', $request->details)))
     ]);
 
     //Store in log

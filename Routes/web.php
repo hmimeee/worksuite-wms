@@ -21,13 +21,18 @@ Route::prefix('admin')->group(function() {
 	Route::get('article-management/reports', 'AdminReportController@index')->name('admin.article.reports');
 	Route::get('article-management/reports/print', 'AdminReportController@show')->name('admin.article.reportPrint');
 
+	//Leaves
+	Route::get('article-management/leaves', 'AdminLeavesController@index')->name('admin.article.leaves');
+
 	//Settings
 	Route::get('article-management/settings', 'AdminSettingController@index')->name('admin.article.settings');
 	Route::post('article-management/settings', 'AdminSettingController@update');
 	Route::post('article-management/settings/update', 'AdminSettingController@updateModule')->name('admin.article.update-module');
 	Route::post('article-management/settings/temp', 'AdminSettingController@temp')->name('admin.article.temp');
+
 	//Writers
 	Route::get('article-management/writers', 'AdminArticleController@writers')->name('admin.article.writers');
+
 	//Invoices
 	Route::get('article-management/invoices', 'AdminInvoiceController@index')->name('admin.article.invoices');
 });
@@ -71,6 +76,13 @@ Route::prefix('member')->group(function() {
 	Route::get('article-management/reports', 'ReportController@index')->name('member.article.reports');
 	Route::get('article-management/reports/print', 'ReportController@show')->name('member.article.reportPrint');
 
+	//Leaves
+	Route::get('article-management/leaves', 'LeavesController@index')->name('member.article.leaves');
+	Route::post('article-management/leaves', 'LeavesController@store')->name('member.article.leaveApply');
+	Route::get('article-management/leaves/{leave}', 'LeavesController@show')->name('member.article.leaveView');
+	Route::patch('article-management/leaves/{leave}', 'LeavesController@update')->name('member.article.leaveApprove');
+	Route::delete('article-management/leaves/{leave}', 'LeavesController@destroy')->name('member.article.leaveDelete');
+
     //Settings
 	Route::get('article-management/settings', 'SettingController@index')->name('member.article.settings');
 	Route::post('article-management/settings', 'SettingController@update');
@@ -87,6 +99,7 @@ Route::prefix('member')->group(function() {
 	Route::post('article-management/writers/{id}/store-payment-details', 'ArticleController@writerPaymentDetailsStore')->name('member.article.writerPaymentDetailsStore');
 	Route::post('article-management/writers/{writer}/rate-update', 'WriterRateController@update')->name('member.article.writerRateUpdate');
 	Route::post('article-management/writers/{writer}/active', 'ArticleController@writerActive')->name('member.article.writerActive');
+	Route::post('article-management/writers/{writer}/stats', 'ArticleController@writerStats')->name('member.article.writerStats');
 
 	//Invoices
 	Route::get('article-management/invoices', 'InvoiceController@index')->name('member.article.invoices');

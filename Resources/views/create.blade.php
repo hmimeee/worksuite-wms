@@ -51,13 +51,13 @@
                         <button type="button" class="btn btn-success btn-sm" id="add-more"><i class="fa fa-plus"></i> Add Article Details</button>
                     </div>
                 </div>
-                <!--/span-->
-                <div class="col-md-12">
+
+                <!-- <div class="col-md-12">
                     <div class="form-group">
                         <label class="control-label required">Description</label>
                         <textarea rows="4" name="description" class="summernote"></textarea>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="col-md-12">
                     <div class="form-group" id="file-upload-tab">
@@ -69,7 +69,6 @@
                         </button>
                         <input type="file" name="files[]" id="file-upload" multiple />
                     </div>
-                    <!-- <input id="file-upload" type="file" name="files[]" class="form-control"> -->
                 </div>
             </div>
 
@@ -79,7 +78,7 @@
                     <select class="select2 form-control" data-placeholder="Select Project" name="project" id="projectTab" >
                         <option value=""></option>
                         @foreach ($projects as $project)
-                        <option value="{{$project->id}}">#{{$project->id}} - {{$project->project_name}}</option>
+                        <option value="{{$project->id}}" {{request()->project_id == $project->id ? 'selected' : ''}}>#{{$project->id}} - {{$project->project_name}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -100,13 +99,6 @@
                 </div>
             </div>
 
-            <!-- <div class="col-md-12">
-                <div class="form-group">
-                    <label class="control-label required">Due Date</label>
-                    <input type="text" name="writing_deadline" id="writing_deadline" class="form-control" autocomplete="off">
-                </div>
-            </div> -->
-            <!--/span-->
             <div class="col-md-12" id="assigneeBlock">
                 <div class="form-group">
                     <label class="control-label required">Assign To</label>
@@ -176,7 +168,7 @@
         var data = '';
         $('.btn-upload').html('Uploading...');
         for (var i = 0; i < $('#file-upload').get(0).files.length; ++i) {
-            var data = data + "<div class='btn btn-primary btn-sm m-b-5' style='text-align:left;'><i class='fa fa-paperclip'></i> " + $('#file-upload').get(0).files[i].name + "</div><br/>";
+            var data = data + "<a href='javascript:;' class='m-b-5'><i class='fa fa-paperclip'></i> " + $('#file-upload').get(0).files[i].name + "</a><br/>";
         }
         $('.btn-upload').html('<i class="fa fa-paperclip"></i> Drag and Drop Your Files');
         $('#selected-files').html(data);
@@ -186,12 +178,34 @@
         var article_count = $('#article_count').val();
         for (var i = 0; i < article_count; i++) {
             var color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
-            var article_tab = '<div id="article-tab"> <div class="col-md-12"> <div class="form-group"> <label class="control-label required"><span style="background:'+color+'; padding: 3px; border-radius: 2px; color: white;">#'+(i+1)+'</span> Title</label> <input type="text" id="title" name="title[]" class="form-control" > </div> </div> <div class="col-md-4"> <div class="form-group"> <label class="control-label required">Type</label> <select class="select2 form-control" data-placeholder="Type" name="type[]" id="type_'+i+'" > <option value=""></option> @foreach ($articleTypes as $articleType) <option value="{{$articleType->name}}">{{$articleType->name}}</option> @endforeach </select> </div> </div> <div class="col-md-3"> <div class="form-group"> <label class="control-label required">Word Count</label> <input type="number" name="word_count[]" class="form-control"> </div> </div> <div class="col-md-3"> <div class="form-group"> <label class="control-label required">Due Date</label> <input type="text" name="writing_deadline[]" class="form-control" id="writing_deadline_'+i+'" autocomplete="off"> </div> </div> <div class="col-md-2"> <div class="form-group align-middle"> <label>Publishing</label> <div class="checkbox checkbox-info"> <input id="'+i+'" name="publishing[]" value="true" type="checkbox"> <label for="'+i+'">Yes</label> </div> </div> </div> <div class="col-md-12"><hr></div> </div> <script> jQuery("#writing_deadline_'+i+'").datepicker({format: "yyyy-mm-dd",autoclose: true,todayHighlight: true}); $("#type_'+i+'").select2({formatNoMatches: function () {return "{{ __("messages.noRecordFound") }}";}});';
+            var article_tab = '<div id="article-tab"> <div class="col-md-12"> <div class="form-group"> <label class="control-label required"><span style="background:'+color+'; padding: 3px; border-radius: 2px; color: white;">#'+(i+1)+'</span> Title</label> <input type="text" id="title" name="title[]" class="form-control" > </div> </div> <div class="col-md-4"> <div class="form-group"> <label class="control-label required">Type</label> <select class="select2 form-control" data-placeholder="Type" name="type[]" id="type_'+i+'" > <option value=""></option> @foreach ($articleTypes as $articleType) <option value="{{$articleType->name}}">{{$articleType->name}}</option> @endforeach </select> </div> </div> <div class="col-md-3"> <div class="form-group"> <label class="control-label required">Word Count</label> <input type="number" name="word_count[]" class="form-control"> </div> </div> <div class="col-md-3"> <div class="form-group"> <label class="control-label required">Due Date</label> <input type="text" name="writing_deadline[]" class="form-control" id="writing_deadline_'+i+'" autocomplete="off"> </div> </div> <div class="col-md-2"> <div class="form-group align-middle"> <label>Publishing</label> <div class="checkbox checkbox-info"> <input id="'+i+'" name="publishing[]" value="true" type="checkbox"> <label for="'+i+'">Yes</label> </div> </div> </div> <div class="col-md-12"><hr></div> </div> <div class="col-md-12"> <div class="form-group"><label class="control-label required">Description</label><textarea rows="4" name="description[]" class="summernote"></textarea></div></div> <script> jQuery("#writing_deadline_'+i+'").datepicker({format: "yyyy-mm-dd",autoclose: true,todayHighlight: true}); $("#type_'+i+'").select2({formatNoMatches: function () {return "{{ __("messages.noRecordFound") }}";}}); $(".summernote").summernote({height: 100, minHeight: null, maxHeight: null,focus: false, toolbar: [ ["style", ["bold", "italic", "underline", "clear"]], ["font", ["strikethrough", "superscript", "subscript"]], ["fontsize", ["fontsize"]], ["color", ["color"]], ["para", ["ul", "ol", "paragraph"]], ["height", ["height"]]]});';
 
             $('#article-tab').append(article_tab);
             $('#add-more').hide();
             $('#article_count').hide();
         }
+    })
+
+    $(document).ready(function(){
+        var project = $('#projectTab').val();
+        var task = '{{request()->task_id}}';
+        if (project =='') { return false;}
+
+        $('#parentBlock').show();
+        var url = "{{route('member.article.projectData', ':id')}}";
+        var url = url.replace(':id', $('#projectTab').val());
+        $.easyAjax({
+            url: url,
+            type: "GET",
+            success: function (res) {
+                var data = '';
+                for(var i = 0; i < res.tasks.length; i++){
+                    var data = data+'<option value="'+res.tasks[i].id+'">#'+res.tasks[i].id+' - '+res.tasks[i].heading+'</option>';
+                }
+                $('#parent_task').html(data);
+                 $('option:selected', this).attr('value="'+task+'"');
+            }
+        });
     })
 
 
@@ -273,8 +287,8 @@
     });
 
     $('#projectTab').change(function () {
-            $('#parentBlock').show();
-        });
+        $('#parentBlock').show();
+    });
 
     $('#parent').change(function () {
         if($(this).is(':checked')){

@@ -39,4 +39,9 @@ class Writer extends User
 	{
 		return $this->hasMany(ArticleActivityLog::class, 'writer_id');
 	}
+
+	public function leaves()
+	{
+		return $this->hasMany(WriterLeave::class, 'user_id');
+	}
 }

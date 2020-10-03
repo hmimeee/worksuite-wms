@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.css') }}">
 <link rel="stylesheet" href="{{ asset('plugins/bower_components/custom-select/custom-select.css') }}">
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
 <style type="text/css">
     /* USER PROFILE PAGE */
     .card {
@@ -238,21 +239,22 @@
 
 
 </style>
-<div class="card hovercard">
+<div class="modal-header bg-info">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+</div>
+<div class="card hovercard" id="writerView">
     <div class="card-background">
         <img class="card-bkimg" alt="" src="{{url('/img/writer_cover.jpg')}}">
-        <!-- http://lorempixel.com/850/280/people/9/ -->
     </div>
     <div class="useravatar">
         <img alt="" src="@if ($writer->image ==null){{url('/img/default-profile-2.png')}} @else {{url('/user-uploads/avatar/'.$writer->image)}} @endif">
     </div>
     <div class="card-info"> <span class="card-title">{{$writer->name}}</span>
-
     </div>
 </div>
 <div class="btn-pref btn-group btn-group-justified btn-group-lg" role="group" aria-label="...">
     <div class="btn-group" role="group">
-        <button type="button" id="stats" class="btn btn-primary" href="#tab1" data-toggle="tab"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+        <button type="button" id="stats" class="btn btn-info" href="#tab1" data-toggle="tab"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
             <div class="hidden-xs">Statistics</div>
         </button>
     </div>
@@ -274,251 +276,288 @@
 </div>
 
 <div class="well">
-  <div class="tab-content">
-    <div class="tab-pane fade in active" id="tab1">
-        <div class="row">
-            <div class="col-sm-12 m-b-10">
-                <div class="rating-block">
-                    <h4>Average rating</h4>
-                    <h2 class="bold padding-bottom-7">{{number_format($rating, 2)}} <small>/ 5</small></h2>
-                    <button type="button" class="btn @if (round($rating)+1 > 1)btn-warning @endif btn-sm" aria-label="Left Align">
-                      <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="btn @if (round($rating)+1 > 2)btn-warning @endif btn-sm" aria-label="Left Align">
-                      <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="btn @if (round($rating)+1 > 3)btn-warning @endif btn-sm" aria-label="Left Align">
-                      <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="btn @if (round($rating)+1 > 4)btn-warning @endif btn-grey btn-sm" aria-label="Left Align">
-                      <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" class="btn @if (round($rating)+1 > 5)btn-warning @endif btn-grey btn-sm" aria-label="Left Align">
-                      <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                  </button>
-              </div>
-          </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-3 col-sm-6">
-            <a style="font-weight: 300;" target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.index')}}@else{{route('member.article.index')}}@endif?type=completedArticles&writer={{$writer->id}}">
-          <div class="circle-tile ">
-            <div class="circle-tile-heading dark-blue"><i class="fa fa-check fa-3x"></i></div>
-            <div class="circle-tile-content dark-blue">
-              <div class="circle-tile-description text-faded"> Completed Articles</div>
-              <div class="circle-tile-number text-faded ">{{count($articles->where('writing_status', 2)->where('article_status', '!=', 1))}}</div>
-          </div>
-      </div>
-  </a>
-  </div>
-
-  <div class="col-lg-3 col-sm-6">
-    <a style="font-weight: 300;" target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.index')}}@else{{route('member.article.index')}}@endif?hide=on&writer={{$writer->id}}">
-      <div class="circle-tile ">
-        <div class="circle-tile-heading red"><i class="fa fa-exclamation-circle fa-3x"></i></div>
-        <div class="circle-tile-content red">
-          <div class="circle-tile-description text-faded"> Incomplete Articles</div>
-          <div class="circle-tile-number text-faded ">{{count($articles->where('writing_status', 0))}}</div>
-      </div>
-  </div>
-</a>
-</div>
-
-@if(!$writer->hasRole($inhouseWriterRole))
-<div class="col-lg-3 col-sm-6">
-    <a style="font-weight: 300;" target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.index')}}@else{{route('member.article.index')}}@endif?type=paidUnpaidArticles&writer={{$writer->id}}">
-  <div class="circle-tile ">
-    <div class="circle-tile-heading dark-blue"><i class="fa fa-money fa-3x"></i></div>
-    <div class="circle-tile-content dark-blue">
-      <div class="circle-tile-description text-faded"> Paid Articles</div>
-      <div class="circle-tile-number text-faded ">{{count($articles->where('article_status', 1))}}</div>
-  </div>
-</div>
-</a>
-</div>
-
-<div class="col-lg-3 col-sm-6">
-  <div class="circle-tile ">
-    <a href="#"><div class="circle-tile-heading red"><i class="fa fa-credit-card fa-3x"></i></div></a>
-    <div class="circle-tile-content red">
-      <div class="circle-tile-description text-faded"> Total Earned</div>
-      <div class="circle-tile-number text-faded ">{{$earning}} BDT</div>
-  </div>
-</div>
-</div>
-@endif
-
-</div> 
-</div>
-<div class="tab-pane fade in" id="tab2">
-  <table class="table table-bordered success">
-    <thead>
-        @if(auth()->user()->hasRole('admin') && $writer->hasRole($writerRole))
-        <tr >
-            <th class="info" style="vertical-align: middle;" rowspan="2">Rate (BDT Per 1K)</th>
-            <td>
-                <input type="number" name="rate" value="{{$writer->rate ? $writer->rate->rate : 0}}" class="form-control" id="rateValue">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <button class="btn bg-success text-white" id="UpdateRate">Update Rate</button>
-            </td>
-        </tr>
-        @endif
-        <tr >
-            <th class="info">Full Name</th>
-            <td>{{$writer->name}}</td>
-        </tr>
-        <tr>
-            <th class="info">Email</th>
-            <td>{{$writer->email}}</td>
-        </tr>
-        <tr>
-            <th class="info">Phone Number</th>
-            <td>{{$writer->mobile}}</td>
-        </tr>
-
-        <tr>
-            <th class="info">Gender</th>
-            <td>{{ucfirst($writer->gender)}}</td>
-        </tr>
-        <tr>
-            <th class="info">Account Status</th>
-            <td> {{ucfirst($writer->status)}}</td>
-        </tr>
-        @if(!$writer->hasRole($inhouseWriterRole))
-        <tr>
-            <th class="label-info" style="vertical-align: middle;">Payment Details (Default)</th>
-            <td>
-                <div class="label-info p-10">
-                    @if($writer->paymentDetails !=null)
-                    <b><u>{{$writer->paymentDetails->title}}</u></b> <br/>
-                    {!! $writer->paymentDetails->details !!}
-                    @endif
-                </div>
-            </td>
-        </tr>
-
-        @if(auth()->user()->hasRole($writerRole) || auth()->user()->hasRole('admin'))
-        <tr>
-            <th class="info" style="vertical-align: middle;">Change Payment Details</th>
-            <td id="payment_tab" class="row">
-                <div class="col-md-7">
-                    @if($writer->paymentDetails ==null || auth()->user()->hasRole('admin'))
-                    <select name="payment_method" id="payment_method" class="form-control">
-                        @foreach ($writer->paymentInfos as $payInfo)
-                        <option value="{{$payInfo->id}}">#{{$payInfo->id}}: {{$payInfo->payment_method}} ({{strip_tags(str_replace('<br/>', ', ', $payInfo->payment_details))}})</option>
-                        @endforeach
-                    </select>
-                    @else
-                    <div class="text-danger">Please contact the authority to change the default payment details!</div>
-                    @endif
-                </div>
-                <div class="col-md-5">
-                    <div class="col-md-5" align="left">
-                        @if($writer->paymentDetails ==null || auth()->user()->hasRole('admin'))
-                        <button class="btn bg-success text-white btn-sm" id="update-payment">Set As Default</button>
-                        @endif
+    <div class="tab-content">
+        <div class="tab-pane fade in active" id="tab1">
+            <div class="row">
+                <div class="col-sm-4 m-b-10">
+                    <div class="rating-block">
+                        <h4>Average rating</h4>
+                        <h2 class="bold padding-bottom-7">{{number_format($rating, 2)}} <small>/ 5</small></h2>
+                        <button type="button" class="btn @if (round($rating)+1 > 1)btn-warning @endif btn-sm" aria-label="Left Align">
+                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn @if (round($rating)+1 > 2)btn-warning @endif btn-sm" aria-label="Left Align">
+                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn @if (round($rating)+1 > 3)btn-warning @endif btn-sm" aria-label="Left Align">
+                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn @if (round($rating)+1 > 4)btn-warning @endif btn-grey btn-sm" aria-label="Left Align">
+                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn @if (round($rating)+1 > 5)btn-warning @endif btn-grey btn-sm" aria-label="Left Align">
+                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                        </button>
                     </div>
-                    <div class="col-md-7" align="right">
-                       <a class="btn bg-info text-white btn-sm" href="javascript:;" onclick="addPaymentDetails()">Add New Details</a>
-                   </div>
-               </div>
-           </td>
-       </tr>
-       @endif
+                </div>
+                <div class="col-sm-8 m-b-10">
+                    <div class="rating-block row">
+                        <h5 class="box-title">@lang('app.selectDateRange')</h5>
+                        <div class="input-daterange input-group" id="date-range">
+                            <input type="text" name="startDate" class="form-control" id="startDate"  placeholder="@lang('app.startDate')" value="{{request()->startDate}}" />
+                            <span class="input-group-addon bg-info b-0 text-white">@lang('app.to')</span>
+                            <input type="text" name="endDate" class="form-control" id="endDate" placeholder="@lang('app.endDate')" value="{{request()->endDate}}" />
+                        </div>
+                        <div class="col-md-3 p-20">
+                            Word Count: <span id="rangeWords" class="badge badge-info badge-lg">{{$range_words}}</span>
+                        </div>
+                        <div class="col-md-3 p-20">
+                            Article Count: <span id="rangeArticles" class="badge badge-info badge-lg">{{count($range_articles)}}</span>
+                        </div>
+                        <div class="col-md-3 p-20">
+                            Articles/Day (Avg.): <span id="rangeDayArt" class="badge badge-info badge-lg">{{number_format($range_articles->count()/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
+                        </div>
+                        <div class="col-md-3 p-20">
+                            Words/Day (Avg.): <span id="rangeDayWor" class="badge badge-info badge-lg">{{number_format($range_words/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-sm-6">
+                    <a style="font-weight: 300;" target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.index')}}@else{{route('member.article.index')}}@endif?type=completedArticles&writer={{$writer->id}}">
+                        <div class="circle-tile ">
+                            <div class="circle-tile-heading dark-blue"><i class="fa fa-check fa-3x"></i></div>
+                            <div class="circle-tile-content dark-blue">
+                                <div class="circle-tile-description text-faded"> Completed Articles</div>
+                                <div class="circle-tile-number text-faded ">{{count($articles->where('writing_status', 2)->where('article_status', '!=', 1))}}</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
 
-       @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole($writerRole))
-       <tr>
-        <th class="info" style="vertical-align: middle;">Added Payment Information</th>
-        <td>
-            @foreach ($writer->paymentInfos as $payInfo)
-            <div class="p-10 label-default m-b-5" id="paymentDetails-{{$payInfo->id}}">
-                #{{$payInfo->id}}: {{$payInfo->payment_method}} ({{strip_tags(str_replace('<br/>', ', ', $payInfo->payment_details))}})
+                <div class="col-lg-3 col-sm-6">
+                    <a style="font-weight: 300;" target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.index')}}@else{{route('member.article.index')}}@endif?hide=on&writer={{$writer->id}}">
+                        <div class="circle-tile ">
+                            <div class="circle-tile-heading red"><i class="fa fa-exclamation-circle fa-3x"></i></div>
+                            <div class="circle-tile-content red">
+                                <div class="circle-tile-description text-faded"> Incomplete Articles</div>
+                                <div class="circle-tile-number text-faded ">{{count($articles->where('writing_status', 0))}}</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
 
-                @if(auth()->user()->hasRole('admin'))
-                <a href="javascript:;" onclick="deleteDetails('{{$payInfo->id}}')" class="label label-danger">Delete</a>
+                @if(!$writer->hasRole($inhouseWriterRole))
+                <div class="col-lg-3 col-sm-6">
+                    <a style="font-weight: 300;" target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.index')}}@else{{route('member.article.index')}}@endif?type=paidUnpaidArticles&writer={{$writer->id}}">
+                        <div class="circle-tile ">
+                            <div class="circle-tile-heading dark-blue"><i class="fa fa-money fa-3x"></i></div>
+                            <div class="circle-tile-content dark-blue">
+                                <div class="circle-tile-description text-faded"> Paid Articles</div>
+                                <div class="circle-tile-number text-faded ">{{count($articles->where('article_status', 1))}}</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <div class="circle-tile ">
+                        <a href="#"><div class="circle-tile-heading red"><i class="fa fa-credit-card fa-3x"></i></div></a>
+                        <div class="circle-tile-content red">
+                            <div class="circle-tile-description text-faded"> Total Earned</div>
+                            <div class="circle-tile-number text-faded ">{{$earning}} BDT</div>
+                        </div>
+                    </div>
+                </div>
                 @endif
-            </div>
-            @endforeach
-        </td>
-    </tr>
-    @endif
-    @endif
-</thead>
-</table>
-</div>
-<div class="tab-pane fade in" id="tab3">
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr role="row">
-                <th>#</th>
-                <th>Title</th>
-                <th>Assignee</th>
-                <th>Creator</th>
-                <th>Word Count</th>
-                <th>Priority</th>
-                <th>Deadline</th>
-            </tr>
-        </thead>
-        <tbody id="list">
-            @forelse ($articles->where('writing_status', '!=', 2) as $article)
-            <tr role="row" class="odd">
-                <td>{{$article->id}}</td>
-                <td>
-                    <a target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.show', $article->id)}} @else {{route('member.article.show', $article->id)}} @endif" class="@if($article->writing_status == 1) text-warning @elseif($article->writing_status == 2) text-dark @endif" style="@if($article->writing_status == 2 && $article->publisher != $user->id) text-decoration: line-through; @endif @if ($article->publishing_status == 1) text-decoration: line-through; @endif">{{$article->title}}</a>
-                </td>
-                <td>{{App\User::find($article->assignee)->name}}</td>
-                <td>{{App\User::find($article->creator)->name}}</td>
-                <td>{{$article->word_count}}</td>
-                <td><div class="label @if($article->priority =='low') label-success @elseif($article->priority =='medium') label-warning @else label-danger @endif">@if($article->priority =='low') Low @elseif($article->priority =='medium') Medium @else High @endif</div></td>
-                <td>{{$article->writing_deadline}}</td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="8">
-                    No data found!
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-<div class="tab-pane fade in" id="tab4">
-    <div class="row">
-    <div class="col-xs-12 panel-body p-t-15">
-        <div class="steamline">
-            @foreach ($writer->logs->sortByDesc('id') as $log)
-            <div class="sl-item">
-                <div class="sl-left" style="margin-left: -13px !important;"><img class="img-circle" src="@if($log->user->image !=null) /user-uploads/avatar/{{$log->user->image}} @else /img/default-profile-2.png @endif" width="25" height="25" alt="">
-                </div>
-                <div class="sl-right">
-                    <div>
-                        <h6><b>{{$log->user->name}}</b> {{$log->details}}</h6>
+
+            </div> 
+        </div>
+        <div class="tab-pane fade in" id="tab2">
+            <table class="table table-bordered success">
+                <thead>
+                    <tr >
+                        <th class="info">Rate (BDT Per 1K Words)</th>
+                        <td id="showRate">
+                            {{$writer->rate ? number_format($writer->rate->rate, 2) : 0.00}} BDT
+                            @if(auth()->user()->hasRole('admin') && $writer->hasRole($writerRole))
+                            <a href="javascript:;" class="label label-sm label-danger m-l-5" id="changeRateButton">Change</a>
+                            @endif
+                        </td>
+                        @if(auth()->user()->hasRole('admin') && $writer->hasRole($writerRole))
+                        <td class="row" id="changeRate" style="display: none;">
+                            <div class="col-md-8">
+                                <input type="number" name="rate" value="{{$writer->rate ? $writer->rate->rate : 0}}" class="form-control" id="rateValue">
+                            </div>
+                            <div class="col-md-4" align="right">
+                                <button class="btn bg-success text-white" id="UpdateRate">Update Rate</button>
+                                <button class="btn bg-inverse text-white" id="cancelUpdateRate">Cancel</button>
+                            </div>
+                        </td>
+                        @endif
+                    </tr>
+                    <tr >
+                        <th class="info">Full Name</th>
+                        <td>{{$writer->name}}</td>
+                    </tr>
+                    <tr>
+                        <th class="info">Email</th>
+                        <td>{{$writer->email}}</td>
+                    </tr>
+                    <tr>
+                        <th class="info">Phone Number</th>
+                        <td>{{$writer->mobile}}</td>
+                    </tr>
+
+                    <tr>
+                        <th class="info">Gender</th>
+                        <td>{{ucfirst($writer->gender)}}</td>
+                    </tr>
+                    <tr>
+                        <th class="info">Account Status</th>
+                        <td> {{ucfirst($writer->status)}}</td>
+                    </tr>
+                    @if($writer->hasRole($writerRole))
+                    <tr>
+                        <th class="label-info" style="vertical-align: middle;">
+                            Payment Details (Default)
+                        </th>
+                        <td id="defaultPayment">
+                            <div class="label-info p-10">
+                                <a href="javascript:;" class="label label-sm label-danger m-l-5" id="changeDefaultPaymentButton" style="float: right;">Change</a>
+                                @if($writer->paymentDetails !=null)
+                                <b><u>{{$writer->paymentDetails->title}}</u></b> <br/>
+                                {!! $writer->paymentDetails->details !!}
+                                @endif
+                            </div>
+                        </td>
+
+                        @if(auth()->user()->hasRole($writerRole) || auth()->user()->hasRole('admin'))
+                        <td id="changeDefaultPayment" class="row" style="display: none;">
+                            <div class="col-md-8">
+                                @if($writer->paymentDetails ==null || auth()->user()->hasRole('admin'))
+                                <select name="payment_method" id="payment_method" class="form-control">
+                                    @foreach ($writer->paymentInfos as $payInfo)
+                                    <option value="{{$payInfo->id}}">#{{$payInfo->id}}: {{$payInfo->payment_method}} ({{strip_tags(str_replace('<br/>', ', ', $payInfo->payment_details))}})</option>
+                                    @endforeach
+                                </select>
+                                @else
+                                <div class="text-danger">
+                                    Please contact the authority to change the default payment details!
+                                </div>
+                                @endif
+                            </div>
+                            <div class="col-md-4">
+                                <div class="col-md-6" align="left">
+                                    @if($writer->paymentDetails ==null || auth()->user()->hasRole('admin'))
+                                    <button class="btn bg-success text-white btn-sm" id="update-payment">Set As Default</button>
+                                    @endif
+                                </div>
+                                <div class="col-md-6" align="right">
+                                    <button class="btn btn-sm bg-inverse text-white" id="cancelDefaultPaymentChange">Cancel</button>
+                                </div>
+                            </div>
+                        </td>
+                        @endif
+                    </tr>
+
+                    @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole($writerRole))
+                    <tr>
+                        <th class="info" style="vertical-align: middle;">
+                            Added Payment Information
+                        </th>
+                        <td>
+                            @foreach ($writer->paymentInfos as $payInfo)
+                            <div class="p-10 label-default m-b-5" id="paymentDetails-{{$payInfo->id}}">
+                                #{{$payInfo->id}}: {{$payInfo->payment_method}} ({{strip_tags(str_replace('<br/>', ', ', $payInfo->payment_details))}})
+
+                                @if(auth()->user()->hasRole('admin'))
+                                <a href="javascript:;" onclick="deleteDetails('{{$payInfo->id}}')" class="label label-danger">Delete</a>
+                                @endif
+                            </div>
+                            @endforeach
+                            <a class="btn bg-info text-white btn-sm" href="javascript:;" onclick="addPaymentDetails()">Add New Details</a>
+                        </td>
+                    </tr>
+                    @endif
+                    @endif
+                </thead>
+            </table>
+        </div>
+        <div class="tab-pane fade in" id="tab3">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr role="row">
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Assignee</th>
+                        <th>Creator</th>
+                        <th>Word Count</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                    </tr>
+                </thead>
+                <tbody id="list">
+                    @forelse ($articles->where('writing_status', '!=', 2) as $article)
+                    <tr role="row" class="odd">
+                        <td>{{$article->id}}</td>
+                        <td>
+                            <a target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.show', $article->id)}} @else {{route('member.article.show', $article->id)}} @endif" class="@if($article->writing_status == 1) text-warning @elseif($article->writing_status == 2) text-dark @endif" style="@if($article->writing_status == 2 && $article->publisher != $user->id) text-decoration: line-through; @endif @if ($article->publishing_status == 1) text-decoration: line-through; @endif">{{$article->title}}</a>
+                        </td>
+                        <td>{{App\User::find($article->assignee)->name}}</td>
+                        <td>{{App\User::find($article->creator)->name}}</td>
+                        <td>{{$article->word_count}}</td>
+                        <td><div class="label @if($article->priority =='low') label-success @elseif($article->priority =='medium') label-warning @else label-danger @endif">@if($article->priority =='low') Low @elseif($article->priority =='medium') Medium @else High @endif</div></td>
+                        <td>{{$article->writing_deadline}}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8">
+                            No data found!
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade in" id="tab4">
+            <div class="row">
+                <div class="col-xs-12 panel-body p-t-15">
+                    <div class="steamline">
+                        @foreach ($writer->logs->sortByDesc('id') as $log)
+                        <div class="sl-item">
+                            <div class="sl-left" style="margin-left: -13px !important;"><img class="img-circle" src="@if($log->user->image !=null) /user-uploads/avatar/{{$log->user->image}} @else /img/default-profile-2.png @endif" width="25" height="25" alt="">
+                            </div>
+                            <div class="sl-right">
+                                <div>
+                                    <h6><b>{{$log->user->name}}</b> {{$log->details}}</h6>
 
 
-                        <span class="sl-date">{{$log->created_at->format('d-m-Y H:s a')}}</span>
+                                    <span class="sl-date">{{$log->created_at->format('d-m-Y H:s a')}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
-            @endforeach
         </div>
     </div>
 </div>
-</div>
-</div>
+
 
 <script src="{{ asset('plugins/bower_components/custom-select/custom-select.min.js') }}"></script>
 <script src="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.js') }}"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.js') }}"></script>
 
 <script type="text/javascript">
     $(document).ready(function() {
         $(".btn-pref .btn").click(function () {
-            $(".btn-pref .btn").removeClass("btn-primary").addClass("btn-default");
+            $(".btn-pref .btn").removeClass("btn-info").addClass("btn-default");
     // $(".tab").addClass("active"); // instead of this do the below 
-    $(this).removeClass("btn-default").addClass("btn-primary");   
+    $(this).removeClass("btn-default").addClass("btn-info");   
 });
     });
 
@@ -617,9 +656,10 @@
 }
 
 function addPaymentDetails(){
+    $(".well").html('<div class="cssload-speeding-wheel"></div>');
     var url = "{{ route('member.article.writerPaymentDetails',':id') }}";
     url = url.replace(':id', '{{$writer->id}}');
-    $("#subTaskModal").modal('toggle');
+    $("#subTaskModal").modal('hide');
     $.ajaxModal('#subTaskModal', url);
     $("#subTaskModal").modal('show');
 }
@@ -629,14 +669,59 @@ function addPaymentDetails(){
 function viewWriter(id) {
     var url = "{{ route('member.article.writer', ':id')}}";
     var url = url.replace(':id', id);
-    $("#subTaskModal").modal('toggle');
+    $("#subTaskModal").modal('hide');
     $.ajaxModal('#subTaskModal', url);
     $("#subTaskModal").modal('show');
 }
+
+$('#changeRateButton').click(function(){
+    $('#changeRate').show();
+    $('#showRate').hide();
+})
+
+$('#cancelUpdateRate').click(function(){
+    $('#changeRate').hide();
+    $('#showRate').show();
+})
+
+$('#changeDefaultPaymentButton').click(function(){
+    $('#changeDefaultPayment').show();
+    $('#defaultPayment').hide();
+})
+
+$('#cancelDefaultPaymentChange').click(function(){
+    $('#changeDefaultPayment').hide();
+    $('#defaultPayment').show();
+})
 
 $("#payment_method").select2({
     formatNoMatches: function () {
         return "{{ __('messages.noRecordFound') }}";
     }
+})
+
+jQuery('#date-range').datepicker({
+    toggleActive: true,
+    format: 'yyyy-mm-dd',
+    language: '{{ $global->locale }}',
+    autoclose: true,
+    todayHighlight: true
+});
+
+$('.input-daterange').change(function(){
+    var start = $('#startDate').val();
+    var end = $('#endDate').val();
+    var url = "{{route('member.article.writerStats', $writer->id)}}";
+    $.easyAjax({
+        type: 'POST',
+        url: url,
+        data: {'startDate': start, 'endDate': end, '_token': '{{csrf_token()}}'},
+        success: function (response) {
+            $('#rangeWords').html(response.words);
+            $('#rangeArticles').html(response.articles.length);
+            $('#rangeDayArt').html((response.articles.length/response.days).toFixed(1));
+            $('#rangeDayWor').html((response.words/response.days).toFixed(1));
+        }
+    });
 })
 </script>

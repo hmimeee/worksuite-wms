@@ -91,7 +91,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($articles as $article)
+                    @foreach ($invoice->articles as $article)
                     <tr>
                         <th scope="row" class="text-center">#{{$article->id}}</th>
                         <td><a style="text-decoration: none;" target="_blank" href="@if(auth()->user()->hasRole('admin')) {{route('admin.article.show', $article->id)}} @else {{route('member.article.show', $article->id)}} @endif">{{$article->title}}</a></td>

@@ -21,6 +21,7 @@ use App\Helper\Reply;
 use App\RoleUser;
 use App\User;
 use App\Setting;
+use Carbon\Carbon;
 
 class InvoiceController extends MemberBaseController
 {
@@ -53,22 +54,21 @@ class InvoiceController extends MemberBaseController
      * @return Response
      */
     public function index(Request $request, Invoice $invoices)
-    {
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole($this->writerRole) && !auth()->user()->hasRole($this->inhouseWriterRole) && auth()->id() != $this->writerHead) {
-            return abort(403);
+    {        
+        if ($request->status == 'paid' || $request->status == 'unpaid') {
+            $status = $request->status == 'paid' ? '1' : '0';
+
+            $invoices = $invoices->where('status', $status);
         }
 
-        $this->invoices = $invoices;
-        
-        if (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)) {
-            $this->invoices = $this->invoices->where('paid_to', auth()->id());
+        if ($request->startDate != null && $request->endDate != null) {
+            $startDate = Carbon::create($request->startDate);
+            $endDate = Carbon::create($request->endDate);
+
+            $invoices = $invoices->whereBetween('created_at', [$request->startDate, $request->endDate]);
         }
 
-        if ($request->hide == 'on') {
-            $this->invoices = $this->invoices->where('status', '<>', 1);
-        }
-
-        $this->invoices = $this->invoices->orderBy('status', 'ASC')->paginate(is_numeric($request->entries) ? $request->entries : 10);
+        $this->invoices = $invoices->orderBy('created_at', 'DESC')->paginate(is_numeric($request->entries) ? $request->entries : 10);
 
         return view('article::invoices', $this->data);
     }

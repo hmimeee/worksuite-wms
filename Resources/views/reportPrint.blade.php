@@ -15,17 +15,32 @@
         <div class="col-sm-6 mb-3 mt-3" align="right">
             <img src="{{ $global->logo_url }}" alt="home" class="Logo" height="50px" />
         </div>
-        <div class="col-sm-6 mb-3 mt-3">
+
+        <div class="col-sm-2 mb-3 mt-3">
             <h5>
                 <span class="text-muted m-l-5">Total Articles: </span>
                 <span class="text-info">{{ $articles ? count($articles) : '0' }}</span>
             </h5>
         </div>
 
-        <div class="col-sm-6 mb-3 mt-3 text-right">
+        <div class="col-sm-2 mb-3 mt-3 text-center">
             <h5>
                 <span class="text-muted m-l-5">Total Words: </span>
                 <span class="text-info">{{ $words ?? '0' }}</span>
+            </h5>
+        </div>
+
+        <div class="col-sm-3 mb-3 mt-3 text-center">
+            <h5>
+                <span class="text-muted m-l-5">Total Cost (BDT): </span>
+                <span class="text-info">{{ number_format($cost, 2) ?? '0' }}</span>
+            </h5>
+        </div>
+
+        <div class="col-sm-5 mb-3 mt-3 text-right">
+            <h5>
+                <span class="text-muted m-l-5">Date Between: </span>
+                <span class="text-info">{{\Carbon\Carbon::create($startDate)->format('d M Y')}} - {{\Carbon\Carbon::create($endDate)->format('d M Y')}}</span>
             </h5>
         </div>
     </div>

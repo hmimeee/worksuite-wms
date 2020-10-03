@@ -133,7 +133,7 @@ class ArticleCommentController extends Controller
     public function download($file)
     {
         $filePath = 'user-uploads/article-comment-files/'.$file;
-        return response()->download($filePath, $file);
+        return file_exists($filePath) ? response()->download($filePath, $file) : abort(404);
     }
 
     /**

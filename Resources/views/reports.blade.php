@@ -30,27 +30,42 @@
     <div class="col-md-12">
         <div class="white-box">
 
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <h4>
                     <span class="font-12 text-muted m-l-5">Total Articles: </span>
                     <span class="text-info btn btn-light">{{ $articles ? count($articles) : '0' }}</span>
                 </h4>
             </div>
 
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <h4>
                     <span class="font-12 text-muted m-l-5">Total Words: </span>
                     <span class="text-info btn btn-light">{{ $words ?? '0' }}</span>
                 </h4>
             </div>
 
-            <div class="col-sm-6" align="right">
+            <div class="col-sm-3">
+                <h4>
+                    <span class="font-12 text-muted m-l-5">Total Cost (BDT): </span>
+                    <span class="text-info btn btn-light">{{ number_format($cost, 2) ?? '0' }}</span>
+                </h4>
+            </div>
+
+            <div class="col-sm-4">
+                <h4>
+                    <span class="font-12 text-muted m-l-5">Date Between: </span>
+                    <span class="text-info btn btn-light">{{\Carbon\Carbon::create($startDate)->format('d M Y')}} - {{\Carbon\Carbon::create($endDate)->format('d M Y')}}</span>
+                </h4>
+            </div>
+
+            <div class="col-sm-1" align="right">
                 <h4>
                     <form action="{{route('member.article.reportPrint')}}" target="_blank">
                         <input type="hidden" name="start_date" value="{{request()->start_date}}">
                         <input type="hidden" name="end_date" value="{{request()->end_date}}">
                         <input type="hidden" name="project" value="{{request()->project}}">
                         <input type="hidden" name="writer" value="{{request()->writer}}">
+                        <input type="hidden" name="assignee" value="{{request()->assignee}}">
                         <button class="btn btn-info btn-sm"><i class="fa fa-print"></i></button>
                     </form>
                 </h4>
@@ -64,10 +79,10 @@
                         <div class="form-group">
                             <div class="input-daterange input-group" id="date-range">
                                 <input type="text" name="start_date" class="form-control" id="start-date" placeholder="@lang('app.startDate')"
-                                value="{{request()->start_date}}"/>
+                                value="{{$startDate}}"/>
                                 <span class="input-group-addon bg-info b-0 text-white">@lang('app.to')</span>
                                 <input type="text" name="end_date" class="form-control" id="end-date" placeholder="@lang('app.endDate')"
-                                value="{{request()->end_date}}"/>
+                                value="{{$endDate}}"/>
                             </div>
                             <!-- <input type="text" name="start_date" class="form-control" id="start_date" autocomplete="off"> -->
                         </div>
@@ -97,6 +112,18 @@
                     </div>
 
                     <div class="col-md-12">
+                        <label>Writer</label>
+                        <div class="form-group">
+                            <select class="form-control select2" name="assignee" id="writer">
+                                <option value="">Select Writer</option>
+                                @foreach($writers as $writer)
+                                <option value="{{$writer->id}}" {{request()->assignee == $writer->id ? 'selected' : ''}}>{{$writer->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
                         <div class="form-group">
                             <button class="btn btn-success">Submit</button>
                         </div>
@@ -111,10 +138,11 @@
                         <th>#</th>
                         <th>Title</th>
                         <th>Project</th>
-                        <th>Assignee</th>
-                        <th>Publish Link</th>
+                        <th>Writer</th>
+                        <th>Published Link</th>
                         <th>Word Count</th>
                         <th>Deadline</th>
+                        <th>Completed</th>
                     </tr>
                 </thead>
                 <tbody id="list">
@@ -140,6 +168,11 @@
                         <td>
                             <span>
                                 {{\Carbon\Carbon::parse($article->writing_deadline)->format('d M Y')}}
+                            </span>
+                        </td>
+                        <td>
+                            <span>
+                                {{$article->logs->where('details', 'submitted the article for approval.')->first()->created_at->format('d M Y')}}
                             </span>
                         </td>
                     </tr>

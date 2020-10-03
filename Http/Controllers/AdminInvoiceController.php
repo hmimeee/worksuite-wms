@@ -11,6 +11,7 @@ use Modules\Article\Entities\Article;
 use Modules\Article\Entities\Invoice;
 use Modules\Article\Entities\ArticleSetting;
 use App\Helper\Reply;
+use Carbon\Carbon;
 
 class AdminInvoiceController extends AdminBaseController
 {
@@ -44,13 +45,20 @@ class AdminInvoiceController extends AdminBaseController
      */
     public function index(Request $request, Invoice $invoices)
     {
-        $this->invoices = $invoices;
+        if ($request->status == 'paid' || $request->status == 'unpaid') {
+            $status = $request->status == 'paid' ? '1' : '0';
 
-        if ($request->hide == 'on') {
-            $this->invoices = $this->invoices->where('status', '<>', 1);
+            $invoices = $invoices->where('status', $status);
         }
 
-        $this->invoices = $this->invoices->orderBy('status', 'ASC')->paginate(is_numeric($request->entries) ? $request->entries : 10);
+        if ($request->startDate != null && $request->endDate != null) {
+            $startDate = Carbon::create($request->startDate);
+            $endDate = Carbon::create($request->endDate);
+
+            $invoices = $invoices->whereBetween('created_at', [$request->startDate, $request->endDate]);
+        }
+
+        $this->invoices = $invoices->orderBy('created_at', 'DESC')->paginate(is_numeric($request->entries) ? $request->entries : 10);
 
         return view('article::admin.invoices', $this->data);
     }
@@ -76,8 +84,8 @@ class AdminInvoiceController extends AdminBaseController
         $amount = 0;
         $words = 0;
         foreach ($articles as $article) {
-        $amount += $article->rate/1000*$article->word_count;
-        $words += $article->word_count;
+            $amount += $article->rate/1000*$article->word_count;
+            $words += $article->word_count;
         }
 
         $writer = Writer::findOrFail($request->writer);
@@ -170,9 +178,9 @@ class AdminInvoiceController extends AdminBaseController
     {
         $invoice->status = $request->status;
         if ($request->status == 1) {
-        $invoice->paid_date = date('Y-m-d');
+            $invoice->paid_date = date('Y-m-d');
         } else {
-        $invoice->paid_date = null;
+            $invoice->paid_date = null;
         }
         $invoice->save();
         return Reply::success('Status updated!');

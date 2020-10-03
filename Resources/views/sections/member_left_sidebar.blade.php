@@ -25,6 +25,9 @@
 			<span class="hide-menu">@if(!auth()->user()->hasRole(writer) && !auth()->user()->hasRole(inhouse_writer)) @lang('article::app.writers') @else Profile @endif</span></a>
 		</li>
 		@if(!auth()->user()->hasRole(inhouse_writer))
+		<li><a href="{{route('member.article.leaves')}}" class="waves-effect">
+			<span class="hide-menu">@lang('article::app.leaves')</span></a>
+		</li>
 		<li><a href="{{is_null(route('member.article.invoices')) ? 'javascript:;' : route('member.article.invoices')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.invoices')</span></a>
 		</li>

@@ -89,6 +89,9 @@
                         <td>{{$writer->id}}</td>
                         <td>
                             <a href="javascript:;" onclick="viewWriter('{{$writer->id}}')">{{$writer->name}}</a>
+                            @if($writer->leaves()->where('leave_dates', 'LIKE', '%'.date('Y-m').'%')->count() > 0)
+                                <span class="label label-danger">Leaves taken</span>
+                                @endif
                         </td>
                         <td>{{App\Role::find($writer->role->last()->role_id)->display_name}}</td>
                         @if(!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))

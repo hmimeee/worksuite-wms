@@ -15,8 +15,8 @@ use Carbon\Carbon;
 
 class ReportController extends MemberBaseController
 {
-   public function __construct()
-   {
+ public function __construct()
+ {
     parent::__construct();
     $this->pageTitle = 'Article Reports';
     $this->pageIcon = 'ti-stats-up';
@@ -34,45 +34,49 @@ class ReportController extends MemberBaseController
     public function index(Request $request, Article $articles)
     {
         $this->articles = $articles;
+        $this->startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
+        $this->endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
-        if ($request->start_date != null && $request->end_date != null) {
-            $this->articles = Article::whereBetween('writing_deadline', [$request->start_date, $request->end_date]);
-        } else {
-            $start = Carbon::now()->subDays(7)->format('Y-m-d');
-            $end = Carbon::now()->format('Y-m-d');
-            request()->start_date = $start;
-            request()->end_date = $end;
-            
-            $this->articles = Article::whereBetween('writing_deadline', [$request->start_date, $request->end_date]);
-        }
+        $this->articles = Article::leftJoin('article_activity_logs', 'article_activity_logs.article_id', '=', 'articles.id')->select('articles.*', 'article_activity_logs.details', 'article_activity_logs.article_id')->where('article_activity_logs.details', 'submitted the article for approval.')->whereBetween(\DB::raw('DATE(article_activity_logs.`created_at`)'), [Carbon::create($this->startDate)->format('Y-m-d'), Carbon::create($this->endDate)->format('Y-m-d')]);
 
         if ($request->project != null) {
-         $this->articles =  $this->articles->where('project_id', $request->project);
-     }
-
-     if ($request->writer != null) {
-        $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-        ->join('roles', 'roles.id', '=', 'role_user.role_id')
-        ->select('users.id')
-        ->where('roles.name', $request->writer)->pluck('users.id');
-
-        if ($request->writer == $this->inhouseWriterRole) {
-            $writerHead = User::find($this->writerHead)->id;
-            $writers = $writers->merge($writerHead);
+            $this->articles =  $this->articles->where('project_id', $request->project);
         }
 
-        $this->articles =  $this->articles->whereIn('assignee', $writers);
+        if ($request->writer != null) {
+            $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->select('users.id')
+            ->where('roles.name', $request->writer)->pluck('users.id');
+
+            if ($request->writer == $this->inhouseWriterRole) {
+                $writerHead = User::find($this->writerHead)->id;
+                $writers = $writers->merge($writerHead);
+            }
+
+            $this->articles =  $this->articles->whereIn('assignee', $writers);
+        }
+
+        if ($request->assignee != null) {
+            $this->articles =  $this->articles->where('assignee', $request->assignee);
+        }
+
+        $this->articles = $this->articles->get()->unique();
+
+        //Get writers
+        $control = new AdminArticleController();
+        $this->writers = $control->getWriters();
+
+        $this->projects = Project::all();
+        $this->words = 0;
+        $this->cost = 0;
+        foreach ($this->articles as $article) {
+            $this->words += $article->word_count;
+            $this->cost += ($article->word_count*$article->rate)/1000;
+        }
+
+        return view('article::reports', $this->data);
     }
-
-    $this->articles = $this->articles->get();
-    $this->projects = Project::all();
-    $this->words = 0;
-    foreach ($this->articles as $article) {
-     $this->words += $article->word_count;
- }
-
- return view('article::reports', $this->data);
-}
 
     /**
      * Show the form for creating a new resource.
@@ -101,42 +105,41 @@ class ReportController extends MemberBaseController
     public function show(Request $request, Article $articles)
     {
         $this->articles = $articles;
+        $this->startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
+        $this->endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
-        if ($request->start_date != null && $request->end_date != null) {
-            $this->articles = Article::whereBetween('writing_deadline', [$request->start_date, $request->end_date]);
-        } else {
-            $start = Carbon::now()->subDays(7)->format('Y-m-d');
-            $end = Carbon::now()->format('Y-m-d');
-            request()->start_date = $start;
-            request()->end_date = $end;
-            
-            $this->articles = Article::whereBetween('writing_deadline', [$request->start_date, $request->end_date]);
-        }
+        $this->articles = Article::whereBetween('writing_deadline', [$this->startDate, $this->endDate]);
 
         if ($request->project != null) {
-         $this->articles =  $this->articles->where('project_id', $request->project);
-     }
-
-     if ($request->writer != null) {
-        $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-        ->join('roles', 'roles.id', '=', 'role_user.role_id')
-        ->select('users.id')
-        ->where('roles.name', $request->writer)->pluck('users.id');
-        
-        if ($request->writer == $this->inhouseWriterRole) {
-            $writerHead = User::find($this->writerHead)->id;
-            $writers = $writers->merge($writerHead);
+            $this->articles =  $this->articles->where('project_id', $request->project);
         }
 
-        $this->articles =  $this->articles->whereIn('assignee', $writers);
-    }
+        if ($request->writer != null) {
+            $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->select('users.id')
+            ->where('roles.name', $request->writer)->pluck('users.id');
 
-    $this->articles = $this->articles->get();
-    $this->projects = Project::all();
-    $this->words = 0;
-    foreach ($this->articles as $article) {
-     $this->words += $article->word_count;
- }
+            if ($request->writer == $this->inhouseWriterRole) {
+                $writerHead = User::find($this->writerHead)->id;
+                $writers = $writers->merge($writerHead);
+            }
+
+            $this->articles =  $this->articles->whereIn('assignee', $writers);
+        }
+
+        if ($request->assignee != null) {
+            $this->articles =  $this->articles->where('assignee', $request->assignee);
+        }
+
+        $this->articles = $this->articles->get();
+        $this->projects = Project::all();
+        $this->words = 0;
+        $this->cost = 0;
+        foreach ($this->articles as $article) {
+            $this->words += $article->word_count;
+            $this->cost += ($article->word_count*$article->rate)/1000;
+        }
 
         return view('article::reportPrint', $this->data);
     }

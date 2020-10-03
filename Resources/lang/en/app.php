@@ -7,6 +7,7 @@ return array(
     ),
     'articles' => 'Articles',
     'reports' => 'Reports',
+    'leaves' => 'Leaves',
     'totalwriters' => 'Total Writers',
     'writers' => 'Writers',
     'settings' => 'Settings',

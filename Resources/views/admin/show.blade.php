@@ -131,16 +131,34 @@
             <a href="javascript:;" id="reminderButton" onclick="sendReminder('{{$article->id}}')" class="btn btn-info btn-sm m-b-10 btn-rounded btn-outline pull-right" title="@lang('messages.remindToAssignedEmployee')"><i class="fa fa-envelope"></i> @lang('modules.tasks.reminder')</a>
             @endif
 
-            @if($article->writing_status == 0 && $article->working_status == 1)
-            <div class="btn btn-outline btn-default btn-sm pull-right m-l-5 m-r-5"><span class="text-info"> Working </span></div>
+            @if($article->writing_status == 0 && $article->working_status == null) 
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-primary pull-right">Not Started</label>
+            @elseif($article->writing_status == 0 && $article->working_status == 1)
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-info pull-right">Working</label>
+            @elseif($article->writing_status == 1)
+
+            @if(!is_null($article->reviewWriter) && (is_null($article->reviewStatus) || $article->reviewStatus->value != 'completed'))
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-primary pull-right">Under Review</label>
+            @elseif(!is_null($article->reviewStatus) && $article->reviewStatus->value == 'completed')
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-success pull-right">Review Complete</label>
+            @else
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-warning pull-right">Pending for Aproval</label> 
             @endif
 
-            @if($article->writing_status == 0 && $article->working_status == null)
-            <div class="btn btn-outline btn-default btn-sm pull-right m-l-5 m-r-5"><span class="text-primary"> Not started</span></div>
+            @elseif($article->writing_status == 2)
+            @if($article->publishing == 1 && !auth()->user()->hasRole($writerRole))
+
+            @if($article->publishing_status == 1)
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-default pull-right" style="color: grey;">Completed Publishing</label>
+            @elseif($article->publishing_status != 1 && $article->publish != null)
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-success pull-right">Started Publishing</label>
+            @else
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-danger pull-right">Waiting for Publish</label>
             @endif
 
-            @if($article->writing_status == 1 && $article->assignee == auth()->id() && (auth()->user()->hasRole($writerRole) || auth()->user()->hasRole($inhouseWriterRole)))
-            <div class="pull-right m-l-5 m-r-5" style="border: 1px solid #fec107; padding: 5px; border-radius: 3px;"><span class="text-warning"> Pending for Aproval </span></div>
+            @else
+            <label class="btn-sm btn-outline btn-default m-r-5 btn-default pull-right" style="color: grey;">Completed Writing</label>
+            @endif
             @endif
 
             @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || auth()->user()->hasRole('admin')) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
@@ -293,10 +311,14 @@
             <p><i class="icon-layers"></i> Project: <a style="font-weight: 400;" target="_blank" href="@if(auth()->user()->hasRole('admin')){{ route('admin.projects.show', $article->project->id) }}@else{{ route('member.projects.show', $article->project->id) }}@endif"> {{$article->project->project_name}} </a> </p>
             @endif
             @if (($writerHead == auth()->user()->id || auth()->user()->hasRole('admin')) && $article->task !=null)
-            <p><i class="fa fa-tasks"></i> Parent Task: <a style="font-weight: 400;" target="_blank" href="@if(auth()->user()->hasRole('admin')){{route('admin.all-tasks.index')}}@else{{route('member.all-tasks.index')}}@endif?view-task={{$article->task->id}}"> {{$article->task->heading}} </a> </p>
+            <p><i class="fa fa-tasks"></i> Parent Task: <a style="font-weight: 400;" href="javascript:;" onclick="parentTask('{{$article->parent_task}}')">{{$article->task->heading}} </a> </p>
             @endif
 
             <p><i class="ti-write"></i> @if($article->writing_status ==2) Word Count: @else Assigned Word: @endif {{$article->word_count}}</p>
+
+            @if($article->writing_status != 0)
+            <p><i class="icon-clock"></i> Writing Deadline: {{\Carbon\Carbon::create($article->writing_deadline)->format('d M Y')}} </p>
+            @endif
 
             @if ($article->rating !=null && (!auth()->user()->hasRole($writerRole) || !auth()->user()->hasRole($inhouseWriterRole)))
             <p><i class="fa fa-thumbs-up"></i> Rating: 
@@ -910,6 +932,23 @@ function deleteArticle(id) {
             });
         }
         if (isConfirm ==='') {swal("Empty!", "You must enter your password!", "warning");}
+    });
+}
+
+function parentTask(id) {
+    
+    $(".right-sidebar").slideDown(50).addClass("shw-rside");
+    var url = "{{ auth()->user()->hasRole('admin') ? route('admin.all-tasks.show',':id') : route('member.all-tasks.show',':id') }}";
+    url = url.replace(':id', id);
+
+    $.easyAjax({
+        type: 'GET',
+        url: url,
+        success: function (response) {
+            if (response.status == "success") {
+                $('#right-sidebar-content').html(response.view);
+            }
+        }
     });
 }
 

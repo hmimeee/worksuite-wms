@@ -84,7 +84,7 @@
     function viewWriter(id) {
         var url = "{{ route('member.article.writer', ':id')}}";
         var url = url.replace(':id', id);
-        $("#subTaskModal").modal('toggle');
+        $("#subTaskModal").modal('hide');
         $.ajaxModal('#subTaskModal', url);
         $("#subTaskModal").modal('show');
     }

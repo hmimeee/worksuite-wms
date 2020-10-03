@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,7 +28,7 @@
     <meta name="msapplication-TileImage" content="{{ asset('favicon/ms-icon-144x144.png') }}">
     <meta name="theme-color" content="#ffffff">
 
-    <title>@if($userRole) {{ $userRole->display_name }} @lang("app.panel")  @else @lang("app.employeePanel") @endif | {{ $pageTitle }}</title>
+    <title>@lang('app.adminPanel') | {{ $pageTitle }}</title>
     <!-- Bootstrap Core CSS -->
     <link href="{{ asset('plugins/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel='stylesheet prefetch'
@@ -62,8 +62,8 @@
     <link href="{{ asset('css/rounded.css') }}" rel="stylesheet">
     @endif
 
-    @if(file_exists(public_path().'/css/member-custom.css'))
-    <link href="{{ asset('css/member-custom.css') }}" rel="stylesheet">
+    @if(file_exists(public_path().'/css/admin-custom.css'))
+    <link href="{{ asset('css/admin-custom.css') }}" rel="stylesheet">
     @endif
 
 
@@ -137,7 +137,7 @@
                         console.log('database id : '+db_onesignal_id);
 
                         if(db_onesignal_id == null || db_onesignal_id !== userId){ //update onesignal ID if it is new
-                            updateOnesignalPlayerId(userId);
+                           updateOnesignalPlayerId(userId);
                         }
 
 
@@ -152,49 +152,50 @@
     </script>
     @endif
 
-    {{--Custom theme styles--}}
     @if($global->active_theme == 'custom')
+    {{--Custom theme styles--}}
     <style>
-
         :root {
-            --header_color: {{ $employeeTheme->header_color }};
-            --sidebar_color: {{ $employeeTheme->sidebar_color }};
-            --link_color: {{ $employeeTheme->link_color }};
-            --sidebar_text_color: {{ $employeeTheme->sidebar_text_color }};
+            --header_color: {{ $adminTheme->header_color }};
+            --sidebar_color: {{ $adminTheme->sidebar_color }};
+            --link_color: {{ $adminTheme->link_color }};
+            --sidebar_text_color: {{ $adminTheme->sidebar_text_color }};
         }
         .navbar-header {
-            background: {{ $employeeTheme->header_color }};
+            background: var(--header_color);
         }
+
         .sidebar-nav .notify {
             margin: 0 !important;
         }
         .sidebar .notify .heartbit {
-            border: 5px solid {{ $employeeTheme->header_color }} !important;
+            border: 5px solid var(--header_color) !important;
             top: -23px !important;
             right: -15px !important;
         }
         .sidebar .notify .point {
-            background-color: {{ $employeeTheme->header_color }} !important;
+            background-color: var(--header_color) !important;
             top: -13px !important;
         }
+
         .navbar-top-links > li > a {
-            color: {{ $employeeTheme->link_color }};
+            color: var(--link_color);
         }
         /*Right panel*/
         .right-sidebar .rpanel-title {
-            background: {{ $employeeTheme->header_color }};
+            background: var(--header_color);
         }
         /*Bread Crumb*/
         .bg-title .breadcrumb .active {
-            color: {{ $employeeTheme->header_color }};
+            color: var(--header_color);
         }
         /*Sidebar*/
         .sidebar {
-            background: {{ $employeeTheme->sidebar_color }};
+            background: var(--sidebar_color);
             box-shadow: 1px 0px 20px rgba(0, 0, 0, 0.08);
         }
         .sidebar .label-custom {
-            background: {{ $employeeTheme->header_color }};
+            background: var(--header_color);
         }
         #side-menu li a, #side-menu > li:not(.user-pro) > a {
             color: var(--sidebar_text_color);
@@ -219,15 +220,15 @@
             color: var(--header_color);
         }
         .sidebar #side-menu .user-pro .nav-second-level a:hover {
-            color: {{ $employeeTheme->header_color }};
+            color: var(--header_color);
         }
         .nav-small-cap {
-            color: {{ $employeeTheme->sidebar_text_color }};
+            color: var(--sidebar_text_color);
         }
         /* .content-wrapper .sidebar .nav-second-level li {
             background: #444859;
-        }
-        @media (min-width: 768px) {
+        } */
+        /* @media (min-width: 768px) {
             .content-wrapper #side-menu ul,
             .content-wrapper .sidebar #side-menu > li:hover,
             .content-wrapper .sidebar .nav-second-level > li > a {
@@ -237,58 +238,58 @@
 
         /*themecolor*/
         .bg-theme {
-            background-color: {{ $employeeTheme->header_color }} !important;
+            background-color: var(--header_color) !important;
         }
         .bg-theme-dark {
-            background-color: {{ $employeeTheme->sidebar_color }} !important;
+            background-color: var(--sidebar_color) !important;
         }
         /*Chat widget*/
         .chat-list .odd .chat-text {
-            background: {{ $employeeTheme->header_color }};
+            background: var(--header_color);
         }
         /*Button*/
         .btn-custom {
-            background: {{ $employeeTheme->header_color }};
-            border: 1px solid {{ $employeeTheme->header_color }};
-            color: {{ $employeeTheme->link_color }};
+            background: var(--header_color);
+            border: 1px solid var(--header_color);
+            color: var(--link_color);
         }
         .btn-custom:hover {
-            background: {{ $employeeTheme->header_color }};
-            border: 1px solid {{ $employeeTheme->header_color }};
+            background: var(--header_color);
+            border: 1px solid var(--header_color);
         }
         /*Custom tab*/
         .customtab li.active a,
         .customtab li.active a:hover,
         .customtab li.active a:focus {
-            border-bottom: 2px solid {{ $employeeTheme->header_color }};
-            color: {{ $employeeTheme->header_color }};
+            border-bottom: 2px solid var(--header_color);
+            color: var(--header_color);
         }
         .tabs-vertical li.active a,
         .tabs-vertical li.active a:hover,
         .tabs-vertical li.active a:focus {
-            background: {{ $employeeTheme->header_color }};
-            border-right: 2px solid {{ $employeeTheme->header_color }};
+            background: var(--header_color);
+            border-right: 2px solid var(--header_color);
         }
         /*Nav-pills*/
         .nav-pills > li.active > a,
         .nav-pills > li.active > a:focus,
         .nav-pills > li.active > a:hover {
-            background: {{ $employeeTheme->header_color }};
-            color: {{ $employeeTheme->link_color }};
+            background: var(--header_color);
+            color: var(--link_color);
         }
 
-        .member-panel-name{
-            background: {{ $employeeTheme->header_color }};
+        .admin-panel-name{
+            background: var(--header_color);
         }
 
         /*fullcalendar css*/
         .fc th.fc-widget-header{
-            background: {{ $employeeTheme->sidebar_color }};
+            background: var(--sidebar_color);
         }
 
         .fc-button{
-            background: {{ $employeeTheme->header_color }};
-            color: {{ $employeeTheme->link_color }};
+            background: var(--header_color);
+            color: var(--link_color);
             margin-left: 2px !important;
         }
 
@@ -297,45 +298,28 @@
         }
 
         .user-pro{
-            background-color: {{ $employeeTheme->sidebar_color }};
+            background-color: var(--sidebar_color);
         }
 
+
         .top-left-part{
-            background: {{ $employeeTheme->sidebar_color }};
+            background: var(--sidebar_color);
         }
 
         .notify .heartbit{
-            border: 5px solid {{ $employeeTheme->sidebar_color }};
+            border: 5px solid var(--sidebar_color);
         }
 
         .notify .point{
-            background-color: {{ $employeeTheme->sidebar_color }};
-        }
-
-        @if(date('d') < 6)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/coloured-feathers/coloured-feathers.jpg')
-        @elseif(date('d') < 11)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/architecture/architecture.jpg')
-        @elseif(date('d') < 16)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/meditation/meditation.jpg')
-        @elseif(date('d') < 21)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/mountains/mountains.jpg')
-        @elseif(date('d') < 26)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/sunset/sunset.jpg')
-        @else
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/jack-o-lantern/jack-o-lantern.jpg')
-        @endif
-
-        body, .container-fluid {
-            background: url('{{$bg}}') no-repeat fixed center !important;
+            background-color: var(--sidebar_color);
         }
     </style>
 
     <style>
-        {!! $employeeTheme->user_css !!}
+        {!! $adminTheme->user_css !!}
     </style>
-    @endif
     {{--Custom theme styles end--}}
+    @endif
 
     <style>
         .sidebar .notify  {
@@ -349,8 +333,8 @@
         top: -13px !important;
         }
         .top-notifications .message-center .user-img{
-            margin: 0 0 0 0 !important;
-        }
+             margin: 0 0 0 0 !important;
+         }
     </style>
 
 
@@ -361,13 +345,9 @@
     <div class="cssload-speeding-wheel"></div>
 </div>
 <div id="wrapper">
-    @if(!auth()->user()->hasRole(\Modules\Article\Entities\ArticleSetting::where('type', 'writer')->first()->value))
     <!-- Left navbar-header -->
-    @include('sections.member_left_sidebar')
+    @include('sections.left_sidebar')
             <!-- Left navbar-header end -->
-    @else
-    @include('article::sections.writer_left_sidebar')
-    @endif
     <!-- Page Content -->
     <div id="page-wrapper" class="row">
         <div class="container-fluid">
@@ -416,30 +396,6 @@
     <!-- /#page-wrapper -->
 </div>
 <!-- /#wrapper -->
-
-
-{{--Timer Modal--}}
-<div class="modal fade bs-modal-md in" id="projectTimerModal" role="dialog" aria-labelledby="myModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog modal-lg" id="modal-data-application">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                <span class="caption-subject font-red-sunglo bold uppercase" id="modelHeading"></span>
-            </div>
-            <div class="modal-body">
-                Loading...
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn blue">Save changes</button>
-            </div>
-        </div>
-        <!-- /.modal-content -->
-    </div>
-    <!-- /.modal-dialog -->
-</div>
-{{--Timer Modal Ends--}}
 
 {{--Footer sticky notes--}}
 <div id="footer-sticky-notes" class="row hidden-xs hidden-sm">
@@ -497,6 +453,29 @@
 
 {{--sticky note end--}}
 
+{{--Timer Modal--}}
+<div class="modal fade bs-modal-md in" id="projectTimerModal" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" id="modal-data-application">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <span class="caption-subject font-red-sunglo bold uppercase" id="modelHeading"></span>
+            </div>
+            <div class="modal-body">
+                Loading...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn blue">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+{{--Timer Modal Ends--}}
+
 {{--sticky note modal--}}
 <div id="responsive-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
     <div class="modal-dialog">
@@ -506,7 +485,6 @@
     </div>
 </div>
 {{--sticky note modal ends--}}
-
 {{--Timer Modal--}}
 <div class="modal fade bs-modal-md in" id="projectTimerModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-md" id="modal-data-application">
@@ -578,12 +556,20 @@
 <script src="{{ asset('plugins/bower_components/icheck/icheck.init.js') }}"></script>
 <script src="{{ asset('js/jquery.magnific-popup.min.js') }}"></script>
 <script src="{{ asset('js/jquery.magnific-popup-init.js') }}"></script>
+
 <script src="https://js.pusher.com/5.0/pusher.min.js"></script>
 
 <script>
 
-    $('body').on('click', '.active-timer-modal', function(){
-        var url = '{{ route('member.all-time-logs.show-active-timer')}}';
+    var isMobile = false; //initiate as false
+    // device detection
+    if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) 
+        || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4))) { 
+        isMobile = true;
+    }
+
+    $('body').on('click', '.timer-modal', function(){
+        var url = '{{ route('admin.all-time-logs.show-active-timer')}}';
         $('#modelHeading').html('Active Timer');
         $.ajaxModal('#projectTimerModal',url);
     });
@@ -593,25 +579,15 @@
         $(this).attr("autocomplete", "off");
     });
 
-    function updateOnesignalPlayerId(userId) {
-        $.easyAjax({
-            url: '{{ route("member.profile.updateOneSignalId") }}',
-            type: 'POST',
-            data:{'userId':userId, '_token':'{{ csrf_token() }}'},
-            success: function (response) {
-            }
-        })
-    }
-
     function addOrEditStickyNote(id)
     {
         var url = '';
         var method = 'POST';
         if(id === undefined || id == "" || id == null) {
-            url =  '{{ route('member.sticky-note.store') }}'
+            url =  '{{ route('admin.sticky-note.store') }}'
         } else{
 
-            url = "{{ route('member.sticky-note.update',':id') }}";
+            url = "{{ route('admin.sticky-note.update',':id') }}";
             url = url.replace(':id', id);
             var stickyID = $('#stickyID').val();
             method = 'PUT'
@@ -633,7 +609,7 @@
 
     // FOR SHOWING FEEDBACK DETAIL IN MODEL
     function showCreateNoteModal(){
-        var url = '{{ route('member.sticky-note.create') }}';
+        var url = '{{ route('admin.sticky-note.create') }}';
 
         $("#responsive-modal").removeData('bs.modal').modal({
             remote: url,
@@ -650,7 +626,7 @@
 
     // FOR SHOWING FEEDBACK DETAIL IN MODEL
     function showEditNoteModal(id){
-        var url = '{{ route('member.sticky-note.edit',':id') }}';
+        var url = '{{ route('admin.sticky-note.edit',':id') }}';
         url  = url.replace(':id',id);
 
         $("#responsive-modal").removeData('bs.modal').modal({
@@ -689,7 +665,7 @@
         }, function(isConfirm){
             if (isConfirm) {
 
-                var url = "{{ route('member.sticky-note.destroy',':id') }}";
+                var url = "{{ route('admin.sticky-note.destroy',':id') }}";
                 url = url.replace(':id', id);
 
                 var token = "{{ csrf_token() }}";
@@ -712,7 +688,7 @@
     //getting all chat data according to user
     function getNoteData(){
 
-        var url = "{{ route('member.sticky-note.index') }}";
+        var url = "{{ route('admin.sticky-note.index') }}";
 
         $.easyAjax({
             type: 'GET',
@@ -727,8 +703,57 @@
             }
         });
     }
+</script>
 
-    //    sticky notes script
+
+<script>
+    $('.mark-notification-read').click(function () {
+        console.log('hello from read notification');
+        var token = '{{ csrf_token() }}';
+        $.easyAjax({
+            type: 'POST',
+            url: '{{ route("mark-notification-read") }}',
+            data: {'_token': token},
+            success: function (data) {
+                if (data.status == 'success') {
+                    $('.top-notifications').remove();
+                    $('.top-notification-count').html('0');
+                    $('#top-notification-dropdown .notify').remove();
+                    $('.notify').remove();
+                }
+            }
+        });
+
+    });
+
+    $('.show-all-notifications').click(function () {
+        var url = '{{ route('show-all-member-notifications')}}';
+        $('#modelHeading').html('View Unread Notifications');
+        $.ajaxModal('#projectTimerModal', url);
+    });
+
+    $('.submit-search').click(function () {
+        $(this).parent().submit();
+    });
+
+    $(function () {
+        $('.selectpicker').selectpicker();
+    });
+
+    $('.language-switcher').change(function () {
+        var lang = $(this).val();
+        $.easyAjax({
+            url: '{{ route("admin.settings.change-language") }}',
+            data: {'lang': lang},
+            success: function (data) {
+                if (data.status == 'success') {
+                    window.location.reload();
+                }
+            }
+        });
+    });
+
+//    sticky notes script
     var stickyNoteOpen = $('#open-sticky-bar');
     var stickyNoteClose = $('#close-sticky-bar');
     var stickyNotes = $('#footer-sticky-notes');
@@ -757,57 +782,92 @@
         stickyNoteClose.toggle();
     })
 
-</script>
 
-<script>
-    $('body').on('click', '.timer-modal', function(){
-        var url = '{{ route('member.time-log.create')}}';
-        $('#modelHeading').html('Start Timer For a Project');
-        $.ajaxModal('#projectTimerModal',url);
-    });
 
-    $('body').on('click', '.stop-timer-modal', function(){
-        var url = '{{ route('member.time-log.show', ':id')}}';
-        url = url.replace(':id', $(this).data('timer-id'));
+    $('body').on('click', '.right-side-toggle', function () {
+        $(".right-sidebar").slideDown(50).removeClass("shw-rside");
+    })
 
-        $('#modelHeading').html('Stop Timer');
-        $.ajaxModal('#projectTimerModal',url);
-    });
 
-    $('.mark-notification-read').click(function () {
-        var token = '{{ csrf_token() }}';
+    function updateOnesignalPlayerId(userId) {
         $.easyAjax({
+            url: '{{ route("member.profile.updateOneSignalId") }}',
             type: 'POST',
-            url: '{{ route("mark-notification-read") }}',
-            data: {'_token': token},
-            success: function (data) {
-                if(data.status == 'success'){
-                    $('.top-notifications').remove();
-                    $('.top-notification-count').html('0');
-                    $('#top-notification-dropdown .notify').remove();
-                    $('.notify').remove()
-                }
+            data:{'userId':userId, '_token':'{{ csrf_token() }}'},
+            success: function (response) {
             }
-        });
+        })
+    }
 
+    $('.table-responsive').on('show.bs.dropdown', function () {
+        $('.table-responsive').css( "overflow", "inherit" );
     });
 
-    $('.show-all-notifications').click(function () {
-        var url = '{{ route('show-all-member-notifications')}}';
-        $('#modelHeading').html('View Unread Notifications');
-        $.ajaxModal('#projectTimerModal',url);
-    });
+    $('.table-responsive').on('hide.bs.dropdown', function () {
+        $('.table-responsive').css( "overflow", "auto" );
+    })
+
+    $('#mobile-filter-toggle').click(function () {
+        $('.filter-section').toggle();
+    })
 
     $('#sticky-note-toggle').click(function () {
         $('#footer-sticky-notes').toggle();
         $('#sticky-note-toggle').hide();
     })
 
-    $('body').on('click', '.right-side-toggle', function () {
-        $(".right-sidebar").slideDown(50).removeClass("shw-rside");
-    })
-</script>
+    $(document).ready(function () {
+        //Side menu active hack
+        setTimeout(function(){
+            var getActiveMenu = $('#side-menu  li.active li a.active').length;
+        // console.log(getActiveMenu);
+            if(getActiveMenu > 0) {
+                $('#side-menu  li.active li a.active').parent().parent().parent().find('a:first').addClass('active');
+            }
 
+         }, 200);
+
+    })
+
+    $('body').on('click', '.toggle-password', function() {
+        var $selector = $(this).parent().find('input.form-control');
+        $(this).toggleClass("fa-eye fa-eye-slash");
+        var $type = $selector.attr("type") === "password" ? "text" : "password";
+        $selector.attr("type", $type);
+    });
+
+    var currentUrl = '{{ request()->route()->getName() }}';
+    $('body').on('click', '.filter-section-close', function() {
+        localStorage.setItem('filter-'+currentUrl, 'hide');
+
+        $('.filter-section').toggle();
+        $('.filter-section-show').toggle();
+        $('.data-section').toggleClass("col-md-9 col-md-12")
+    });
+
+    $('body').on('click', '.filter-section-show', function() {
+        localStorage.setItem('filter-'+currentUrl, 'show');
+
+        $('.filter-section-show').toggle();
+        $('.data-section').toggleClass("col-md-9 col-md-12")
+        $('.filter-section').toggle();
+    });
+
+    var currentUrl = '{{ request()->route()->getName() }}';
+    var checkCurrentUrl = localStorage.getItem('filter-'+currentUrl);
+    if (checkCurrentUrl == "hide") {
+        $('.filter-section-show').show();
+        $('.data-section').removeClass("col-md-9")
+        $('.data-section').addClass("col-md-12")
+        $('.filter-section').hide();
+    } else if (checkCurrentUrl == "show") {
+        $('.filter-section-show').hide();
+        $('.data-section').removeClass("col-md-12")
+        $('.data-section').addClass("col-md-9")
+        $('.filter-section').show();
+    }
+
+</script>
 
 @if ($pusherSettings->status)
 <script>
@@ -825,7 +885,6 @@ var pusher = new Pusher("{{ $pusherSettings->pusher_app_key }}", {
 @yield('pusher-event')
 
 @endif
-
 
 @stack('footer-script')
 
