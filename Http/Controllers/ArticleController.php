@@ -227,7 +227,7 @@ public function index(Request $request)
     if ($request->type =='edited') {
         $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
         ->select('articles.*', 'article_details.label', 'article_details.value')
-        ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
+        ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2)->where('article_details.value', auth()->id());
     }
 
     //Editable articles
