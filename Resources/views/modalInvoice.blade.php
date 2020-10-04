@@ -15,12 +15,17 @@
 <div class="modal-body">
     <div class="btn-pref btn-group btn-group-justified btn-group-lg" role="group" aria-label="...">
         <div class="btn-group" role="group">
-            <button type="button" id="invoice" class="btn btn-primary" href="#tab1" data-toggle="tab"><span class="ti-receipt" aria-hidden="true"></span>
+            <button type="button" id="invoice" class="btn btn-info" href="#tab1" data-toggle="tab"><span class="ti-receipt" aria-hidden="true"></span>
                 <div class="hidden-xs">Payslip</div>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button type="button" id="activity" class="btn btn-default" href="#tab2" data-toggle="tab"><span class="fa fa-history" aria-hidden="true"></span>
+            <button type="button" id="receipt" class="btn btn-default" href="#tab2" data-toggle="tab"><span class="fa fa-file" aria-hidden="true"></span>
+                <div class="hidden-xs">Receipt</div>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" id="activity" class="btn btn-default" href="#tab3" data-toggle="tab"><span class="fa fa-history" aria-hidden="true"></span>
                 <div class="hidden-xs">Activity</div>
             </button>
         </div>
@@ -182,6 +187,35 @@
         </div>
         <div class="tab-pane fade in" id="tab2">
             <div class="row">
+                @if(auth()->user()->hasRole('admin'))
+                <div class="col-xs-4 panel-body p-t-15">
+                    <form method="post" id="receiptUploadForm">
+                        @csrf
+                        <div class="form-group">
+                            <input type="file" name="receipt" class="form-control" id="receiptFile" accept=".jpg,.jpeg,.png,.gif">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-info btn-sm">Upload File</button>
+                        </div>
+                    </form>
+                </div>
+                @endif
+                <div class="{{auth()->user()->hasRole('admin') ? 'col-xs-8' : 'col-xs-12'}} panel-body p-t-15">
+                    @foreach($invoice->receipts as $receipt)
+                    <div class="col-xs-6" align="center">
+                        <a href="{{route('member.article.receiptDownload', [$invoice->id, $receipt->id])}}" target="_blank">
+                            <img class="card-img-top" src="{{route('member.article.receiptDownload', [$invoice->id, $receipt->id])}}" style="width: 250px; border: 2px solid rgba(0,0,0,0.5); position: relative;" alt="Receipt">
+                            @if(auth()->user()->hasRole('admin'))
+                            <a href="javascript:;" data-id="{{$receipt->id}}" id="deleteReceipt" class="label label-danger" style="position: absolute; top: 3%; right: 10%;">X</a>
+                            @endif
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade in" id="tab3">
+            <div class="row">
                 <div class="col-xs-12 panel-body p-t-15">
                     <div class="steamline">
                         @foreach ($invoice->logs->sortByDesc('id') as $log)
@@ -209,70 +243,113 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $(".btn-pref .btn").click(function () {
-            $(".btn-pref .btn").removeClass("btn-primary").addClass("btn-default");
-    // $(".tab").addClass("active"); // instead of this do the below 
-    $(this).removeClass("btn-default").addClass("btn-primary");   
-});
+            $(".btn-pref .btn").removeClass("btn-info").addClass("btn-default");
+            // $(".tab").addClass("active"); // instead of this do the below 
+            $(this).removeClass("btn-default").addClass("btn-info");
+        });
     })
-                    // function changeStatus(status) {
-                    //     var token = "{{csrf_token()}}";
-                    //     var url = '{{route('member.article.invoiceStatus', ':id')}}';
-                    //     var url = url.replace(':id', '{{$invoice->id}}');
-                    //     $.easyAjax({
-                    //         url: url,
-                    //         type: "POST",
-                    //         data: {'status': status,'_token': token},
-                    //         success: function (res) {
-                    //             if (res.status ==='success') {
-                    //                 var url = "{{ route('member.article.modalInvoice', ':id') }}";
-                    //                 var url = url.replace(':id', '{{$invoice->id}}');
-                    //                 $.ajaxModal('#subTaskModal', url);
-                    //             }
-                    //         }
-                    //     });
-                    // }
 
-                    function invoiceStatus(status) {
-                        var buttons = {
-                            cancel: "Cancel",
-                            confirm: {
-                                text: "Confirm",
-                                visible: true,
-                                className: "success",
-                            }
-                        };
-                        swal({
-                            title: "Are you sure want to change status?",
-                            text: "Please enter your password below:",
-                            dangerMode: true,
-                            icon: 'warning',
-                            buttons: buttons,
-                            content: 'input'
-                        }).then(function (isConfirm) {
-                            if (isConfirm !=='' && isConfirm !==null) {
-                                var url = "{{ route('member.article.invoiceStatus',':id') }}";
-                                var url = url.replace(':id', '{{$invoice->id}}');
-                                var token = "{{ csrf_token() }}";
-                                var dataObject = {'password': isConfirm, '_token': token, 'status': status};
-                                $.easyAjax({
-                                    type: 'POST',
-                                    url: url,
-                                    data: dataObject,
-                                    success: function (response) {
-                                        if (response.status == "success") {
-                                            swal("Success", "Status has been updated!", "success");
-                                            var url = "{{ route('member.article.modalInvoice', ':id') }}";
-                                            var url = url.replace(':id', '{{$invoice->id}}');
-                                            $("#subTaskModal").modal('toggle');
-                                            $.ajaxModal('#subTaskModal', url);
-                                            $("#subTaskModal").modal('show');
-                                        } else {
-                                            swal("Error!", "The password you entered is incorrect!", "error");
-                                        }
-                                    }
-                                });
-                            }
-                            if (isConfirm ==='') {swal("Empty!", "You must enter your password!", "warning");}
-                        });
+    function invoiceStatus(status) {
+        var buttons = {
+            cancel: "Cancel",
+            confirm: {
+                text: "Confirm",
+                visible: true,
+                className: "success",
+            }
+        };
+        swal({
+            title: "Are you sure want to change status?",
+            text: "Please enter your password below:",
+            dangerMode: true,
+            icon: 'warning',
+            buttons: buttons,
+            content: 'input'
+        }).then(function (isConfirm) {
+            if (isConfirm !=='' && isConfirm !==null) {
+                var url = "{{ route('member.article.invoiceStatus',':id') }}";
+                var url = url.replace(':id', '{{$invoice->id}}');
+                var token = "{{ csrf_token() }}";
+                var dataObject = {'password': isConfirm, '_token': token, 'status': status};
+                $.easyAjax({
+                    type: 'POST',
+                    url: url,
+                    data: dataObject,
+                    success: function (response) {
+                        if (response.status == "success") {
+                            swal("Success", "Status has been updated!", "success");
+                            var url = "{{ route('member.article.modalInvoice', ':id') }}";
+                            var url = url.replace(':id', '{{$invoice->id}}');
+                            $("#subTaskModal").modal('toggle');
+                            $.ajaxModal('#subTaskModal', url);
+                            $("#subTaskModal").modal('show');
+                        } else {
+                            swal("Error!", "The password you entered is incorrect!", "error");
+                        }
                     }
-                </script>
+                });
+            }
+            if (isConfirm ==='') {swal("Empty!", "You must enter your password!", "warning");}
+        });
+    }
+
+    @if(auth()->user()->hasRole('admin'))
+
+    $('#receiptUploadForm').submit(function(e){
+        e.preventDefault();
+
+        url = '{{route('member.article.receiptUpload', $invoice->id)}}';
+
+        $.easyAjax({
+            type: 'POST',
+            url: url,
+            container: '#receiptUploadForm',
+            data: $(this).serialize(),
+            file: true,
+            success: function(response){
+                viewInvoice({{$invoice->id}});
+            }
+        })
+    });
+
+    $('body #deleteReceipt').click(function(){
+        var id = $(this).data('id');
+            var block = $(this).parent();
+            var token = "{{csrf_token()}}";
+            var url = '{{route('member.article.receiptDelete', [$invoice->id, ':id'])}}';
+            var url = url.replace(':id', id);
+
+        var buttons = {
+            cancel: "Cancel",
+            confirm: {
+                text: "Yes",
+                value: 'confirm',
+                visible: true,
+                className: "danger",
+            }
+        };
+
+        swal({
+            title: "Are you sure?",
+            text: "Please enter your password below:",
+            dangerMode: true,
+            icon: 'warning',
+            buttons: buttons,
+            content: "input"
+        }).then(function (isConfirm) {
+            if (isConfirm ==='') {swal("Empty!", "You must enter your password!", "warning"); return false;}
+            if (isConfirm === null) {return false; }
+            $.easyAjax({
+                type: 'POST',
+                url: url,
+                data: {'password': isConfirm, '_token': token, '_method': 'delete'},
+                success: function (response) {
+                    if (response.status == "success") {
+                        block.hide();
+                    }
+                }
+            });
+        });
+    })
+    @endif
+</script>

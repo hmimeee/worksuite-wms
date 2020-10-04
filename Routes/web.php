@@ -110,5 +110,8 @@ Route::prefix('member')->group(function() {
 	Route::get('article-management/invoices/{invoice}/modal', 'InvoiceController@showModal')->name('member.article.modalInvoice');
 	Route::post('article-management/invoices/{invoice}/status', 'InvoiceController@update')->name('member.article.invoiceStatus');
 	Route::post('article-management/invoices/{invoice}/delete', 'InvoiceController@destroy')->name('member.article.invoiceDelete');
+	Route::post('article-management/invoices/{invoice}/receipt', 'InvoiceController@receipt')->name('member.article.receiptUpload');
+	Route::get('article-management/invoices/{invoice}/receipt/{receipt}', 'InvoiceController@downloadReceipt')->name('member.article.receiptDownload');
+	Route::delete('article-management/invoices/{invoice}/receipt/{receipt}', 'InvoiceController@receiptDelete')->name('member.article.receiptDelete');
 });
 

@@ -25,4 +25,9 @@ class Invoice extends Model
     {
         return $this->hasMany(ArticleActivityLog::class, 'invoice_id');
     }
+
+    public function receipts()
+    {
+        return $this->hasMany(InvoiceFile::class);
+    }
 }

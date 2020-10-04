@@ -11,6 +11,7 @@ use Modules\Article\Entities\Writer;
 use Modules\Article\Entities\ArticleActivityLog;
 use Modules\Article\Entities\Article;
 use Modules\Article\Entities\Invoice;
+use Modules\Article\Entities\InvoiceFile;
 use Modules\Article\Entities\ArticleSetting;
 use Illuminate\Support\Facades\Notification;
 use Modules\Article\Notifications\NewInvoice;
@@ -135,6 +136,36 @@ class InvoiceController extends MemberBaseController
     }
 
     /**
+     * Store a newly created resource in storage.
+     * @param Request $request
+     * @return Response
+     */
+    public function receipt(Request $request, Invoice $invoice)
+    {
+        if (!is_dir(public_path('article-invoice-file'))) {
+            mkdir(public_path('article-invoice-file'));
+        }
+
+        $file = $request->file('receipt')->store('article-invoice-file');
+
+        $receipt = $invoice->receipts()->create([
+            'article_invoice_id' => $invoice->id,
+            'file' => $file
+        ]);
+
+        //Store in log
+        ArticleActivityLog::create([
+            'user_id' => auth()->id(),
+            'type' => 'Payslip',
+            'invoice_id' => $invoice->id,
+            'label' => 'payslip_receipt',
+            'details' => 'uploaded a payslip receipt.'
+        ]);
+
+        return Reply::success('Payslip receipt uploaded!');
+    }
+
+    /**
      * Show the specified resource.
      * @param int $id
      * @return Response
@@ -184,6 +215,16 @@ class InvoiceController extends MemberBaseController
             $this->amount += $article->rate/1000*$article->word_count;
         }
         return view('article::modalInvoice', $this->data);
+    }
+
+    /**
+     * Show the specified resource.
+     * @param int $id
+     * @return Response
+     */
+    public function downloadReceipt(Invoice $invoice, InvoiceFile $receipt)
+    {
+        return response()->download('user-uploads/'.$receipt->file, basename($receipt->file));
     }
 
     /**
@@ -283,5 +324,35 @@ class InvoiceController extends MemberBaseController
 
         $invoice->delete();
         return Reply::success('Payslip deleted!');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     * @param int $id
+     * @return Response
+     */
+    public function receiptDelete(Request $request, Invoice $invoice, InvoiceFile $receipt)
+    {
+        if (!Hash::check($request->password, auth()->user()->password)) {
+            return Reply::error('Your password is incorrect!');
+        }
+
+        if (file_exists(public_path('/user-uploads/'.$receipt->file))) {
+            unlink(public_path('/user-uploads/'.$receipt->file));
+        }
+
+        //Store in log
+        ArticleActivityLog::create([
+            'user_id' => auth()->id(),
+            'type' => 'Payslip',
+            'invoice_id' => $invoice->id,
+            'label' => 'payslip_receipt',
+            'details' => 'deleted a payslip receipt.'
+        ]);
+
+        $receipt->delete();
+
+        return Reply::success('File deleted!');
+
     }
 }
