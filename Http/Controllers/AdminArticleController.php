@@ -200,8 +200,10 @@ public function index(Request $request)
         $this->articles = $this->editable_articles->where('articles.writing_status', 2);
     }
 
-    if ($request->type =='editable') {
-        $this->articles = $this->editable_articles;
+    if ($request->type =='edited') {
+        $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
+        ->select('articles.*', 'article_details.label', 'article_details.value')
+        ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
     }
 
     //Editable articles

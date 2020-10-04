@@ -225,7 +225,9 @@ public function index(Request $request)
     }
 
     if ($request->type =='edited') {
-        $this->articles = $this->editable_articles->where('articles.writing_status', 2);
+        $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
+        ->select('articles.*', 'article_details.label', 'article_details.value')
+        ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2)->where('article_details.value', auth()->id());
     }
 
     //Editable articles
@@ -884,10 +886,10 @@ public function writers(Request $request)
 
     $this->range_words = 0;
     foreach ($this->range_articles as $article) {
-     $this->range_words = $this->range_words+$article->word_count;
- }
+       $this->range_words = $this->range_words+$article->word_count;
+   }
 
- return view('article::writerView', $this->data);
+   return view('article::writerView', $this->data);
 }
 
 public function writerStats($id)
@@ -902,12 +904,12 @@ public function writerStats($id)
 
     $words = 0;
     foreach ($articles as $article) {
-     $words = $words+$article->word_count;
- }
+       $words = $words+$article->word_count;
+   }
 
- $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate);
+   $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate);
 
- return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days]);
+   return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days]);
 }
 
 public function writerPaymentDetails($id)
