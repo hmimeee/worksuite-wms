@@ -95,7 +95,7 @@
                         </td>
                         <td>{{App\Role::find($writer->role->last()->role_id)->display_name}}</td>
                         @if(!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
-                        <td>{{$writer->rate['rate']?$writer->rate['rate']:'--'}}</td>
+                        <td>{{$writer->rate ? $writer->rate->rate : '--'}}</td>
                         @endif
                         <td>
                             @php

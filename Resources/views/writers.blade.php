@@ -54,6 +54,13 @@
                     </select>
                     entries
                 </div>
+                <!-- <div class="col-md-8">
+                </div>
+                <div class="col-md-2" align="right">
+                    <form method="get" id="search-form">
+                        <input type="text" name="search" class="form-control" placeholder="Type & Press Enter" value="{{request()->search}}">
+                    </form>
+                </div> -->
             </div>
 
             <div class="row el-element-overlay">
@@ -85,7 +92,7 @@
                             </td>
                             <td>{{App\Role::find($writer->role->last()->role_id)->display_name}}</td>
                             @if(!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
-                            <td>{{$writer->rate['rate']?$writer->rate['rate']:'--'}}</td>
+                            <td>{{$writer->rate ? $writer->rate->rate : '--'}}</td>
                             @endif
                             <td>
                                 @php
@@ -158,7 +165,7 @@
                     </tbody>
                     <tfoot style="border: 0px !important;">
                         <tr align="right" style="border: 0px !important;">
-                            <td colspan="10" style="border: 0px !important;"> {{$writers->appends(['entries' => request('entries')])->render()}} </td>
+                            <td colspan="10" style="border: 0px !important;"> {{$writers->appends(['entries' => request('entries'), 'search' => request('search')])->render()}} </td>
                         </tr>
                     </tfoot>
                 </table>

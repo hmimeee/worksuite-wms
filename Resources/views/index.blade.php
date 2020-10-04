@@ -274,6 +274,10 @@
                     @if(request()->entries)
                     <input type="hidden" name="entries" value="{{request()->entries ? request()->entries : 10}}">
                     @endif
+                    @if(request()->startDate && request()->endDate)
+                    <input type="hidden" name="startDate" value="{{request()->startDate}}">
+                    <input type="hidden" name="endDate" value="{{request()->endDate}}">
+                    @endif
                     <div class="col-md-2 text-right">Order By: </div>
                     <div class="col-md-3">
                         <select name="orderBy" id="orderBy" class="form-control">
@@ -440,7 +444,7 @@
                <td align="left" colspan="2" style="border: 0px !important; vertical-align: middle;">
                 Showing {{($articles->currentPage()-1)*$articles->perPage()+1}} to {{$articles->currentPage()*$articles->perPage() > $articles->total() ? $articles->total() : $articles->currentPage()*$articles->perPage() }} of  {{$articles->total()}} articles
             </td>
-            <td align="right" colspan="10" style="border: 0px !important;"> {{$articles->appends(['type' => request('type'), 'category' => request()->category, 'project' => request('project'), 'writer' => request('writer'), 'hide' => request('hide'), 'assignee' => request('assignee'), 'orderBy' => request('orderBy'), 'orderType' => request('orderType'), 'q' => request('q'), 'entries' => request('entries')])->render()}} </td>
+            <td align="right" colspan="10" style="border: 0px !important;"> {{$articles->appends(['type' => request('type'), 'category' => request()->category, 'project' => request('project'), 'writer' => request('writer'), 'hide' => request('hide'), 'assignee' => request('assignee'), 'orderBy' => request('orderBy'), 'orderType' => request('orderType'), 'q' => request('q'), 'entries' => request('entries'), 'startDate' => request('startDate'), 'endDate' => request('endDate')])->render()}} </td>
         </tr>
     </tfoot>
 </table>

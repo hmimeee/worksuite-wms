@@ -397,7 +397,7 @@
                                 <div style="font-size: 14px;">Files:</div> 
                                 @forelse ($article->files as $file)
                                 @php
-                                $size = filesize(public_path('/user-uploads/article-files/').$file->hashname)/1024
+                                $size = file_exists(public_path('/user-uploads/article-files/').$file->hashname) ? filesize(public_path('/user-uploads/article-files/').$file->hashname)/1024 : 0
                                 @endphp
                                 <div class="col-md-12 col-xs-12 m-t-5" id="file-{{$file->id}}">
                                    <a href="javascript:;" onclick="downloadFile('{{$file->id}}')" class="btn btn-default btn-sm btn-rounded btn-outline"><i class="fa fa-paperclip"></i> {{$file->filename}} 

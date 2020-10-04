@@ -839,14 +839,17 @@ public function writers(Request $request)
         ->join('roles', 'roles.id', '=', 'role_user.role_id')
         ->select('users.*')
         ->where('roles.name',$this->writerRole)
-        ->orWhere('roles.name',$this->inhouseWriterRole)
-        ->with('articles')
-        ->with('rate');
+        ->orWhere('roles.name',$this->inhouseWriterRole);
+
+        $this->totalWriters = $this->writers->count();
+
+        if ($request->search != null) {
+            $this->writers = $this->writers->where('users.name', $request->search);
+        }
     } else {
         $this->writers = Writer::where('id', auth()->id());
     }
 
-    $this->totalWriters = count($this->writers->get());
     $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
     
     return view('article::writers', $this->data);
