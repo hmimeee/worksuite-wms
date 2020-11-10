@@ -622,8 +622,8 @@
 
             @endif
 
-            @if (($writerHead == auth()->user()->id || auth()->user()->hasRole('admin')) && $article->task !=null)
-
+            @if(!auth()->user()->hasRole($writerRole))
+            
             <p><i class="fa fa-tasks"></i> Parent Task: <a style="font-weight: 400;" href="javascript:;" onclick="parentTask('{{$article->parent_task}}')">{{$article->task->heading}} </a> </p>
 
             @endif

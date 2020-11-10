@@ -36,7 +36,7 @@
                 <tr>
                     <td style="border: 0px !important;"></td>
                     <td style="border: 0px !important;">
-                        <img src="https://viserx.com/wp-content/uploads/2019/04/logo-e1555414846101.png" height="100px">
+                        <img src="{{asset('favicon.png')}}" height="100px">
                     </td>
                     <td style="border: 0px !important;" class="text-left">
                         <u><h3><b>PAYSLIP</b></h3></u>
@@ -203,7 +203,7 @@
                 <div class="{{auth()->user()->hasRole('admin') ? 'col-xs-8' : 'col-xs-12'}} panel-body p-t-15">
                     @foreach($invoice->receipts as $receipt)
                     <div class="col-xs-6" align="center">
-                        <a href="{{route('member.article.receiptDownload', [$invoice->id, $receipt->id])}}" target="_blank">
+                        <a href="javascript:;" data-toggle="modal" id="previewReceipt" data-target="#previewModal" data-id="{{$receipt->id}}">
                             <img class="card-img-top" src="{{route('member.article.receiptDownload', [$invoice->id, $receipt->id])}}" style="width: 250px; border: 2px solid rgba(0,0,0,0.5); position: relative;" alt="Receipt">
                             @if(auth()->user()->hasRole('admin'))
                             <a href="javascript:;" data-id="{{$receipt->id}}" id="deleteReceipt" class="label label-danger" style="position: absolute; top: 3%; right: 10%;">X</a>
@@ -314,10 +314,10 @@
 
     $('body #deleteReceipt').click(function(){
         var id = $(this).data('id');
-            var block = $(this).parent();
-            var token = "{{csrf_token()}}";
-            var url = '{{route('member.article.receiptDelete', [$invoice->id, ':id'])}}';
-            var url = url.replace(':id', id);
+        var block = $(this).parent();
+        var token = "{{csrf_token()}}";
+        var url = '{{route('member.article.receiptDelete', [$invoice->id, ':id'])}}';
+        var url = url.replace(':id', id);
 
         var buttons = {
             cancel: "Cancel",
@@ -352,4 +352,11 @@
         });
     })
     @endif
+
+    $('#previewReceipt').click(function(){
+        url = '{{route('member.article.receiptDownload', [$invoice->id, ':id'])}}';
+        url = url.replace(':id', $(this).data('id'));
+
+        $('#previewModal').find('#previewImage').attr('src', url);
+    })
 </script>

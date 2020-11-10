@@ -9,23 +9,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <link rel="apple-touch-icon" sizes="57x57" href="{{asset('apple-icon-57x57.png')}}">
-    <link rel="apple-touch-icon" sizes="60x60" href="{{asset('apple-icon-60x60.png')}}">
-    <link rel="apple-touch-icon" sizes="72x72" href="{{asset('apple-icon-72x72.png')}}">
-    <link rel="apple-touch-icon" sizes="76x76" href="{{asset('apple-icon-76x76.png')}}">
-    <link rel="apple-touch-icon" sizes="114x114" href="{{asset('apple-icon-114x114.png')}}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{{asset('apple-icon-120x120.png')}}">
-    <link rel="apple-touch-icon" sizes="144x144" href="{{asset('apple-icon-144x144.png')}}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{{asset('apple-icon-152x152.png')}}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{asset('apple-icon-180x180.png')}}">
-    <link rel="icon" type="image/png" sizes="192x192"  href="{{asset('android-icon-192x192.png')}}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{asset('favicon-32x32.png')}}">
-    <link rel="icon" type="image/png" sizes="96x96" href="{{asset('favicon-96x96.png')}}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{asset('favicon-16x16.png')}}">
-    
-    <link rel="manifest" href="{{ asset('favicon/manifest.json') }}">
+    <link rel="icon" type="image/png" href="{{asset('favicon.png')}}">
     <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="{{ asset('favicon/ms-icon-144x144.png') }}">
     <meta name="theme-color" content="#ffffff">
 
     <title>@if($userRole) {{ $userRole->display_name }} @lang("app.panel")  @else @lang("app.employeePanel") @endif | {{ $pageTitle }}</title>
@@ -313,21 +298,21 @@
         }
 
         @if(date('d') < 6)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/coloured-feathers/coloured-feathers.jpg')
+        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/dark/pattern-sky-blue/pattern-sky-blue.svg')
         @elseif(date('d') < 11)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/architecture/architecture.jpg')
+        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/pattern-blue/pattern-blue.svg')
         @elseif(date('d') < 16)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/meditation/meditation.jpg')
+        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/dark/pattern-pink/pattern-pink.svg')
         @elseif(date('d') < 21)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/mountains/mountains.jpg')
+        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/dark/pattern-light-grey/pattern-light-grey.svg')
         @elseif(date('d') < 26)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/sunset/sunset.jpg')
+        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/pattern-grey/pattern-grey.svg')
         @else
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/jack-o-lantern/jack-o-lantern.jpg')
+        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/pattern-bluish-green/pattern-bluish-green.svg')
         @endif
 
         body, .container-fluid {
-            background: url('{{$bg}}') no-repeat fixed center !important;
+                background: #62b7c0  url('{{$bg}}') 0 0 repeat fixed !important;
         }
     </style>
 

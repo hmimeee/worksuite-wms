@@ -69,6 +69,10 @@ class InvoiceController extends MemberBaseController
             $invoices = $invoices->whereBetween('created_at', [$request->startDate, $request->endDate]);
         }
 
+        if (auth()->user()->hasRole($this->writerRole)) {
+            $invoices = $invoices->where('paid_to', auth()->id());
+        }
+
         $this->invoices = $invoices->orderBy('created_at', 'DESC')->paginate(is_numeric($request->entries) ? $request->entries : 10);
 
         return view('article::invoices', $this->data);

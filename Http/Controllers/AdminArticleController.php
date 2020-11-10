@@ -25,6 +25,7 @@ use App\Role;
 use App\Task;
 use Pusher\Pusher;
 use Carbon\Carbon;
+use Modules\Article\Datatables\WritersDataTable;
 
 class AdminArticleController extends AdminBaseController
 {
@@ -248,23 +249,12 @@ public function show($id)
  * Show the list of writers.
  * @return Response
  */
-public function writers(Request $request)
+public function writers(Request $request, WritersDataTable $dataTable)
 {
     $this->pageTitle = 'Article Writers';
     $this->pageIcon = 'ti-user';
 
-    $this->writers = Writer::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-    ->join('roles', 'roles.id', '=', 'role_user.role_id')
-    ->select('users.*')
-    ->where('roles.name',$this->writerRole)
-    ->orWhere('roles.name',$this->inhouseWriterRole)
-    ->with('articles')
-    ->with('rate');
-
-    $this->totalWriters = count($this->writers->get());
-    $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
-
-    return view('article::admin.writers', $this->data);
+    return $dataTable->render('article::admin.writers', $this->data);
 }
 }
 

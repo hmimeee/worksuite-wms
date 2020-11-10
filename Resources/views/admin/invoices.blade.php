@@ -34,6 +34,10 @@
 
 @push('head-script')
 <link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.1.1/css/responsive.bootstrap.min.css">
+<link rel="stylesheet" href="//cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="//cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
 
 <style type="text/css">
     .pull-left{
@@ -97,142 +101,16 @@ a{
             </div>
             @endsection
 
-
-
-            <div class="row el-element-overlay">
-
-                <div class="col-md-3"> 
-
-                    Show 
-
-                    <select id="entries" class="form-control" style="width: 50%; display: inline;">
-
-                        <option selected>{{request()->entries ? request()->entries : '...'}}</option>
-
-                        <option @if(request()->entries == 10) selected @endif>10</option>
-
-                        <option @if(request()->entries == 30) selected @endif>30</option>
-
-                        <option @if(request()->entries == 50) selected @endif>50</option>
-
-                        <option @if(request()->entries == 100) selected @endif>100</option>
-
-                    </select>
-
-                    entries
-
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="white-box">
+                        <div class="row">
+                            <div class="table-responsive p-20">
+                                {!! $dataTable->table(['class' => 'table table-bordered table-hover toggle-circle default footable-loaded footable']) !!}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <table class="table table-bordered table-hover">
-
-                    <thead>
-
-                        <tr role="row">
-
-                            <th>#</th>
-
-                            <th>Name</th>
-
-                            <th>Payment For</th>
-
-                            <th>Amount</th>
-
-                            <th>Status</th>
-
-                            <th>Created</th>
-
-                            <th>Action</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="list">
-
-                        @forelse ($invoices as $invoice)
-
-                        <tr role="row" class="odd">
-
-                            <td>{{$invoice->id}}</td>
-
-                            <td>
-
-                                <a href="javascript:;" onclick="viewInvoice('{{$invoice->id}}')">{{$invoice->name}}</a>
-
-                            </td>
-
-                            <td>{{$invoice->user->name}}</td>
-
-                            <td>{{$invoice->amount}} BDT</td>
-
-                            <td>
-
-                                @if($invoice->status == 1) 
-
-                                <label class="label label-success">Paid</label>
-
-                                @else
-
-                                <label class="label label-danger">Unpaid</label>
-
-                                @endif
-
-                            </td>
-
-                            <td>{{$invoice->created_at->format('d-m-Y')}}</td>
-
-                            <td>
-
-                                <div class="btn-group dropdown m-r-10  text-center">
-
-                                    <button aria-expanded="false" data-toggle="dropdown" class="btn dropdown-toggle waves-effect waves-light" type="button"><i class="ti-more"></i></button>
-
-                                    <ul role="menu" class="dropdown-menu pull-right">
-
-                                        <li><a target="_blank" href="{{route('member.article.invoice', $invoice->id)}}"><i class="fa fa-print" aria-hidden="true"></i> Print</a></li>
-
-                                        @if($user->hasRole('admin'))
-
-                                        <li><a href="javascript:;"  onclick="deleteInvoice('{{$invoice->id}}')"><i class="fa fa-times" aria-hidden="true"></i> Delete</a></li>
-
-                                        @endif
-
-                                    </ul> 
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                        @empty
-
-                        <tr>
-
-                            <td colspan="8">
-
-                                No data found!
-
-                            </td>
-
-                        </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                    <tfoot style="border: 0px !important;">
-
-                        <tr align="right" style="border: 0px !important;">
-
-                            <td colspan="8" style="border: 0px !important;"> {{$invoices->appends(['hide' => request()->hide, 'entries' => request()->entries])->render()}} </td>
-
-                        </tr>
-
-                    </tfoot>
-
-                </table>
-
             </div>
 
         </div>
@@ -265,60 +143,43 @@ a{
 
 {{--Ajax Modal Ends--}}
 
-
+<div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalArea" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalArea"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img src="" id="previewImage" style="width: 100%; height: cover;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @endsection
 
 
 
 @push('footer-script')
-
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="{{ asset('plugins/bower_components/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.1.1/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.1.1/js/responsive.bootstrap.min.js"></script>
+<script src="{{ asset('plugins/bower_components/custom-select/custom-select.min.js') }}"></script>
+<script src="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.js') }}"></script>
 <script src="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.js') }}"></script>
+<script src="{{ asset('plugins/bower_components/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
+<script src="https://cdn.datatables.net/buttons/1.0.3/js/dataTables.buttons.min.js"></script>
+<script src="{{ asset('js/datatables/buttons.server-side.js') }}"></script>
+{!! $dataTable->scripts() !!}
 
 <script type="text/javascript">
-    $('#resetFilter').click(function(e){
-        e.preventDefault();
-        
-        url = '{{route('admin.article.invoices')}}';
-        window.location.href = url;
-    });
-
-    jQuery('#date-range').datepicker({
-        toggleActive: true,
-        format: 'yyyy-mm-dd',
-        language: '{{ $global->locale }}',
-        autoclose: true,
-        todayHighlight: true
-    });
-
-    @if(request('view-invoice'))
-
-    viewInvoice('{{request('view-invoice')}}');
-
-    @endif
-
-
-
-    $('#entries').on('change', function(){
-
-        var url = '{{route('admin.article.invoices')}}';
-
-
-
-        var entries = $(this).val();
-        var status = $('#status').val();
-        var startDate = $('#startDate').val();
-        var endDate = $('#endDate').val();
-
-        var url = url+'?status='+status+'&startDate='+startDate+'&endDate='+endDate+'&entries='+entries;
-
-        window.location.href = url;
-
-    });
-
-
-
     $('#createInvoice').click(function () {
 
         var url = "{{ route('member.article.createInvoice') }}";
