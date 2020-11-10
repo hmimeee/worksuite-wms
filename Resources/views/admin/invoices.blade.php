@@ -20,7 +20,7 @@
 
     <div class="col-lg-4 col-sm-8 col-md-8 col-xs-12 text-right">
 
-        <a href="#" class="btn btn-outline btn-success btn-sm pull-right" id="createInvoice"><i class="fa fa-plus" aria-hidden="true"></i> Add New Payslip</a>
+        <a href="javascript:;" class="btn btn-outline btn-success btn-sm pull-right" id="createInvoice"><i class="fa fa-plus" aria-hidden="true"></i> Add New Payslip</a>
 
     </div>
 
