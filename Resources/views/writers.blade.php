@@ -1,27 +1,26 @@
-@extends('article::layouts.member-app')
+@extends('layouts.member-app')
 
 @section('page-title')
 <div class="row bg-title">
     <!-- .page title -->
-    <div class="col-lg-8 col-md-4 col-sm-4 col-xs-12">
-        <h4 class="page-title"><i class="{{ $pageIcon }}"></i> {{ $pageTitle }} </h4>
+    <div class="col-lg-8 col-md-5 col-sm-6 col-xs-12">
+        <h4 class="page-title"><i class="{{ $pageIcon }}"></i> {{ $pageTitle }}</h4>
     </div>
+
     <!-- /.page title -->
-    <!-- .breadcrumb -->
-    <div class="col-lg-4 col-sm-8 col-md-8 col-xs-12 text-right">
-        @if(auth()->user()->hasRole('admin'))
-        <a href="{{ route('admin.employees.create') }}" class="btn btn-outline btn-success btn-sm pull-right"><i class="fa fa-plus" aria-hidden="true"></i> Add New Writer</a>
-        @endif
-    </div>
-    <!-- /.breadcrumb -->
 </div>
 @endsection
 
 @push('head-script')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.1.1/css/responsive.bootstrap.min.css">
+<link rel="stylesheet" href="//cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="//cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.css') }}">
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/custom-select/custom-select.css') }}">
+<link rel="stylesheet"
+href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
 <style type="text/css">
-    .pull-left{
-        display: none;
-    }
     .checked {
       color: orange;
   }
@@ -32,37 +31,12 @@
 @endpush
 
 @section('content')
+<div class="row">
 
-<div class="row dashboard-stats">
     <div class="col-md-12">
         <div class="white-box">
-            <div class="row">
-                <div class="col-sm-12">
-                    <h4>
-                        <span class="text-info">{{ $totalWriters ?? '0' }}</span>
-                        <span class="font-12 text-muted m-l-5"> @lang('article::app.totalwriters')</span>
-                    </h4>
-                </div>
-                <div class="col-md-2 m-b-5"> 
-                    Show 
-                    <select id="entries" class="form-control" style="width: 50%; display: inline;">
-                        <option selected>{{request()->entries ? request()->entries : '...'}}</option>
-                        <option @if(request()->entries == 10) selected @endif>10</option>
-                        <option @if(request()->entries == 30) selected @endif>30</option>
-                        <option @if(request()->entries == 50) selected @endif>50</option>
-                        <option @if(request()->entries == 100) selected @endif>100</option>
-                    </select>
-                    entries
-                </div>
-                <!-- <div class="col-md-8">
-                </div>
-                <div class="col-md-2" align="right">
-                    <form method="get" id="search-form">
-                        <input type="text" name="search" class="form-control" placeholder="Type & Press Enter" value="{{request()->search}}">
-                    </form>
-                </div> -->
-            </div>
 
+<<<<<<< HEAD
             <div class="row el-element-overlay">
                 <table class="table table-bordered table-hover m-l-10">
                     <thead>
@@ -172,85 +146,96 @@
                         </tr>
                     </tfoot>
                 </table>
+=======
+            <div class="row" id="ticket-filters">
+                <div class="table-responsive p-20">
+                    {!! $dataTable->table(['class' => 'table table-bordered table-hover toggle-circle default footable-loaded footable']) !!}
+                </div>
+>>>>>>> 1f3322c3c6355e9545e648b0c49b0cc25f11bbd2
             </div>
         </div>
     </div>
-</div>
-
-{{--Ajax Modal--}}
-<div class="modal"  id="subTaskModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" id="modal-data-application">
-        <div class="modal-content">
-            <div class="modal-body">
-                Loading...
+    <!-- .row -->
+    {{--Ajax Modal--}}
+    <div class="modal fade bs-modal-md in" id="writerModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" id="modal-data-application">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <span class="caption-subject font-red-sunglo bold uppercase" id="modelHeading"></span>
+                </div>
+                <div class="modal-body">
+                    Loading...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn blue">Save changes</button>
+                </div>
             </div>
+            <!-- /.modal-content -->
         </div>
+        <!-- /.modal-dialog -->.
     </div>
-</div>
-{{--Ajax Modal Ends--}}
+    {{--Ajax Modal Ends--}}
+    @endsection
 
-@endsection
+    @push('footer-script')
+    <script src="{{ asset('plugins/bower_components/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.1.1/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.1.1/js/responsive.bootstrap.min.js"></script>
+    <script src="{{ asset('plugins/bower_components/custom-select/custom-select.min.js') }}"></script>
+    <script src="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.js') }}"></script>
+    <script src="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.js') }}"></script>
+    <script src="{{ asset('plugins/bower_components/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
+    <script src="https://cdn.datatables.net/buttons/1.0.3/js/dataTables.buttons.min.js"></script>
+    <script src="{{ asset('js/datatables/buttons.server-side.js') }}"></script>
 
-@push('footer-script')
-<script type="text/javascript">
+    {!! $dataTable->scripts() !!}
+    <script>
+        $(".select2").select2();
 
-    $('#entries').on('change', function(){
-        var url = '{{route('member.article.writers')}}?{{request()->entries ? 'entries=:entries' : ''}}';
+        jQuery('#date-range').datepicker({
+            toggleActive: true,
+            format: '{{ $global->date_picker_format }}',
+            language: '{{ $global->locale }}',
+            autoclose: true
+        });
+        var table;
 
-        var ent = '{{request()->entries}}';
+        $('.toggle-filter').click(function () {
+            $('#ticket-filters').toggle('slide');
+        })
 
-        var url = url.replace(':entries', $(this).val());
-        if (ent.length ===0) {var url = url+'entries='+$(this).val();}
-        window.location.href = url;
-    })
+        $('#apply-filters').click(function () {
+            $('#writers-table').on('preXhr.dt', function (e, settings, data) {
+                var status = $('#status').val();
+                data['status'] = status;
 
-    // $(function() {
-    //     var writer = '{{request()->writer}}';
-    //     alert('Test');
-    //         viewWriter(writer);
-    // })
 
-    function viewWriter(id) {
+            });
+
+            $.easyBlockUI('#writers-table');
+            window.LaravelDataTables["writers-table"].draw();
+            $.easyUnblockUI('#writers-table');
+
+        });
+
+        $('#reset-filters').click(function () {
+            $('#filter-form')[0].reset();
+            $('#status').val('all');
+            $('.select2').val('all');
+            $('#filter-form').find('select').select2();
+
+            $.easyBlockUI('#writers-table');
+            window.LaravelDataTables["writers-table"].draw();
+            $.easyUnblockUI('#writers-table');
+        })
+
+        function viewWriter(id) {
         var url = "{{ route('member.article.writer', ':id')}}";
         var url = url.replace(':id', id);
-        $.ajaxModal('#subTaskModal', url);
+        $.ajaxModal('#writerModal', url);
     }
-    $(function() {
-        $('body').on('click', '.sa-params', function(){
-            var id = $(this).data('user-id');
-            swal({
-                title: "Are you sure?",
-                text: "You will not be able to recover the deleted user!",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "No, cancel please!",
-                closeOnConfirm: true,
-                closeOnCancel: true
-            }, function(isConfirm){
-                if (isConfirm) {
-
-                    var url = "{{ route('admin.employees.destroy',':id') }}";
-                    url = url.replace(':id', id);
-
-                    var token = "{{ csrf_token() }}";
-
-                    $.easyAjax({
-                        type: 'POST',
-                        url: url,
-                        data: {'_token': token, '_method': 'DELETE'},
-                        success: function (response) {
-                            if (response.status == "success") {
-                                $.easyBlockUI('#employees-table');
-                                window.LaravelDataTables["employees-table"].draw();
-                                $.easyUnblockUI('#employees-table');
-                            }
-                        }
-                    });
-                }
-            });
-        });
-    });
-</script>
-@endpush
+    </script>
+    @endpush

@@ -622,7 +622,11 @@
 
             @endif
 
+<<<<<<< HEAD
             @if(!auth()->user()->hasRole($writerRole) && $article->parent_task)
+=======
+            @if(!auth()->user()->hasRole($writerRole))
+>>>>>>> 1f3322c3c6355e9545e648b0c49b0cc25f11bbd2
             
             <p><i class="fa fa-tasks"></i> Parent Task: <a style="font-weight: 400;" href="javascript:;" onclick="parentTask('{{$article->parent_task}}')">{{$article->task->heading}} </a> </p>
 

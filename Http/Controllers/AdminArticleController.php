@@ -26,6 +26,7 @@ use App\Role;
 use App\Task;
 use Pusher\Pusher;
 use Carbon\Carbon;
+use Modules\Article\Datatables\WritersDataTable;
 
 class AdminArticleController extends AdminBaseController
 {
@@ -235,6 +236,7 @@ class AdminArticleController extends AdminBaseController
             return Reply::error('You are not authorized for this task!');
         }
 
+<<<<<<< HEAD
         $this->editors = Writer::leftJoin('role_user', 'user_id', '=', 'users.id')
             ->select('role_user.role_id')
             ->join('roles', 'role_user.role_id', '=', 'roles.id')
@@ -261,6 +263,20 @@ class AdminArticleController extends AdminBaseController
             ->orWhere('roles.name', $this->inhouseWriterRole)
             ->with('articles')
             ->with('rate');
+=======
+/**
+ * Show the list of writers.
+ * @return Response
+ */
+public function writers(Request $request, WritersDataTable $dataTable)
+{
+    $this->pageTitle = 'Article Writers';
+    $this->pageIcon = 'ti-user';
+
+    return $dataTable->render('article::admin.writers', $this->data);
+}
+}
+>>>>>>> 1f3322c3c6355e9545e648b0c49b0cc25f11bbd2
 
         $this->totalWriters = count($this->writers->get());
         $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);

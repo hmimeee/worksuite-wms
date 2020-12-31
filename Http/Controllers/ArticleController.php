@@ -43,6 +43,7 @@ use App\Task;
 use App\Project;
 use Pusher\Pusher;
 use Carbon\Carbon;
+use Modules\Article\Datatables\WritersDataTable;
 
 class ArticleController extends MemberBaseController
 {
@@ -849,6 +850,7 @@ class ArticleController extends MemberBaseController
 
         $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
 
+<<<<<<< HEAD
         return view('article::writers', $this->data);
     }
 
@@ -875,6 +877,19 @@ class ArticleController extends MemberBaseController
 
         request()->startDate = now()->subDays(30)->format('Y-m-d');
         request()->endDate = now()->format('Y-m-d');
+=======
+/**
+ * Show the list of writers.
+ * @return Response
+ */
+public function writers(Request $request, WritersDataTable $dataTable)
+{
+    $this->pageTitle = 'Article Writers';
+    $this->pageIcon = 'ti-user';
+
+    return $dataTable->render('article::writers', $this->data);
+}
+>>>>>>> 1f3322c3c6355e9545e648b0c49b0cc25f11bbd2
 
         $this->range_articles = Article::where('assignee', $id)
             ->whereHas('logs', function ($q) {
