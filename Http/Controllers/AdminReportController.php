@@ -145,6 +145,36 @@ class AdminReportController extends AdminBaseController
         return view('article::reportPrint', $this->data);
     }
 
+    public function dailyReports(Request $request)
+    {
+        $this->pageTitle = 'Daily Reports';
+        $this->date = $request->date ?? Carbon::now()->format('Y-m-d');
+        $this->submittedArticles = Article::whereHas('logs', function($q){
+            return $q->where('details', 'submitted the article for approval.')->whereDate('created_at', $this->date);
+        })->get();
+
+        $this->submittedArticlesWords = $this->submittedArticles->sum('word_count');
+
+        $this->approvedArticles = Article::whereHas('logs', function ($q) {
+            return $q->whereDate('created_at', $this->date)
+            ->where(function ($query) {
+                return $query->where('details', 'approved the article and transferred for publishing.')->orWhere('details', 'approved the article.');
+            });
+        })->get();
+
+        $this->approvedArticlesWords = $this->approvedArticles->sum('word_count');
+
+        $this->assignedArticles = Article::whereHas('logs', function ($q) {
+            return $q->where('details', 'assigned this article.')
+            ->whereDate('created_at', $this->date);
+        })->get();
+        $this->assignedArticlesWords = $this->assignedArticles->sum('word_count');
+
+        $this->projects = Project::all();
+
+        return view('article::admin.daily-reports', $this->data);
+    }
+
     /**
      * Show the form for editing the specified resource.
      * @param int $id

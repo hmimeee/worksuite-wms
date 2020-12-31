@@ -5,31 +5,18 @@
 @section('page-title')
 
 <div class="row bg-title">
-
     <!-- .page title -->
-
     <div class="col-lg-8 col-md-4 col-sm-4 col-xs-12">
-
         <h4 class="page-title"><i class="{{ $pageIcon }}"></i> {{ $pageTitle }} </h4>
-
     </div>
-
     <!-- /.page title -->
-
     <!-- .breadcrumb -->
-
     <div class="col-lg-4 col-sm-8 col-md-8 col-xs-12 text-right">
-
         @if($user->id == $writerHead || $user->hasRole('admin'))
-
         <a href="#" class="btn btn-outline btn-success btn-sm pull-right" id="createInvoice"><i class="fa fa-plus" aria-hidden="true"></i> Add New Payslip</a>
-
         @endif
-
     </div>
-
     <!-- /.breadcrumb -->
-
 </div>
 
 @endsection
@@ -283,7 +270,24 @@ a{
 
 {{--Ajax Modal Ends--}}
 
-
+<div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalArea" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalArea"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img src="" id="previewImage" style="width: 100%; height: cover;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @endsection
 

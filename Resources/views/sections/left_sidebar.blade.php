@@ -3,6 +3,9 @@
 		<li><a href="{{route('admin.article.index')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.articles')</span></a>
 		</li>
+		<li><a href="{{route('admin.article.dailyReports')}}" class="waves-effect">
+			<span class="hide-menu">@lang('article::app.dailyReports')</span></a>
+		</li>
 		<li><a href="{{route('admin.article.reports')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.reports')</span></a>
 		</li>

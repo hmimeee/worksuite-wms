@@ -18,6 +18,7 @@ Route::prefix('admin')->group(function() {
 	Route::get('article-management/articles/{id}', 'AdminArticleController@show')->name('admin.article.show');
 
 	//Reports
+	Route::get('article-management/daily-reports', 'AdminReportController@dailyReports')->name('admin.article.dailyReports');
 	Route::get('article-management/reports', 'AdminReportController@index')->name('admin.article.reports');
 	Route::get('article-management/reports/print', 'AdminReportController@show')->name('admin.article.reportPrint');
 
@@ -100,6 +101,7 @@ Route::prefix('member')->group(function() {
 	Route::post('article-management/writers/{writer}/rate-update', 'WriterRateController@update')->name('member.article.writerRateUpdate');
 	Route::post('article-management/writers/{writer}/active', 'ArticleController@writerActive')->name('member.article.writerActive');
 	Route::post('article-management/writers/{writer}/stats', 'ArticleController@writerStats')->name('member.article.writerStats');
+	Route::post('article-management/writers/{writer}/availability', 'ArticleController@writerAvailability')->name('member.article.writerAvailability');
 
 	//Invoices
 	Route::get('article-management/invoices', 'InvoiceController@index')->name('member.article.invoices');

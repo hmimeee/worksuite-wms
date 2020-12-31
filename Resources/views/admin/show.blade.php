@@ -426,7 +426,7 @@
                             @foreach ($article->comments as $comment)
                             <div class="row m-t-10" style="background: rgba(0,0,0,0.03); padding: 5px;">
                                 <div class="col-xs-10 m-b-10">
-                                    <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->diffForHumans()}}
+                                    <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->format('d M Y')}}
                                 </div>
                                 @if($writerHead == auth()->user()->id || auth()->user()->hasRole('admin'))
                                 <div class="col-xs-2 text-right">

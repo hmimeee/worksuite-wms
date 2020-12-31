@@ -6,6 +6,7 @@ return array(
         'article' => 'Article Management',
     ),
     'articles' => 'Articles',
+    'dailyReports' => 'Daily Reports',
     'reports' => 'Reports',
     'leaves' => 'Leaves',
     'totalwriters' => 'Total Writers',

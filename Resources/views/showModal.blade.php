@@ -169,7 +169,7 @@
         <div class="col-xs-12">
             <h5 style="font-weight: 500; color: #337ab7;">{{$article->title}} <label class="label label-default text-dark m-l-5 font-light">{{$article->type}}</label> <label class="label @if($article->priority =='low') label-success @elseif($article->priority =='medium') label-warning @else label-danger @endif"><span class="text-dark">Priority > </span>@if($article->priority =='low') Low @elseif($article->priority =='medium') Medium @else High @endif</label>
             </h5>
-            @if(!auth()->user()->hasRole($writerRole))
+            @if(!auth()->user()->hasRole($writerRole) && $article->project)
             <p><i class="icon-layers"></i> Project: <a style="font-weight: 400;" target="_blank" href="@if(auth()->user()->hasRole('admin')){{ route('admin.projects.show', $article->project->id) }}@else{{ route('member.projects.show', $article->project->id) }}@endif"> {{$article->project->project_name}} </a> </p>
             @endif
             @if (($writerHead == auth()->user()->id || auth()->user()->hasRole('admin')) && $article->task !=null)
@@ -289,7 +289,7 @@
                         @foreach ($article->comments as $comment)
                         <div class="row m-t-10" style="background: rgba(0,0,0,0.03); padding: 5px;">
                             <div class="col-xs-10 m-b-10">
-                                <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->diffForHumans()}}
+                                <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->format('d M Y')}}
                             </div>
                             @if($writerHead == auth()->user()->id || auth()->user()->hasRole('admin'))
                             <div class="col-xs-2 text-right">

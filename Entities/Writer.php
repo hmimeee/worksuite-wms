@@ -44,4 +44,9 @@ class Writer extends User
 	{
 		return $this->hasMany(WriterLeave::class, 'user_id');
 	}
+
+	public function unavailable()
+	{
+		return $this->hasOne(WriterDetails::class, 'user_id')->where('label', 'writer_unavailable');
+	}
 }

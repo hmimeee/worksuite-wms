@@ -396,7 +396,8 @@
 
                     @if(request()->type =='pendingAproval')
                     <td>
-                        {{$article->logs ? $article->logs->where('details', 'submitted the article for approval.')->first()->created_at->format('d M Y') : '-'}}
+                        @php($log = $article->logs->where('details', 'submitted the article for approval.')->first())
+                        {{$log ? $log->created_at->format('d M Y') : '-'}}
                     </td>
                     @endif
 

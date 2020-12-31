@@ -616,14 +616,14 @@
 
             </h5>
 
-            @if(!auth()->user()->hasRole($writerRole))
+            @if(!auth()->user()->hasRole($writerRole) && $article->project)
 
             <p><i class="icon-layers"></i> Project: <a style="font-weight: 400;" target="_blank" href="@if(auth()->user()->hasRole('admin')){{ route('admin.projects.show', $article->project->id) }}@else{{ route('member.projects.show', $article->project->id) }}@endif"> {{$article->project->project_name}} </a> </p>
 
             @endif
 
-            @if (($writerHead == auth()->user()->id || auth()->user()->hasRole('admin')) && $article->task !=null)
-
+            @if(!auth()->user()->hasRole($writerRole) && $article->parent_task)
+            
             <p><i class="fa fa-tasks"></i> Parent Task: <a style="font-weight: 400;" href="javascript:;" onclick="parentTask('{{$article->parent_task}}')">{{$article->task->heading}} </a> </p>
 
             @endif
@@ -854,7 +854,7 @@
 
                                 <div class="col-xs-10 m-b-10">
 
-                                    <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->diffForHumans()}}
+                                    <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->format('d M Y')}}
 
                                 </div>
 

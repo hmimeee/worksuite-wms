@@ -237,6 +237,66 @@
         text-align: center !important;
     }
 
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 45px;
+      height: 25px;
+  }
+
+  .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+  }
+
+  .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #47bb50;
+      -webkit-transition: .4s;
+      transition: .4s;
+  }
+
+  .slider:before {
+      position: absolute;
+      content: "";
+      height: 15px;
+      width: 15px;
+      left: 2px;
+      bottom: 5px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+  }
+
+  input:checked + .slider {
+      background-color: #ff6b6b;
+  }
+
+  input:focus + .slider {
+      box-shadow: 0 0 1px #ff6b6b;
+  }
+
+  input:checked + .slider:before {
+      -webkit-transform: translateX(26px);
+      -ms-transform: translateX(26px);
+      transform: translateX(26px);
+  }
+
+  /* Rounded sliders */
+  .slider.round {
+      border-radius: 34px;
+  }
+
+  .slider.round:before {
+      border-radius: 50%;
+  }
+
 
 </style>
 <div class="modal-header bg-info">
@@ -375,7 +435,7 @@
             </div> 
         </div>
         <div class="tab-pane fade in" id="tab2">
-            <table class="table table-bordered success">
+            <table class="table table-bordered">
                 <thead>
                     <tr >
                         <th class="info">Rate (BDT Per 1K Words)</th>
@@ -414,10 +474,42 @@
                         <th class="info">Gender</th>
                         <td>{{ucfirst($writer->gender)}}</td>
                     </tr>
+
                     <tr>
                         <th class="info">Account Status</th>
                         <td> {{ucfirst($writer->status)}}</td>
                     </tr>
+
+                    <tr>
+                        <th class="info">Availability Status</th>
+                        <td>
+                            <div class="form-group">
+                                @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin'))
+                                <label class="switch">
+                                    <input type="checkbox" id="unavailableWriter" {{$writer->unavailable ? 'checked' : ''}}>
+                                    <span class="slider round"></span>
+                                </label>
+                                @endif
+                                <p>
+                                    <label class="p-10 text-{{$writer->unavailable ? 'danger' : 'success'}}">
+                                        {{$writer->unavailable ? 'Unavailable - ' : 'Available'}}
+                                    </label>
+                                    @if($writer->unavailable)
+                                    {{$writer->unavailable->details}}
+                                    @endif
+                                </p>
+                            </div>
+
+                            @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin'))
+                            <div class="form-group" id="unavailableNote" style="display: none;">
+                                <textarea class="form-control" placeholder="Write a note for unavailability"></textarea>
+                                <br>
+                                <button class="btn btn-sm btn-danger" id="saveUnavailable">Save</button>
+                            </div>
+                            @endif
+                        </td>
+                    </tr>
+
                     @if($writer->hasRole($writerRole))
                     <tr>
                         <th class="label-info" style="vertical-align: middle;">
@@ -553,6 +645,35 @@
 <script src="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.js') }}"></script>
 
 <script type="text/javascript">
+    $('#unavailableWriter').change(function () {
+        if ($(this).prop('checked')) {
+            $('#unavailableNote').toggle('show');
+        } else {
+            $('#unavailableNote').hide();
+            changeUnavailablity(false);
+        }
+    });
+
+    $('#saveUnavailable').click(function () {
+        note = $('#unavailableNote').find('textarea').val();
+        changeUnavailablity(true, note);
+    })
+
+    function changeUnavailablity(status, note = null) {
+        $.easyAjax({
+            url: '{{ route('member.article.writerAvailability', $writer->id) }}',
+            type: "POST",
+            data: {
+                'status': status,
+                'note': note,
+                '_token': '{{ csrf_token() }}'
+            },
+            success: function(res){
+                viewWriter('{{$writer->id}}');
+            }
+        })
+    }
+    
     $(document).ready(function() {
         $(".btn-pref .btn").click(function () {
             $(".btn-pref .btn").removeClass("btn-info").addClass("btn-default");
