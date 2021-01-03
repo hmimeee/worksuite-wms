@@ -2,47 +2,49 @@
 
 namespace Modules\Article\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Routing\Controller;
-use App\Http\Controllers\Member\MemberBaseController;
-use Modules\Article\Entities\Article;
-use Modules\Article\Entities\ArticleDetails;
-use Modules\Article\Entities\ArticleActivityLog;
-use Modules\Article\Entities\ArticleType;
-use Modules\Article\Entities\Writer;
-use Modules\Article\Entities\ArticleFile;
-use Modules\Article\Entities\ArticleComment;
-use Modules\Article\Entities\ArticleSetting;
-use Modules\Article\Entities\WriterPaymentInfo;
-use Modules\Article\Entities\WriterDetails;
-use Modules\Article\Notifications\NewArticle;
-use Modules\Article\Notifications\ArticleReminder;
-use Modules\Article\Notifications\ArticleUpdate;
-use Modules\Article\Notifications\ArticleDelete;
-use Modules\Article\Notifications\ArticleWritingComplete;
-use Modules\Article\Notifications\ArticleWritingReturn;
-use Modules\Article\Notifications\ArticleWritingApprove;
-use Modules\Article\Notifications\ArticlePublishingComplete;
-use Modules\Article\Notifications\ArticlePublishingReturn;
-use Modules\Article\Notifications\NewArticlePublishing;
-use Modules\Article\Notifications\ArticlePublishingReminder;
-use Modules\Article\Notifications\NewArticleReview;
-use Modules\Article\Notifications\ArticleReviewComplete;
-use Modules\Article\Notifications\ArticleReviewReturn;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Response;
-use App\Helper\Reply;
-use Illuminate\Http\File;
-use App\User;
-use App\Setting;
-use App\RoleUser;
 use App\Role;
 use App\Task;
+use App\User;
+use App\Leave;
+use App\Holiday;
 use App\Project;
-use Pusher\Pusher;
+use App\Setting;
+use App\RoleUser;
 use Carbon\Carbon;
+use Pusher\Pusher;
+use App\Helper\Reply;
+use Illuminate\Http\File;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Hash;
+use Modules\Article\Entities\Writer;
+use Modules\Article\Entities\Article;
+use Illuminate\Support\Facades\Schema;
+use Modules\Article\Entities\ArticleFile;
+use Modules\Article\Entities\ArticleType;
+use Modules\Article\Entities\WriterDetails;
+use Illuminate\Support\Facades\Notification;
+use Modules\Article\Entities\ArticleComment;
+use Modules\Article\Entities\ArticleDetails;
+use Modules\Article\Entities\ArticleSetting;
+use Modules\Article\Notifications\NewArticle;
+use Modules\Article\Entities\WriterPaymentInfo;
+use Modules\Article\Entities\ArticleActivityLog;
+use Modules\Article\Notifications\ArticleDelete;
+use Modules\Article\Notifications\ArticleUpdate;
+use Modules\Article\Notifications\ArticleReminder;
+use Modules\Article\Notifications\NewArticleReview;
+use App\Http\Controllers\Member\MemberBaseController;
+use Modules\Article\Notifications\ArticleReviewReturn;
+use Modules\Article\Notifications\ArticleWritingReturn;
+use Modules\Article\Notifications\NewArticlePublishing;
+use Modules\Article\Notifications\ArticleReviewComplete;
+use Modules\Article\Notifications\ArticleWritingApprove;
+use Modules\Article\Notifications\ArticleWritingComplete;
+use Modules\Article\Notifications\ArticlePublishingReturn;
+use Modules\Article\Notifications\ArticlePublishingComplete;
+use Modules\Article\Notifications\ArticlePublishingReminder;
 
 class ArticleController extends MemberBaseController
 {
@@ -898,6 +900,16 @@ class ArticleController extends MemberBaseController
     {
         $startDate = Carbon::create(request()->startDate)->startOfDay();
         $endDate = Carbon::create(request()->endDate)->endOfDay();
+        $holidays = Holiday::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])->get();
+        $leaves = Leave::where('user_id', $id)
+        ->where('duration', '<>', 'half day')
+        ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+        ->get();
+        $halfleaves = Leave::where('user_id', $id)
+        ->where('duration', 'half day')
+        ->whereBetween('leave_date', [ $startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+        ->get();
+
         $articles = Article::where('assignee', $id)
         ->where('writing_status', 2)
         ->whereHas('logs', function ($q) use ($startDate, $endDate) {
@@ -912,7 +924,7 @@ class ArticleController extends MemberBaseController
             $words = $words + $article->word_count;
         }
 
-        $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate);
+        $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count()/2));
 
         return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days]);
     }
