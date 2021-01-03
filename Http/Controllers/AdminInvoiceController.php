@@ -12,7 +12,6 @@ use Modules\Article\Entities\Invoice;
 use Modules\Article\Entities\ArticleSetting;
 use App\Helper\Reply;
 use Carbon\Carbon;
-use Modules\Article\Datatables\PayslipsDataTable;
 
 class AdminInvoiceController extends AdminBaseController
 {
@@ -44,12 +43,24 @@ class AdminInvoiceController extends AdminBaseController
      * Display a listing of the resource.
      * @return Response
      */
-    public function index(Request $request, PayslipsDataTable $dataTable)
+    public function index(Request $request, Invoice $invoices)
     {
-        $this->pageTitle = 'Article Payslips';
-        $this->pageIcon = 'ti-receipt';
+        if ($request->status == 'paid' || $request->status == 'unpaid') {
+            $status = $request->status == 'paid' ? '1' : '0';
 
-        return $dataTable->render('article::admin.invoices', $this->data);
+            $invoices = $invoices->where('status', $status);
+        }
+
+        if ($request->startDate != null && $request->endDate != null) {
+            $startDate = Carbon::create($request->startDate);
+            $endDate = Carbon::create($request->endDate);
+
+            $invoices = $invoices->whereBetween('created_at', [$request->startDate, $request->endDate]);
+        }
+
+        $this->invoices = $invoices->orderBy('created_at', 'DESC')->paginate(is_numeric($request->entries) ? $request->entries : 10);
+
+        return view('article::admin.invoices', $this->data);
     }
 
     /**

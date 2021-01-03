@@ -43,7 +43,6 @@ use App\Task;
 use App\Project;
 use Pusher\Pusher;
 use Carbon\Carbon;
-use Modules\Article\Datatables\WritersDataTable;
 
 class ArticleController extends MemberBaseController
 {
@@ -850,7 +849,6 @@ class ArticleController extends MemberBaseController
 
         $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
 
-<<<<<<< HEAD
         return view('article::writers', $this->data);
     }
 
@@ -877,19 +875,6 @@ class ArticleController extends MemberBaseController
 
         request()->startDate = now()->subDays(30)->format('Y-m-d');
         request()->endDate = now()->format('Y-m-d');
-=======
-/**
- * Show the list of writers.
- * @return Response
- */
-public function writers(Request $request, WritersDataTable $dataTable)
-{
-    $this->pageTitle = 'Article Writers';
-    $this->pageIcon = 'ti-user';
-
-    return $dataTable->render('article::writers', $this->data);
-}
->>>>>>> 1f3322c3c6355e9545e648b0c49b0cc25f11bbd2
 
         $this->range_articles = Article::where('assignee', $id)
             ->whereHas('logs', function ($q) {
@@ -911,13 +896,16 @@ public function writers(Request $request, WritersDataTable $dataTable)
 
     public function writerStats($id)
     {
+        $startDate = Carbon::create(request()->startDate)->startOfDay();
+        $endDate = Carbon::create(request()->endDate)->startOfDay();
         $articles = Article::where('assignee', $id)
-            ->whereHas('logs', function ($q) {
-                return $q->where('label', 'article_writing_status')
-                    ->where('details', 'submitted the article for approval.')
-                    ->whereBetween('created_at', [request()->startDate, request()->endDate]);
-            })
-            ->get();
+        ->where('writing_status', 2)
+        ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+            return $q->where('label', 'article_writing_status')
+            ->where('details', 'submitted the article for approval.')
+            ->whereBetween('created_at', [$startDate, $endDate]);
+        })
+        ->get();
 
         $words = 0;
         foreach ($articles as $article) {

@@ -34,12 +34,18 @@ class AdminReportController extends AdminBaseController
      */
     public function index(Request $request, Article $articles)
     {
-        $this->articles = $articles;
-        $this->startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
-        $this->endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
+        $startDate = $request->start_date ? Carbon::create($request->start_date)->startOfDay() : Carbon::now()->subDays(7);
+        $endDate = $request->end_date ? Carbon::create($request->end_date)->startOfDay() : Carbon::now();
+        $this->startDate = $startDate->format('Y-m-d');
+        $this->endDate = $endDate->format('Y-m-d');
 
-        $this->articles = Article::leftJoin('article_activity_logs', 'article_activity_logs.article_id', '=', 'articles.id')->select('articles.*', 'article_activity_logs.details', 'article_activity_logs.article_id')->where('article_activity_logs.details', 'submitted the article for approval.')->whereBetween(\DB::raw('DATE(article_activity_logs.`created_at`)'), [Carbon::create($this->startDate)->format('Y-m-d'), Carbon::create($this->endDate)->format('Y-m-d')]);
-
+        $this->articles = $articles->where('writing_status', 2)
+        ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+            return $q->where('label', 'article_writing_status')
+            ->where('details', 'submitted the article for approval.')
+            ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+        });
+        
         if ($request->project != null) {
             $this->articles =  $this->articles->where('project_id', $request->project);
         }
