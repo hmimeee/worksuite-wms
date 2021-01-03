@@ -9,7 +9,7 @@
     <div class="row" id="invoice">
         <div class="col-1"></div>
         <div class="col-3">
-            <img src="https://viserx.com/wp-content/uploads/2019/04/logo-e1555414846101.png" height="100px">
+            <img src="{{ asset('favicon.png') }}" height="100px">
         </div>
         <div class="col-3 text-center">
             <u><h3>PAYSLIP</h3></u>

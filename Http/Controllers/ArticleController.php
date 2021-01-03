@@ -897,13 +897,13 @@ class ArticleController extends MemberBaseController
     public function writerStats($id)
     {
         $startDate = Carbon::create(request()->startDate)->startOfDay();
-        $endDate = Carbon::create(request()->endDate)->startOfDay();
+        $endDate = Carbon::create(request()->endDate)->endOfDay();
         $articles = Article::where('assignee', $id)
         ->where('writing_status', 2)
         ->whereHas('logs', function ($q) use ($startDate, $endDate) {
             return $q->where('label', 'article_writing_status')
             ->where('details', 'submitted the article for approval.')
-            ->whereBetween('created_at', [$startDate, $endDate]);
+            ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
         })
         ->get();
 

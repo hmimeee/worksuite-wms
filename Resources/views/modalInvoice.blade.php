@@ -36,7 +36,7 @@
                 <tr>
                     <td style="border: 0px !important;"></td>
                     <td style="border: 0px !important;">
-                        <img src="{{asset('favicon.png')}}" height="100px">
+                        <img src="{{ asset('favicon.png') }}" height="100px">
                     </td>
                     <td style="border: 0px !important;" class="text-left">
                         <u><h3><b>PAYSLIP</b></h3></u>

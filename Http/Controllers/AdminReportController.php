@@ -34,8 +34,8 @@ class AdminReportController extends AdminBaseController
      */
     public function index(Request $request, Article $articles)
     {
-        $startDate = $request->start_date ? Carbon::create($request->start_date)->startOfDay() : Carbon::now()->subDays(7);
-        $endDate = $request->end_date ? Carbon::create($request->end_date)->startOfDay() : Carbon::now();
+        $startDate = $request->start_date ? Carbon::create($request->start_date)->startOfDay() : Carbon::now()->subDays(7)->startOfDay();
+        $endDate = $request->end_date ? Carbon::create($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
         $this->startDate = $startDate->format('Y-m-d');
         $this->endDate = $endDate->format('Y-m-d');
 
