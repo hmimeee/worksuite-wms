@@ -34,11 +34,13 @@ use Modules\Article\Entities\ArticleActivityLog;
 use Modules\Article\Notifications\ArticleDelete;
 use Modules\Article\Notifications\ArticleUpdate;
 use Modules\Article\Notifications\ArticleReminder;
+use Modules\Article\Notifications\WriterRateAdmin;
 use Modules\Article\Notifications\NewArticleReview;
 use App\Http\Controllers\Member\MemberBaseController;
 use Modules\Article\Notifications\ArticleReviewReturn;
 use Modules\Article\Notifications\ArticleWritingReturn;
 use Modules\Article\Notifications\NewArticlePublishing;
+use Modules\Article\Notifications\WriterUnavailability;
 use Modules\Article\Notifications\ArticleReviewComplete;
 use Modules\Article\Notifications\ArticleWritingApprove;
 use Modules\Article\Notifications\ArticleWritingComplete;
@@ -1051,7 +1053,7 @@ class ArticleController extends MemberBaseController
         ]);
 
         $notifyTo = User::allAdmins();
-        \Notification::send($notifyTo, new WriterRateAdmin($writer, $old_rate));
+        Notification::send($notifyTo, new WriterUnavailability($writer));
 
         return Reply::success(ucfirst($message));
     }
