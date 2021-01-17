@@ -21,9 +21,9 @@ class WriterUnavailability extends Notification
      * @return void
      */
     private $writer;
-    public function __construct($writer)
+    public function __construct(Writer $writer)
     {
-        $this->writer = Writer::find($writer);
+        $this->writer = $writer;
         $this->emailSetting = EmailNotificationSetting::where('slug', 'user-assign-to-task')->first();
     }
 

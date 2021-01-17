@@ -37,6 +37,8 @@ public function index()
     $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value ?? '';
     $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value ?? '';
     $this->outreachHead = ArticleSetting::where('type', 'outreach_head')->first()->value ?? '';
+    $this->teamLeaders = ArticleSetting::where('type', 'team_leaders')->first()->value ?? '';
+    $this->publishers = ArticleSetting::where('type', 'publishers')->first()->value ?? '';
     $this->outreachCategory = ArticleSetting::where('type', 'outreach_category')->first()->value ?? '';
     $this->roles = Role::all();
     $this->employees = User::allEmployees();
@@ -63,6 +65,7 @@ public function create()
  */
 public function store(Request $request)
 {
+    //
 }
 
 /**
@@ -93,90 +96,32 @@ public function edit($id)
  */
 public function update(Request $request)
 {
-    $writer = ArticleSetting::where('type', 'writer')->first();
-    if($writer == null){
-        ArticleSetting::create([
-            'name' => 'Remote Writer',
-            'type' => 'writer',
-            'value' => $request->writer
+    $updateKeys = $request->only([
+            'writer',
+            'address',
+            'outreach_category',
+            'outreach_head',
+            'publisher',
+            'writer_head',
+            'inhouse_writer',
+            'team_leaders',
+            'publishers',
+    ]);
+
+    foreach ($updateKeys as $key => $value) {
+        ArticleSetting::updateOrCreate(['type' => $key], [
+            'name' => ucwords(str_replace('_', ' ', $key)),
+            'value' => is_array($value) ? implode(',', $value) : $value
         ]);
-    } else {
-        $writer->value =  $request->writer;
-        $writer->save();
     }
 
-    $inhouse_writer = ArticleSetting::where('type', 'inhouse_writer')->first();
-    if($inhouse_writer == null){
-        ArticleSetting::create([
-            'name' => 'Inhouse Writer',
-            'type' => 'inhouse_writer',
-            'value' => $request->inhouse_writer
+        //Store in log
+        ArticleActivityLog::create([
+            'user_id' => auth()->id(),
+            'type' => 'settings_update',
+            'label' => 'settings_update',
+            'details' => 'updated the settings'
         ]);
-    } else {
-        $inhouse_writer->value =  $request->inhouse_writer;
-        $inhouse_writer->save();
-    }
-
-    $writerHead = ArticleSetting::where('type', 'writer_head')->first();
-    if($writerHead == null){
-        ArticleSetting::create([
-            'name' => 'Writer Head',
-            'type' => 'writer_head',
-            'value' => $request->writer_head
-        ]);
-    } else {
-        $writerHead->value =  $request->writer_head;
-        $writerHead->save();
-    }
-
-    $publisher = ArticleSetting::where('type', 'publisher')->first();
-    if($publisher == null){
-        ArticleSetting::create([
-            'name' => 'Publisher Head',
-            'type' => 'publisher',
-            'value' => $request->publisher
-        ]);
-    } else {
-        $publisher->value =  $request->publisher;
-        $publisher->save();
-    }
-
-    $outreach_head = ArticleSetting::where('type', 'outreach_head')->first();
-    if($outreach_head == null){
-        ArticleSetting::create([
-            'name' => 'Outreach Head',
-            'type' => 'outreach_head',
-            'value' => $request->outreach_head
-        ]);
-    } else {
-        $outreach_head->value =  $request->outreach_head;
-        $outreach_head->save();
-    }
-
-    $outreach_category = ArticleSetting::where('type', 'outreach_category')->first();
-    if($outreach_category == null){
-        ArticleSetting::create([
-            'name' => 'Outreach Category',
-            'type' => 'outreach_category',
-            'value' => $request->outreach_category
-        ]);
-    } else {
-        $outreach_category->value =  $request->outreach_category;
-        $outreach_category->save();
-    }
-
-    //Company Address
-    $address = ArticleSetting::where('type', 'address')->first();
-    if ($address == null) {
-        ArticleSetting::create([
-            'type' => 'address',
-            'name' => 'Comapny Address',
-            'value' => str_replace('</p>', '<br/>', str_replace('<p>', '', $request->address))
-        ]);
-    } else {
-        $address->value =  str_replace('</p>', '<br/>', str_replace('<p>', '', $request->address));
-        $address->save();
-    }
 
     return Reply::success('article::app.storeSettingSuccess');
 }

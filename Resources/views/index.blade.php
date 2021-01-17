@@ -129,7 +129,7 @@
         </div>
         @endif
 
-        @if (auth()->id() != $outreachHead && auth()->id() != $publisher && !auth()->user()->hasRole($inhouseWriterRole))
+        @if (auth()->id() == $writerHead && auth()->user()->hasRole($writerRole) && auth()->user()->hasRole('admin'))
         <div class="col-md-12 p-t-10">
             <div class="form-group">
                 <a href="?type=completedArticles">
@@ -168,32 +168,28 @@
                 <h5 style="margin-left: 5px;">Article Type</h5>
                 <select class="select2 form-control col-md-6" name="type" id="type" data-style="form-control">
                     <option value="{{request()->type}}">Select Type</option>
-                    @if(auth()->id() != $publisher && auth()->id() != $outreachHead)
-                    <option value="All" @if(request()->type == 'All') selected @endif>All Task</option>
-                    <option value="assignByMe" @if(request()->type == 'assignByMe') selected @endif>Assign By Me</option>
-                    <option value="pendingAproval" @if(request()->type == 'pendingAproval') selected @endif>Pending Aproval</option>
-                    <option value="editable" @if(request()->type == 'editable') selected @endif>Editable Aproval</option>
-                    <option value="completedArticles" @if(request()->type == 'completedArticles') selected @endif>Completed Articles</option>
-                    <option value="paidArticles" @if(request()->type == 'paidArticles') selected @endif>Paid Articles</option>
-                    <option value="unpaidArticles" @if(request()->type == 'unpaidArticles') selected @endif>Unpaid Articles</option>
-                    <option value="writingNotStarted" @if(request()->type == 'writingNotStarted') selected @endif>Not Started Writing</option>
-                    <option value="writingStarted" @if(request()->type == 'writingStarted') selected @endif>Started Writing</option>
-                    @endif
-                    @if(auth()->id() == $publisher || auth()->id() == $writerHead || auth()->user()->hasRole('admin') || auth()->id() == $outreachHead)
-                    <option value="waitingPublish" @if(request()->type == 'waitingPublish') selected @endif>Waiting for Publish</option>
-                    <option value="startedPublish" @if(request()->type == 'startedPublish') selected @endif>Started Publishing</option>
-                    <option value="completePublish" @if(request()->type == 'completePublish') selected @endif>Completed Publishing</option>
-                    @endif
+                    <option value="All" {{ request()->type == 'All' ? 'selected' : '' }}>All Task</option>
+                    <option value="assignByMe" {{ request()->type == 'assignByMe' ? 'selected' : '' }}>Assign By Me</option>
+                    <option value="pendingAproval" {{ request()->type == 'pendingAproval' ? 'selected' : '' }}>Pending Aproval</option>
+                    <option value="editable" {{ request()->type == 'editable' ? 'selected' : '' }}>Editable Aproval</option>
+                    <option value="completedArticles" {{ request()->type == 'completedArticles' ? 'selected' : '' }}>Completed Articles</option>
+                    <option value="paidArticles" {{ request()->type == 'paidArticles' ? 'selected' : '' }}>Paid Articles</option>
+                    <option value="unpaidArticles" {{ request()->type == 'unpaidArticles' ? 'selected' : '' }}>Unpaid Articles</option>
+                    <option value="writingNotStarted" {{ request()->type == 'writingNotStarted' ? 'selected' : '' }}>Not Started Writing</option>
+                    <option value="writingStarted" {{ request()->type == 'writingStarted' ? 'selected' : '' }}>Started Writing</option>
+                    <option value="waitingPublish" {{ request()->type == 'waitingPublish' ? 'selected' : '' }}>Waiting for Publish</option>
+                    <option value="startedPublish" {{ request()->type == 'startedPublish' ? 'selected' : '' }}>Started Publishing</option>
+                    <option value="completePublish" {{ request()->type == 'completePublish' ? 'selected' : '' }}>Completed Publishing</option>
                 </select>
             </div>
 
-            @if (auth()->id() != $publisher && !auth()->user()->hasRole($inhouseWriterRole) && auth()->id() != $outreachHead)
+            @if (auth()->id() == $writerHead && auth()->user()->hasRole($writerRole) && auth()->user()->hasRole('admin'))
             <div class="col-md-12 p-t-10">
                 <h5 style="margin-left: 5px;">Writer</h5>
                 <select class="select2 form-control col-md-6" name="writer" id="writer" data-style="form-control">
                     <option value="">Select Writer</option>
                     <option value="{{auth()->id()}}" @if(request()->writer == auth()->id()) selected @endif>{{auth()->user()->name}}</option>
-                    @foreach ($writers as $writer)
+                    @foreach ($writers as $writerRole)
                     <option value="{{$writer->id}}" @if(request()->writer == $writer->id) selected @endif>{{$writer->name}}</option>
                     @endforeach
                 </select>
@@ -222,7 +218,7 @@
             @if (auth()->id() != $publisher && !auth()->user()->hasRole($inhouseWriterRole) && auth()->id() != $outreachHead)
             <div class="col-md-12 m-t-10 m-b-10">
                 <div class="checkbox checkbox-info">
-                    <input type="checkbox" name="hide" id="hide-completed-tasks">
+                    <input type="checkbox" name="hide" id="hide-completed-tasks" {{ request()->hide == 'on' ? 'checked' : '' }}>
                     <label for="hide-completed-tasks">Hide Written Articles Only</label>
                 </div>
             </div>

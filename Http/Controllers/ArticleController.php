@@ -62,6 +62,8 @@ class ArticleController extends MemberBaseController
         $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value ?? '';
         $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value ?? '';
         $this->outreachHead = ArticleSetting::where('type', 'outreach_head')->first()->value ?? '';
+        $this->publishers = ArticleSetting::where('type', 'publishers')->first()->value ?? '';
+        $this->teamLeaders = ArticleSetting::where('type', 'team_leaders')->first()->value ?? '';
         $this->outreachCategory = ArticleSetting::where('type', 'outreach_category')->first()->value ?? '';
         $this->user = auth()->user();
     }
@@ -160,8 +162,10 @@ class ArticleController extends MemberBaseController
         }
 
         if ($type == "myArticles") {
-            if (auth()->id() != $this->publisher && auth()->id() != $this->outreachHead) {
+            if (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)) {
                 $this->articles = $this->articles->where('assignee', auth()->id())->where('writing_status', 0);
+            } elseif (in_array(auth()->id(), explode(',', $this->publishers))) {
+                $this->articles = $this->articles->whereNull('publishing_status')->whereNotNull('publisher')->where('writing_status', 2);
             } else {
                 $this->articles = $this->articles->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
             }
@@ -830,7 +834,7 @@ class ArticleController extends MemberBaseController
      */
     public function writers(Request $request)
     {
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole($this->writerRole) && !auth()->user()->hasRole($this->inhouseWriterRole) && auth()->id() != $this->writerHead) {
+        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole($this->writerRole) && !auth()->user()->hasRole($this->inhouseWriterRole) && auth()->id() != $this->writerHead && !in_array(auth()->id(), explode(',', $this->teamLeaders))) {
             return abort(403);
         }
         $this->pageTitle = 'Article Writers';
@@ -1052,8 +1056,8 @@ class ArticleController extends MemberBaseController
             'details' => $message
         ]);
 
-        $notifyTo = User::allAdmins();
-        Notification::send($notifyTo, new WriterUnavailability($writer));
+        // $notifyTo = User::find(10);
+        // Notification::send($notifyTo, new WriterUnavailability($writer));
 
         return Reply::success(ucfirst($message));
     }

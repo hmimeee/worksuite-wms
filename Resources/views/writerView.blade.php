@@ -517,7 +517,9 @@
                         </th>
                         <td id="defaultPayment">
                             <div class="label-info p-10">
+                                @if(auth()->user()->hasRole('admin'))
                                 <a href="javascript:;" class="label label-sm label-danger m-l-5" id="changeDefaultPaymentButton" style="float: right;">Change</a>
+                                @endif
                                 @if($writer->paymentDetails !=null)
                                 <b><u>{{$writer->paymentDetails->title}}</u></b> <br/>
                                 {!! $writer->paymentDetails->details !!}

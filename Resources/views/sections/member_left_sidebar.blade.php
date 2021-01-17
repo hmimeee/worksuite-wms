@@ -9,22 +9,22 @@
 </script>
 @endif
 
-@if(auth()->id() == writer_head || auth()->id() == publisher || auth()->user()->hasRole('admin') || auth()->user()->hasRole(writer) || auth()->user()->hasRole(inhouse_writer) || auth()->id() == outreach_head)
+@if(auth()->id() == writer_head || auth()->id() == publisher || auth()->user()->hasRole('admin') || auth()->user()->hasRole(writer) || auth()->user()->hasRole(inhouse_writer) || auth()->id() == outreach_head || in_array(auth()->id(), explode(',', team_leaders ?? '1')) || in_array(auth()->id(), explode(',', publishers)))
 <li><a href="javascript:;" class="waves-effect"><i class="ti-pencil"></i> <span class="hide-menu"> @lang('article::app.menu.article')<span class="frow"></span> </span></a>
 	<ul class="nav nav-second-level collapse">
 		<li><a href="{{is_null(route('member.article.index')) ? 'javascript:;' : route('member.article.index')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.articles')</span></a>
 		</li>
-		@if(auth()->id() == writer_head || auth()->user()->hasRole('admin'))
+		@if(auth()->id() == writer_head || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', team_leaders ?? '1')))
 		<li><a href="{{is_null(route('member.article.reports')) ? 'javascript:;' : route('member.article.reports')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.reports')</span></a>
 		</li>
 		@endif
-		@if(auth()->id() != publisher && auth()->id() != outreach_head)
+		@if(auth()->id() == writer_head || auth()->user()->hasRole('admin') || auth()->user()->hasRole(writer) || auth()->user()->hasRole(inhouse_writer) || in_array(auth()->id(), explode(',', team_leaders ?? '1')))
 		<li><a href="{{is_null(route('member.article.writers')) ? 'javascript:;' : route('member.article.writers')}}" class="waves-effect">
 			<span class="hide-menu">@if(!auth()->user()->hasRole(writer) && !auth()->user()->hasRole(inhouse_writer)) @lang('article::app.writers') @else Profile @endif</span></a>
 		</li>
-		@if(!auth()->user()->hasRole(inhouse_writer))
+		@if(auth()->id() == writer_head || auth()->user()->hasRole('admin') || auth()->user()->hasRole(writer))
 		<li><a href="{{route('member.article.leaves')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.leaves')</span></a>
 		</li>

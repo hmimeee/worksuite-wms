@@ -126,6 +126,26 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                             </div>
                         </div>
                         <div class="form-group col-md-12">
+                            <label class="control-label col-md-4">Team Leader</label>
+                            <div class="col-md-8">
+                                <select class="form-control custom-select" name="team_leaders[]" id="team_leaders">
+                                    @foreach ($employees as $employee)
+                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $teamLeaders)) ? 'selected' : '' }}>{{$employee->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-12">
+                            <label class="control-label col-md-4">Publishers</label>
+                            <div class="col-md-8">
+                                <select class="custom-select custom-multiple" name="publishers[]" id="publishers" multiple>
+                                    @foreach ($employees as $employee)
+                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $publishers)) ? 'selected' : '' }}>{{$employee->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Company Address</label>
                             <div class="col-md-8">
                                 <textarea class="summernote" name="address" id="address">
@@ -268,6 +288,12 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
         }
     });
 
+    $("#publishers").select2({
+        formatNoMatches: function () {
+            return "{{ __('messages.noRecordFound') }}";
+        }
+    });
+
     $("#outreach_head").select2({
         formatNoMatches: function () {
             return "{{ __('messages.noRecordFound') }}";
@@ -281,6 +307,12 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
     });
 
     $("#writerHead").select2({
+        formatNoMatches: function () {
+            return "{{ __('messages.noRecordFound') }}";
+        }
+    });
+
+    $("#team_leaders").select2({
         formatNoMatches: function () {
             return "{{ __('messages.noRecordFound') }}";
         }
