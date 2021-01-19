@@ -35,6 +35,7 @@ public function index()
     $this->writerRole = ArticleSetting::where('type', 'writer')->first()->value ?? '';
     $this->inhouseWriterRole = ArticleSetting::where('type', 'inhouse_writer')->first()->value ?? '';
     $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value ?? '';
+    $this->writerHeadAssistant = ArticleSetting::where('type', 'writer_head_assistant')->first()->value ?? '';
     $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value ?? '';
     $this->outreachHead = ArticleSetting::where('type', 'outreach_head')->first()->value ?? '';
     $this->teamLeaders = ArticleSetting::where('type', 'team_leaders')->first()->value ?? '';
@@ -103,6 +104,7 @@ public function update(Request $request)
             'outreach_head',
             'publisher',
             'writer_head',
+            'writer_head_assistant',
             'inhouse_writer',
             'team_leaders',
             'publishers',

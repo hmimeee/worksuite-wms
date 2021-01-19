@@ -11,7 +11,7 @@
     <!-- /.page title -->
     <!-- .breadcrumb -->
     <div class="col-lg-4 col-sm-6 col-md-7 col-xs-12 text-right">
-        @if (auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
+        @if (auth()->user()->hasRole('admin') || auth()->id() == $writerHeadAssistant || auth()->id() == $writerHead)
         <a href="javascript:;" id="createArticle" 
         class="btn btn-outline btn-success btn-sm"><i class="fa fa-plus"
         aria-hidden="true"></i> Add New Articles</a>
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        @if (auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
+        @if (auth()->user()->hasRole('admin') || auth()->id() == $writerHeadAssistant || auth()->id() == $writerHead)
         <div class="col-md-12 p-t-10">
             @php($assignByMe = count($all_articles->where('creator', auth()->id())->where('writing_status', 0)))
             <div class="form-group">
@@ -129,7 +129,7 @@
         </div>
         @endif
 
-        @if (auth()->id() == $writerHead && auth()->user()->hasRole($writerRole) && auth()->user()->hasRole('admin'))
+        @if (auth()->user()->hasRole($inhouseWriterRole) || auth()->id() == $writerHead || auth()->user()->hasRole($writerRole) || auth()->user()->hasRole('admin'))
         <div class="col-md-12 p-t-10">
             <div class="form-group">
                 <a href="?type=completedArticles">
@@ -153,7 +153,7 @@
         </div>
         @endif
 
-        @if (!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
+        @if (auth()->id() == $writerHeadAssistant || (!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole)))
         <form>
             <div class="col-md-12">
                 <h5 class="box-title">@lang('app.selectDateRange') (Writing Deadline)</h5>
@@ -183,13 +183,13 @@
                 </select>
             </div>
 
-            @if (auth()->id() == $writerHead && auth()->user()->hasRole($writerRole) && auth()->user()->hasRole('admin'))
+            @if (auth()->id() == $writerHeadAssistant || auth()->id() == $writerHead || auth()->user()->hasRole($writerRole) || auth()->user()->hasRole('admin'))
             <div class="col-md-12 p-t-10">
                 <h5 style="margin-left: 5px;">Writer</h5>
                 <select class="select2 form-control col-md-6" name="writer" id="writer" data-style="form-control">
                     <option value="">Select Writer</option>
                     <option value="{{auth()->id()}}" @if(request()->writer == auth()->id()) selected @endif>{{auth()->user()->name}}</option>
-                    @foreach ($writers as $writerRole)
+                    @foreach ($writers as $writer)
                     <option value="{{$writer->id}}" @if(request()->writer == $writer->id) selected @endif>{{$writer->name}}</option>
                     @endforeach
                 </select>
@@ -421,7 +421,7 @@
                         <button aria-expanded="false" data-toggle="dropdown" class="btn dropdown-toggle waves-effect waves-light" type="button"><i class="ti-more"></i></button>
                         <ul role="menu" class="dropdown-menu pull-right">
                             <li><a href="javascript:;" onclick="view('{{$article->id}}')"><i class="fa fa-search" aria-hidden="true"></i> View</a></li>
-                            @if ($writerHead == auth()->id() || auth()->user()->hasRole('admin'))
+                            @if (auth()->id() == $writerHeadAssistant || $writerHead == auth()->id() || auth()->user()->hasRole('admin'))
                             <li><a href="javascript:;" onclick="editArticle('{{$article->id}}')"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a></li>
                             @endif
                         </ul> 

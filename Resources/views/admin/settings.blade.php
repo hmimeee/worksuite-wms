@@ -96,6 +96,16 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                             </div>
                         </div>
                         <div class="form-group col-md-12">
+                            <label class="control-label col-md-4">Writer Head Assistant</label>
+                            <div class="col-md-8">
+                                <select class="form-control custom-select" name="writer_head_assistant" id="writerHeadAssistant">
+                                    @foreach ($employees as $employee)
+                                    <option value="{{$employee->id}}" @if($writerHeadAssistant == $employee->id) selected @endif>{{$employee->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Publisher Head</label>
                             <div class="col-md-8">
                                 <select class="form-control custom-select" name="publisher" id="publisher">
@@ -271,48 +281,7 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
     })
  });
 
-    $("#writers").select2({
-        formatNoMatches: function () {
-            return "{{ __('messages.noRecordFound') }}";
-        }
-    });
-    $("#inhouse_writers").select2({
-        formatNoMatches: function () {
-            return "{{ __('messages.noRecordFound') }}";
-        }
-    });
-
-    $("#publisher").select2({
-        formatNoMatches: function () {
-            return "{{ __('messages.noRecordFound') }}";
-        }
-    });
-
-    $("#publishers").select2({
-        formatNoMatches: function () {
-            return "{{ __('messages.noRecordFound') }}";
-        }
-    });
-
-    $("#outreach_head").select2({
-        formatNoMatches: function () {
-            return "{{ __('messages.noRecordFound') }}";
-        }
-    });
-
-    $("#outreach_category").select2({
-        formatNoMatches: function () {
-            return "{{ __('messages.noRecordFound') }}";
-        }
-    });
-
-    $("#writerHead").select2({
-        formatNoMatches: function () {
-            return "{{ __('messages.noRecordFound') }}";
-        }
-    });
-
-    $("#team_leaders").select2({
+    $(".custom-select").select2({
         formatNoMatches: function () {
             return "{{ __('messages.noRecordFound') }}";
         }

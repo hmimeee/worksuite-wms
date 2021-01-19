@@ -60,6 +60,7 @@ class ArticleController extends MemberBaseController
         $this->writerRole = ArticleSetting::where('type', 'writer')->first()->value ?? '';
         $this->inhouseWriterRole = ArticleSetting::where('type', 'inhouse_writer')->first()->value ?? '';
         $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value ?? '';
+        $this->writerHeadAssistant = ArticleSetting::where('type', 'writer_head_assistant')->first()->value ?? '';
         $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value ?? '';
         $this->outreachHead = ArticleSetting::where('type', 'outreach_head')->first()->value ?? '';
         $this->publishers = ArticleSetting::where('type', 'publishers')->first()->value ?? '';
@@ -141,7 +142,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->where('articles.writing_status', '<>', 2);
         }
 
-        if (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)) {
+        if (auth()->id() != $this->writerHeadAssistant && (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole))) {
             $this->articles = $this->articles->where('assignee', auth()->id());
         }
 
@@ -153,7 +154,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->where('working_status', null);
         }
 
-        if ($type == "writingStarted") {
+        if ($type == "writingStarted") { 
             $this->articles = $this->articles->where('working_status', 1)->where('writing_status', 0);
         }
 
@@ -176,11 +177,7 @@ class ArticleController extends MemberBaseController
         }
 
         if ($type == "pendingAproval") {
-            if (auth()->user()->hasRole('admin')) {
-                $this->articles = $this->articles->where('writing_status', 1);
-            } else {
-                $this->articles = $this->articles->where('creator', auth()->id())->where('writing_status', 1);
-            }
+            $this->articles = $this->articles->where('writing_status', 1);
         }
 
         if ($type == "completedArticles") {
@@ -839,7 +836,7 @@ class ArticleController extends MemberBaseController
         }
         $this->pageTitle = 'Article Writers';
         $this->pageIcon = 'ti-user';
-        if (!auth()->user()->hasRole($this->writerRole) && !auth()->user()->hasRole($this->inhouseWriterRole)) {
+        if (auth()->id() == $this->writerHead || auth()->id() == $this->writerHeadAssistant || auth()->user()->hasRole('admin')) {
             $this->writers = Writer::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
                 ->join('roles', 'roles.id', '=', 'role_user.role_id')
                 ->select('users.*')
