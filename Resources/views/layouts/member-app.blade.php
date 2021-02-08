@@ -296,24 +296,6 @@
         .notify .point{
             background-color: {{ $employeeTheme->sidebar_color }};
         }
-
-        @if(date('d') < 6)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/dark/pattern-sky-blue/pattern-sky-blue.svg')
-        @elseif(date('d') < 11)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/pattern-blue/pattern-blue.svg')
-        @elseif(date('d') < 16)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/dark/pattern-pink/pattern-pink.svg')
-        @elseif(date('d') < 21)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/dark/pattern-light-grey/pattern-light-grey.svg')
-        @elseif(date('d') < 26)
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/pattern-grey/pattern-grey.svg')
-        @else
-        @php($bg = 'https://faimust.bitrix24.com/bitrix/templates/bitrix24/themes/light/pattern-bluish-green/pattern-bluish-green.svg')
-        @endif
-
-        body, .container-fluid {
-                background: #62b7c0  url('{{$bg}}') 0 0 repeat fixed !important;
-        }
     </style>
 
     <style>

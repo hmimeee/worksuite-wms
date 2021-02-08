@@ -156,7 +156,10 @@ class AdminReportController extends AdminBaseController
         $this->pageTitle = 'Daily Reports';
         $this->date = $request->date ?? Carbon::now()->format('Y-m-d');
         $this->submittedArticles = Article::whereHas('logs', function($q){
-            return $q->where('details', 'submitted the article for approval.')->whereDate('created_at', $this->date);
+            return $q->where(function ($query) {
+                return $query->where('details', 'submitted the article for approval.')
+                ->orWhere('details', 'submitted the article for approval and waiting for review.');
+            })->whereDate('created_at', $this->date);
         })->get();
 
         $this->submittedArticlesWords = $this->submittedArticles->sum('word_count');
@@ -164,7 +167,9 @@ class AdminReportController extends AdminBaseController
         $this->approvedArticles = Article::whereHas('logs', function ($q) {
             return $q->whereDate('created_at', $this->date)
             ->where(function ($query) {
-                return $query->where('details', 'approved the article and transferred for publishing.')->orWhere('details', 'approved the article.');
+                return $query->where('details', 'approved the article and transferred for publishing.')
+                ->orWhere('details', 'completed the article review and transferred for publishing..')
+                ->orWhere('details', 'approved the article.');
             });
         })->get();
 

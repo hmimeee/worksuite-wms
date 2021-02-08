@@ -112,16 +112,12 @@
                 </a>
             </div>
         </div>
+
         <div class="col-md-12 p-t-10">
             <div class="form-group">
                 <a href="?type=edited">
                     <button type="button" id="edited" class="btn btn-inverse btn-sm col-md-12 @if(request()->type == 'edited') active @endif">
                         Edited Articles
-                        @if(!is_null($editable_articles->where('articles.writing_status', 2)->first()))
-                        <span class="label label-primary text-dark">
-                            {{count($editable_articles->where('articles.writing_status', 2))}}
-                        </span>
-                        @endif
                     </button>
                 </a>
             </div>

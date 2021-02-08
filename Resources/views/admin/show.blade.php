@@ -21,77 +21,7 @@
 
 @push('head-script')
 <style type="text/css">
-    .rate {
-        float: left;
-        height: 46px;
-        padding: 0 10px;
-    }
-    .rate:not(:checked) > input {
-        position:absolute;
-        top:-9999px;
-    }
-    .rate:not(:checked) > label {
-        float:right;
-        width:1em;
-        overflow:hidden;
-        white-space:nowrap;
-        cursor:pointer;
-        font-size:30px;
-        color:#ccc;
-    }
-    .rate:not(:checked) > label:before {
-        content: '★ ';
-    }
-    .rate > input:checked ~ label {
-        color: #ffc700;    
-    }
-    .rate:not(:checked) > label:hover,
-    .rate:not(:checked) > label:hover ~ label {
-        color: #deb217;  
-    }
-    .rate > input:checked + label:hover,
-    .rate > input:checked + label:hover ~ label,
-    .rate > input:checked ~ label:hover,
-    .rate > input:checked ~ label:hover ~ label,
-    .rate > label:hover ~ input:checked ~ label {
-        color: #c59b08;
-    }
-
-    .checked {
-      color: orange;
-  }
-
-  .upload-btn-wrapper {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-  }
-
-  .btn-upload {
-      border: 1px dotted gray;
-      color: gray;
-      background-color: white;
-      padding: 25px;
-      border-radius: 8px;
-      font-weight: bold;
-      display: block;
-      min-width: 500px; 
-  }
-
-  .upload-btn-wrapper input[type=file] {
-      font-size: 100px;
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-  }
-
-  .sl-item:nth-child(n+6) {
-    display: none;
-}
-
-
-/* Modified from: https://github.com/mukulkant/Star-rating-using-pure-css */
+    .rate{float:left;height:46px;padding:0 10px}.rate:not(:checked)>input{position:absolute;top:-9999px}.rate:not(:checked)>label{float:right;width:1em;overflow:hidden;white-space:nowrap;cursor:pointer;font-size:30px;color:#ccc}.rate:not(:checked)>label:before{content:'★ '}.rate>input:checked~label{color:#ffc700}.rate:not(:checked)>label:hover,.rate:not(:checked)>label:hover~label{color:#deb217}.rate>input:checked+label:hover,.rate>input:checked+label:hover~label,.rate>input:checked~label:hover,.rate>input:checked~label:hover~label,.rate>label:hover~input:checked~label{color:#c59b08}.upload-btn-wrapper{position:relative;overflow:hidden;display:inline-block}.btn-upload{border:1px dotted gray;color:gray;background-color:#fff;padding:25px;border-radius:8px;font-weight:700;display:block;min-width:500px}.upload-btn-wrapper input[type=file]{font-size:100px;position:absolute;left:0;top:0;opacity:0}.sl-item:nth-child(n+6){display:none}.checked{color:#deb217}
 </style>
 <link rel="stylesheet" href="{{ asset('plugins/bower_components/summernote/dist/summernote.css') }}">
 <link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.css') }}">
@@ -206,6 +136,17 @@
                     <label class="control-label required">Word Count</label>
                     <input type="number" name="wordCount" id="wordCount" class="form-control">
                 </div>
+
+                @if($article->publishing ==1)
+                <div class="col-md-2">
+                    <label class="control-label required">Publishing Due Date</label>
+                    <input type="text" name="publishing_deadline" id="publishing_deadline" class="form-control" autocomplete="off">
+                </div>
+                <div class="col-md-2">
+                    <label class="control-label">Website to Publish</label>
+                    <input type="text" name="website" id="website" class="form-control">
+                </div>
+                @endif
             </div>
             @endif
             @endif
@@ -223,11 +164,11 @@
             </div>
             @endif
 
+            @if(is_null($article->reviewWriter))
             @if($article->writing_status ==1 && ($writerHead == auth()->id() || auth()->user()->hasRole('admin')))
             <a href="javascript:;" id="finishButton" class="btn btn-success btn-sm m-b-10 m-r-5 btn-rounded pull-left"  onclick="markComplete('finish')"><i class="fa fa-check"></i> Accept and Finish</a>
 
             <div class="form-group row m-l-5">
-                @if(is_null($article->reviewWriter))
                 <div class="col-md-2">
                     <label class="control-label required" style="display: block;">Rate This Article</label>
                     <label class="control-label" for="rating"></label>
@@ -248,7 +189,7 @@
                     <label class="control-label required">Word Count</label>
                     <input type="number" name="wordCount" id="wordCount" class="form-control">
                 </div>
-                @endif
+
                 @if($article->publishing ==1)
                 <div class="col-md-2">
                     <label class="control-label required">Publishing Due Date</label>
@@ -260,6 +201,7 @@
                 </div>
                 @endif
             </div>
+            @endif
             @endif
         </div>
     </div>
@@ -750,20 +692,19 @@ $('#editorTransfer').on('click', function(){
 function reviewStatus(status) {
     var url = '{{route('member.article.review', $article->id)}}';
     var id = '{{$article->id}}';
-
     var one = $('#star1:checked').val();
     var two = $('#star2:checked').val();
     var three = $('#star3:checked').val();
     var four = $('#star4:checked').val();
     var five = $('#star5:checked').val();
-
     if (typeof one !='undefined') {var rating = 1;}
     if (typeof two !='undefined') {var rating = 2;}
     if (typeof three !='undefined') {var rating = 3;}
     if (typeof four !='undefined') {var rating = 4;}
     if (typeof five !='undefined') {var rating = 5;}
     var wordCount = $('#wordCount').val();
-
+    var deadline = $('#publishing_deadline').val();
+    var website = $('#website').val();
     if (status =='completed' && (wordCount == '' || typeof rating == 'undefined')) {
         $.showToastr('Please check rating and enter word count!', 'error');
         return false;
@@ -772,13 +713,14 @@ function reviewStatus(status) {
     $.easyAjax({
         type: 'POST',
         url: url,
-        data: {'status': status, 'rating': rating, 'word_count': wordCount, '_token': '{{csrf_token()}}'},
+        data: {'status': status, 'rating': rating, 'word_count': wordCount, 'deadline': deadline, 'website': website, '_token': '{{csrf_token()}}'},
         success: function(response){
-          var location = "{{auth()->user()->hasRole('admin') ? route('admin.article.show', ':id') : route('member.article.show', ':id')}}";
+          var location = "{{route('member.article.show', ':id')}}";
           var location = location.replace(':id', id);
           document.location.href = location;
       }
   });
+
 }
 
 function markComplete(status) {

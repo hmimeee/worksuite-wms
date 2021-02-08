@@ -101,7 +101,7 @@
             <div class="btn btn-outline btn-default btn-sm pull-right m-l-5 m-r-5"><span class="text-primary"> Not started</span></div>
             @endif
 
-            @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || auth()->user()->hasRole('admin')) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
+            @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', $publishers))) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
             <a href="javascript:;" id="startPublishing" class="btn btn-info btn-sm m-b-10 btn-rounded"  onclick="startPublishing('start')"><i class="fa fa-hourglass-start"></i> Start Publishing</a>
             @endif
 
@@ -109,7 +109,7 @@
             <a href="javascript:;" id="publishButton" class="btn btn-danger btn-sm m-b-10 btn-rounded btn-outline"  onclick="completePublish('incomplete')" ><i class="fa fa-arrow-left"></i> Return to Publisher</a>
             @endif
 
-            @if($article->writing_status ==2 && ($article->publisher == auth()->user()->id || $writerHead == auth()->user()->id || auth()->user()->hasRole('admin') == 1) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
+            @if($article->writing_status ==2 && ($article->publisher == auth()->user()->id || $writerHead == auth()->user()->id || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', $publishers))) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
             <input type="text" name="publishLink" id="publishLink" placeholder="Please enter your publish link here" class="form-control col-md-12 m-b-10">
             <a href="javascript:;" id="publishButton" class="btn btn-success btn-sm m-b-10 btn-rounded"  onclick="completePublish('complete')" ><i class="fa fa-check"></i> Complete Publishing</a>
             @endif

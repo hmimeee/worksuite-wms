@@ -61,6 +61,7 @@ class ArticleController extends MemberBaseController
         $this->inhouseWriterRole = ArticleSetting::where('type', 'inhouse_writer')->first()->value ?? '';
         $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value ?? '';
         $this->writerHeadAssistant = ArticleSetting::where('type', 'writer_head_assistant')->first()->value ?? '';
+        $this->defaulEditor = ArticleSetting::where('type', 'default_editor')->first()->value ?? '';
         $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value ?? '';
         $this->outreachHead = ArticleSetting::where('type', 'outreach_head')->first()->value ?? '';
         $this->publishers = ArticleSetting::where('type', 'publishers')->first()->value ?? '';
@@ -106,20 +107,20 @@ class ArticleController extends MemberBaseController
         $this->endDate = $request->endDate ?? Carbon::today()->addDays(15)->format('Y-m-d');
 
         $this->articles = Article::join('projects', 'projects.id', '=', 'articles.project_id')
-            ->join('users', 'users.id', '=', 'articles.assignee')
-            ->select('articles.*', 'projects.project_name', 'users.name');
+        ->join('users', 'users.id', '=', 'articles.assignee')
+        ->select('articles.*', 'projects.project_name', 'users.name');
 
         //Editable articles
         $this->editable_articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-            ->select('articles.*', 'article_details.label', 'article_details.value')
-            ->where('article_details.label', 'article_review_writer');
+        ->select('articles.*', 'article_details.label', 'article_details.value')
+        ->where('article_details.label', 'article_review_writer');
 
         if ($request->startDate != null || $request->endDate != null) {
             $this->articles = $this->articles->whereBetween(\DB::raw('DATE(articles.`writing_deadline`)'), [$this->startDate, $this->endDate]);
         }
 
         if (auth()->user()->hasRole($this->inhouseWriterRole)) {
-            $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id());
+            $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id())->where('article_details.label', 'article_review_writer');
         }
 
         if (auth()->id() == $this->outreachHead) {
@@ -230,10 +231,14 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->editable_articles->where('articles.writing_status', 1);
         }
 
-        if ($request->type == 'edited') {
+        if ($request->type == 'edited' && !auth()->user()->hasRole('admin')) {
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
                 ->select('articles.*', 'article_details.label', 'article_details.value')
                 ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2)->where('article_details.value', auth()->id());
+        } elseif(auth()->user()->hasRole('admin')) {
+            $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
+            ->select('articles.*', 'article_details.label', 'article_details.value')
+            ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
         }
 
         //Editable articles
@@ -530,31 +535,23 @@ class ArticleController extends MemberBaseController
      */
     public function review(Request $request, Article $article)
     {
-        //Retrive editor & editing status
-        $article_editor = $article->reviewWriter;
+        //Retrive editing && editor status
         $article_review = $article->reviewStatus;
+        $article_editor = $article->reviewWriter;
 
         if (isset($request->editor)) {
 
-            /* ======== If assigned a writer for review ======== */
-
-            if (is_null($article_editor)) {
-                $result = ArticleDetails::create([
+            $result = ArticleDetails::updateOrCreate(
+                [
                     'article_id' => $article->id,
-                    'user_id' => auth()->id(),
                     'label' => 'article_review_writer',
+                ],
+                [
+                    'user_id' => auth()->id(),
                     'value' => $request->editor,
                     'description' => 'assigned the article for review'
-                ]);
-            } else {
-
-                $article_editor = ArticleDetails::find($article_editor->id);
-                $article_editor->value = $request->editor;
-                $article_editor->save();
-
-                //For activity description
-                $result = $article_editor;
-            }
+                ]
+            );
 
             $notifyTo = User::find($request->editor);
             Notification::send($notifyTo, new NewArticleReview($article));
@@ -563,14 +560,30 @@ class ArticleController extends MemberBaseController
         /* ======== If review article completed and submitted ======== */
 
         if (isset($request->status)) {
-
             if ($request->status == 'completed' && is_null($request->rating) && is_null($request->word_count)) {
                 return Reply::error('Please fill the required fields!');
             } elseif ($request->status == 'completed' && !is_null($request->rating) && !is_null($request->word_count)) {
                 $article = Article::find($article->id);
                 $article->rating = $request->rating;
                 $article->word_count = $request->word_count;
+                $article->publishing_deadline = $request->deadline ?? date('Y-m-d');
+                $article->writing_status = 2;
+
+                if ($article->publishing == 1) {
+                    if ($article->type == ArticleType::find($this->outreachCategory)->name) {
+                        $article->publisher = $this->outreachHead;
+                    } else {
+                        $article->publisher = $this->publisher;
+                    }
+                }
+
                 $article->save();
+
+                if ($article->publishing == 1) {
+                    //Notify about update
+                    $notifyTo = User::find($article->publisher);
+                    Notification::send($notifyTo, new NewArticlePublishing($article));
+                }
             }
 
             if (is_null($article_review)) {
@@ -579,7 +592,7 @@ class ArticleController extends MemberBaseController
                     'user_id' => auth()->id(),
                     'label' => 'article_review_status',
                     'value' => $request->status,
-                    'description' => 'completed article review'
+                    'description' => 'completed the article review and transferred for publishing.'
                 ]);
             } else {
 
@@ -587,9 +600,9 @@ class ArticleController extends MemberBaseController
                 $article_review->value = $request->status;
 
                 if ($request->status == 'completed') {
-                    $article_review->description = 'completed article review';
+                    $article_review->description = 'completed article review and approved.';
                 } else {
-                    $article_review->description = 'return the article for check again';
+                    $article_review->description = 'return the article for check again.';
                 }
 
                 $article_review->save();
@@ -599,7 +612,7 @@ class ArticleController extends MemberBaseController
             }
 
             if ($request->status == 'completed') {
-                $notifyTo = User::find($article->creator);
+                $notifyTo = User::find([$this->writerHead, $this->writerHeadAssistant]);
                 Notification::send($notifyTo, new ArticleReviewComplete($article));
             } elseif ($request->status == 'incomplete') {
                 $notifyTo = User::find($article_editor->value);
@@ -669,6 +682,10 @@ class ArticleController extends MemberBaseController
             $article->rating = $request->rating;
             $article->save();
         } else {
+            if ($request->status == 0 && $article->invoice) {
+                return Reply::error('The article has a payslip, can\'t return after generating payslip!');
+            }
+
             if ($request->status == 1) {
                 $comment = $article->comments()->first();
                 if ($comment == null) {
@@ -677,11 +694,28 @@ class ArticleController extends MemberBaseController
             }
             $article->writing_status = $request->status;
             $article->save();
+
+            if ($request->status == 1) {
+                $result = ArticleDetails::updateOrCreate(
+                    [
+                        'article_id' => $article->id,
+                        'label' => 'article_review_writer',
+                    ],
+                    [
+                        'user_id' => auth()->id(),
+                        'value' => $this->defaulEditor,
+                        'description' => 'assigned the article for review'
+                    ]
+                );
+
+                $notifyTo = User::find($this->defaulEditor);
+                Notification::send($notifyTo, new NewArticleReview($article));
+            }
         }
 
         //Store in log
         if ($request->status == 1) {
-            $message = 'submitted the article for approval.';
+            $message = 'submitted the article for approval and waiting for review.';
         } elseif ($article->publishing == 1 && $request->status == 2) {
             $message = 'approved the article and transferred for publishing.';
         } elseif ($request->status == 2 && $article->publishing != 1) {
@@ -699,7 +733,7 @@ class ArticleController extends MemberBaseController
 
 
         if ($request->status == 1) {
-            $notifyTo = User::find($article->creator);
+            $notifyTo = User::find([$this->writerHead, $this->writerHeadAssistant]);
             Notification::send($notifyTo, new ArticleWritingComplete($article));
         } elseif ($request->status == 2) {
             $notifyTo = Writer::find($article->assignee);
@@ -864,9 +898,12 @@ class ArticleController extends MemberBaseController
     public function writerView($id)
     {
         $this->writer = Writer::findOrFail($id);
-        if ($this->user->hasRole($this->writerRole) && $this->user->id != $this->writer->id) {
+        if (auth()->id() == $id || auth()->id() == $this->writerHead || in_array(auth()->id(), explode(',', $this->writerHeadAssistant)) || auth()->user()->hasRole('admin')) {
+            //Continue
+        } else {
             return Reply::error('You are not authorized to view this page!');
         }
+
         $this->articles = $this->writer->articles;
         $this->earning = 0;
         $this->rating = 0;
@@ -881,11 +918,16 @@ class ArticleController extends MemberBaseController
         request()->startDate = now()->subDays(30)->format('Y-m-d');
         request()->endDate = now()->format('Y-m-d');
 
+        $startDate = Carbon::create(request()->startDate)->startOfDay();
+        $endDate = Carbon::create(request()->endDate)->endOfDay();
         $this->range_articles = Article::where('assignee', $id)
-            ->whereHas('logs', function ($q) {
+            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
                 return $q->where('label', 'article_writing_status')
-                    ->where('details', 'submitted the article for approval.')
-                    ->whereBetween('created_at', [request()->startDate, request()->endDate]);
+                    ->where(function ($q) {
+                        return $q->where('details', 'submitted the article for approval.')
+                            ->orWhere('details', 'submitted the article for approval and waiting for review.');
+                    })
+                    ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
             })
             ->get();
 
@@ -893,8 +935,23 @@ class ArticleController extends MemberBaseController
         foreach ($this->range_articles as $article) {
             $this->range_words = $this->range_words + $article->word_count;
         }
-        
-        $this->data['writerHead'] = $this->writerHead;
+
+        if ($id == $this->defaulEditor) {
+            $this->range_earticles = Article::where('writing_status', 2)
+            ->whereHas('reviewWriter', function ($q) use ($id) {
+                return $q->where('value', $id);
+            })
+            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+                return $q->where('label', 'article_review')
+                ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+            })
+            ->get();
+
+            $this->range_ewords = 0;
+            foreach ($this->range_earticles as $eart) {
+                $this->range_ewords = $this->range_ewords + $eart->word_count;
+            }
+        }
 
         return view('article::writerView', $this->data);
     }
@@ -917,10 +974,30 @@ class ArticleController extends MemberBaseController
         ->where('writing_status', 2)
         ->whereHas('logs', function ($q) use ($startDate, $endDate) {
             return $q->where('label', 'article_writing_status')
-            ->where('details', 'submitted the article for approval.')
+            ->where(function($q){
+                return $q->where('details', 'submitted the article for approval.')
+                ->orWhere('details', 'submitted the article for approval and waiting for review.');
+            })
             ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
         })
         ->get();
+
+        if ($id == $this->defaulEditor) {
+            $edited_articles = Article::where('writing_status', 2)
+            ->whereHas('reviewWriter', function ($q) use ($id) {
+                return $q->where('value', $id);
+            })
+            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+                return $q->where('label', 'article_review')
+                ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+            })
+            ->get();
+
+            $ewords = 0;
+            foreach ($edited_articles as $eart) {
+                $ewords = $ewords + $eart->word_count;
+            }
+        }
 
         $words = 0;
         foreach ($articles as $article) {
@@ -929,7 +1006,7 @@ class ArticleController extends MemberBaseController
 
         $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count()/2));
 
-        return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days]);
+        return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days, 'earticles' => $edited_articles, 'ewords' => $ewords]);
     }
 
     public function writerPaymentDetails($id)

@@ -87,13 +87,9 @@ class AdminArticleController extends AdminBaseController
 
         //Editable articles
         $this->editable_articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-            ->select('articles.*', 'article_details.label', 'article_details.value')
-            ->where('articles.writing_status', 1)
-            ->where('article_details.label', 'article_review_writer');
-
-        if (auth()->user()->hasRole($this->inhouseWriterRole)) {
-            $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id());
-        }
+        ->select('articles.*', 'article_details.label', 'article_details.value')
+        ->where('articles.writing_status', 1)
+        ->where('article_details.label', 'article_review_writer');
 
         if ($request->startDate != null || $request->endDate != null) {
             $this->articles = $this->articles->whereBetween(\DB::raw('DATE(articles.`writing_deadline`)'), [$this->startDate, $this->endDate]);
@@ -197,20 +193,20 @@ class AdminArticleController extends AdminBaseController
             $this->articles = $this->articles->where('articles.id', 'LIKE', '%' . $request->q . '%')->orWhere('title', 'LIKE', '%' . $request->q . '%')->orWhere('projects.project_name', 'LIKE', '%' . $request->q . '%')->orWhere('users.name', 'LIKE', '%' . $request->q . '%');
         }
 
-        if ($request->type == 'edited') {
-            $this->articles = $this->editable_articles->where('articles.writing_status', 2);
+        if ($request->type == 'editable') {
+            $this->articles = $this->editable_articles;
         }
 
         if ($request->type == 'edited') {
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-                ->select('articles.*', 'article_details.label', 'article_details.value')
-                ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
+            ->select('articles.*', 'article_details.label', 'article_details.value')
+            ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
         }
 
         //Editable articles
         $this->editable_articles = $this->editable_articles->get();
 
-        $this->all_articles = Article::all();
+        $this->all_articles = $this->articles->get();
 
         $this->articles = $this->articles->orderBy($orderBy, $orderType)->paginate($paginate);
 

@@ -339,7 +339,7 @@
     <div class="tab-content">
         <div class="tab-pane fade in active" id="tab1">
             <div class="row">
-                <div class="col-sm-4 m-b-10">
+                <div class="col-md-12 m-b-10">
                     <div class="rating-block">
                         <h4>Average rating</h4>
                         <h2 class="bold padding-bottom-7">{{number_format($rating, 2)}} <small>/ 5</small></h2>
@@ -360,7 +360,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="col-sm-8 m-b-10">
+                <div class="col-md-12 m-b-10">
                     <div class="rating-block row">
                         <h5 class="box-title">@lang('app.selectDateRange')</h5>
                         <div class="input-daterange input-group" id="date-range">
@@ -380,6 +380,21 @@
                         <div class="col-md-3 p-20">
                             Words/Day (Avg.): <span id="rangeDayWor" class="badge badge-info badge-lg">{{number_format($range_words/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
                         </div>
+                        @if(isset($range_earticles))
+                        <h4 class="box-title col-md-12">Edited Articles</h4>
+                        <div class="col-md-3 p-20">
+                            Word Count: <span id="rangeEwords" class="badge badge-info badge-lg">{{$range_ewords}}</span>
+                        </div>
+                        <div class="col-md-3 p-20">
+                            Article Count: <span id="rangeEarticles" class="badge badge-info badge-lg">{{count($range_earticles)}}</span>
+                        </div>
+                        <div class="col-md-3 p-20">
+                            Articles/Day (Avg.): <span id="rangeDayEart" class="badge badge-info badge-lg">{{number_format($range_earticles->count()/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
+                        </div>
+                        <div class="col-md-3 p-20">
+                            Words/Day (Avg.): <span id="rangeDayEwor" class="badge badge-info badge-lg">{{number_format($range_ewords/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -484,7 +499,7 @@
                         <th class="info">Availability Status</th>
                         <td>
                             <div class="form-group">
-                                @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin'))
+                                @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', $writerHeadAssistant)))
                                 <label class="switch">
                                     <input type="checkbox" id="unavailableWriter" {{$writer->unavailable ? 'checked' : ''}}>
                                     <span class="slider round"></span>
@@ -500,7 +515,7 @@
                                 </p>
                             </div>
 
-                            @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin'))
+                            @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', $writerHeadAssistant)))
                             <div class="form-group" id="unavailableNote" style="display: none;">
                                 <textarea class="form-control" placeholder="Write a note for unavailability"></textarea>
                                 <br>
@@ -679,9 +694,8 @@
     $(document).ready(function() {
         $(".btn-pref .btn").click(function () {
             $(".btn-pref .btn").removeClass("btn-info").addClass("btn-default");
-    // $(".tab").addClass("active"); // instead of this do the below 
-    $(this).removeClass("btn-default").addClass("btn-info");   
-});
+            $(this).removeClass("btn-default").addClass("btn-info");   
+        });
     });
 
     $('#UpdateRate').click(function(){
@@ -844,6 +858,14 @@ $('.input-daterange').change(function(){
             $('#rangeArticles').html(response.articles.length);
             $('#rangeDayArt').html((response.articles.length/response.days).toFixed(1));
             $('#rangeDayWor').html((response.words/response.days).toFixed(1));
+
+            //For edited articles
+            if (response.earticles !== 'undefined') {
+                $('#rangeEwords').html(response.ewords);
+                $('#rangeEarticles').html(response.earticles.length);
+                $('#rangeDayEart').html((response.earticles.length/response.days).toFixed(1));
+                $('#rangeDayEwor').html((response.ewords/response.days).toFixed(1));
+            }
         }
     });
 })
