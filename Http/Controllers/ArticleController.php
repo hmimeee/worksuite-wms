@@ -1006,7 +1006,7 @@ class ArticleController extends MemberBaseController
 
         $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count()/2));
 
-        return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days, 'earticles' => $edited_articles, 'ewords' => $ewords]);
+        return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days, 'earticles' => $edited_articles ?? [], 'ewords' => $ewords ?? []]);
     }
 
     public function writerPaymentDetails($id)
