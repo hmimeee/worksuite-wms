@@ -107,13 +107,13 @@ class ArticleController extends MemberBaseController
         $this->endDate = $request->endDate ?? Carbon::today()->addDays(15)->format('Y-m-d');
 
         $this->articles = Article::join('projects', 'projects.id', '=', 'articles.project_id')
-        ->join('users', 'users.id', '=', 'articles.assignee')
-        ->select('articles.*', 'projects.project_name', 'users.name');
+            ->join('users', 'users.id', '=', 'articles.assignee')
+            ->select('articles.*', 'projects.project_name', 'users.name');
 
         //Editable articles
         $this->editable_articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-        ->select('articles.*', 'article_details.label', 'article_details.value')
-        ->where('article_details.label', 'article_review_writer');
+            ->select('articles.*', 'article_details.label', 'article_details.value')
+            ->where('article_details.label', 'article_review_writer');
 
         if ($request->startDate != null || $request->endDate != null) {
             $this->articles = $this->articles->whereBetween(\DB::raw('DATE(articles.`writing_deadline`)'), [$this->startDate, $this->endDate]);
@@ -155,7 +155,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->where('working_status', null);
         }
 
-        if ($type == "writingStarted") { 
+        if ($type == "writingStarted") {
             $this->articles = $this->articles->where('working_status', 1)->where('writing_status', 0);
         }
 
@@ -235,10 +235,10 @@ class ArticleController extends MemberBaseController
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
                 ->select('articles.*', 'article_details.label', 'article_details.value')
                 ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2)->where('article_details.value', auth()->id());
-        } elseif(auth()->user()->hasRole('admin')) {
+        } elseif (auth()->user()->hasRole('admin')) {
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-            ->select('articles.*', 'article_details.label', 'article_details.value')
-            ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
+                ->select('articles.*', 'article_details.label', 'article_details.value')
+                ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
         }
 
         //Editable articles
@@ -938,14 +938,14 @@ class ArticleController extends MemberBaseController
 
         if ($id == $this->defaulEditor) {
             $this->range_earticles = Article::where('writing_status', 2)
-            ->whereHas('reviewWriter', function ($q) use ($id) {
-                return $q->where('value', $id);
-            })
-            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
-                return $q->where('label', 'article_review')
-                ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
-            })
-            ->get();
+                ->whereHas('reviewWriter', function ($q) use ($id) {
+                    return $q->where('value', $id);
+                })
+                ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+                    return $q->where('label', 'article_review')
+                        ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+                })
+                ->get();
 
             $this->range_ewords = 0;
             foreach ($this->range_earticles as $eart) {
@@ -962,36 +962,35 @@ class ArticleController extends MemberBaseController
         $endDate = Carbon::create(request()->endDate)->endOfDay();
         $holidays = Holiday::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])->get();
         $leaves = Leave::where('user_id', $id)
-        ->where('duration', '<>', 'half day')
-        ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-        ->get();
+            ->where('duration', '<>', 'half day')
+            ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get();
         $halfleaves = Leave::where('user_id', $id)
-        ->where('duration', 'half day')
-        ->whereBetween('leave_date', [ $startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-        ->get();
+            ->where('duration', 'half day')
+            ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get();
 
         $articles = Article::where('assignee', $id)
-        ->where('writing_status', 2)
-        ->whereHas('logs', function ($q) use ($startDate, $endDate) {
-            return $q->where('label', 'article_writing_status')
-            ->where(function($q){
-                return $q->where('details', 'submitted the article for approval.')
-                ->orWhere('details', 'submitted the article for approval and waiting for review.');
+            ->where('writing_status', 2)
+            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+                return $q->where(function ($q) {
+                    return $q->where('details', 'submitted the article for approval.')
+                        ->orWhere('details', 'submitted the article for approval and waiting for review.');
+                })
+                    ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
             })
-            ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
-        })
-        ->get();
+            ->get();
 
         if ($id == $this->defaulEditor) {
             $edited_articles = Article::where('writing_status', 2)
-            ->whereHas('reviewWriter', function ($q) use ($id) {
-                return $q->where('value', $id);
-            })
-            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
-                return $q->where('label', 'article_review')
-                ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
-            })
-            ->get();
+                ->whereHas('reviewWriter', function ($q) use ($id) {
+                    return $q->where('value', $id);
+                })
+                ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+                    return $q->where('label', 'article_review')
+                        ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+                })
+                ->get();
 
             $ewords = 0;
             foreach ($edited_articles as $eart) {
@@ -1004,7 +1003,7 @@ class ArticleController extends MemberBaseController
             $words = $words + $article->word_count;
         }
 
-        $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count()/2));
+        $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count() / 2));
 
         return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days, 'earticles' => $edited_articles ?? [], 'ewords' => $ewords ?? []]);
     }

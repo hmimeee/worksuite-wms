@@ -35,12 +35,12 @@ class Article extends Model
 
     public function files()
     {
-    	return $this->hasMany(ArticleFile::class, 'article_id');
+        return $this->hasMany(ArticleFile::class, 'article_id');
     }
 
     public function comments()
     {
-    	return $this->hasMany(ArticleComment::class, 'article_id');
+        return $this->hasMany(ArticleComment::class, 'article_id');
     }
 
     public function task()
@@ -65,8 +65,10 @@ class Article extends Model
 
     public function completedLog()
     {
-        return $this->logs()->where('details', 'submitted the article for approval.')
-        ->orWhere('details', 'submitted the article for approval and waiting for review.');
+        return $this->logs()->where(function ($q) {
+            return $q->where('details', 'submitted the article for approval.')
+                ->orWhere('details', 'submitted the article for approval and waiting for review.');
+        });
     }
 
     public function details()
@@ -93,5 +95,4 @@ class Article extends Model
     {
         return $this->hasOne(ArticleDetails::class)->where('label', 'article_review_status');
     }
-
 }

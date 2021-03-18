@@ -172,7 +172,7 @@
                         </td>
                         <td>
                             <span>
-                                {{$article->completedLog->first()}}
+                                {{$article->completedLog->first()->created_at->format('d M Y')}}
                             </span>
                         </td>
                     </tr>
