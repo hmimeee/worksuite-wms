@@ -15,18 +15,18 @@ use Carbon\Carbon;
 
 class AdminReportController extends AdminBaseController
 {
- public function __construct()
- {
-    $this->middleware(['auth','role:admin']);
-    parent::__construct();
-    $this->pageTitle = 'Article Reports';
-    $this->pageIcon = 'ti-stats-up';
-    $this->user = auth()->user();
-    $this->writerRole = ArticleSetting::where('type', 'writer')->first()->value;
-    $this->inhouseWriterRole = ArticleSetting::where('type', 'inhouse_writer')->first()->value;
-    $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value;
-    $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value;
-}
+    public function __construct()
+    {
+        $this->middleware(['auth', 'role:admin']);
+        parent::__construct();
+        $this->pageTitle = 'Article Reports';
+        $this->pageIcon = 'ti-stats-up';
+        $this->user = auth()->user();
+        $this->writerRole = ArticleSetting::where('type', 'writer')->first()->value;
+        $this->inhouseWriterRole = ArticleSetting::where('type', 'inhouse_writer')->first()->value;
+        $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value;
+        $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value;
+    }
 
     /**
      * Display a listing of the resource.
@@ -40,21 +40,23 @@ class AdminReportController extends AdminBaseController
         $this->endDate = $endDate->format('Y-m-d');
 
         $this->articles = $articles->where('writing_status', 2)
-        ->whereHas('logs', function ($q) use ($startDate, $endDate) {
-            return $q->where('label', 'article_writing_status')
-            ->where('details', 'submitted the article for approval.')
-            ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
-        });
-        
+            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+                return $q->where(function ($q) {
+                    return $q->where('details', 'submitted the article for approval.')
+                        ->orWhere('details', 'submitted the article for approval and waiting for review.');
+                })
+                ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+            });
+
         if ($request->project != null) {
             $this->articles =  $this->articles->where('project_id', $request->project);
         }
 
         if ($request->writer != null) {
             $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_user.role_id')
-            ->select('users.id')
-            ->where('roles.name', $request->writer)->pluck('users.id');
+                ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                ->select('users.id')
+                ->where('roles.name', $request->writer)->pluck('users.id');
 
             if ($request->writer == $this->inhouseWriterRole) {
                 $writerHead = User::find($this->writerHead)->id;
@@ -79,7 +81,7 @@ class AdminReportController extends AdminBaseController
         $this->cost = 0;
         foreach ($this->articles as $article) {
             $this->words += $article->word_count;
-            $this->cost += ($article->word_count*$article->rate)/1000;
+            $this->cost += ($article->word_count * $article->rate) / 1000;
         }
 
         return view('article::admin.reports', $this->data);
@@ -123,9 +125,9 @@ class AdminReportController extends AdminBaseController
 
         if ($request->writer != null) {
             $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_user.role_id')
-            ->select('users.id')
-            ->where('roles.name', $request->writer)->pluck('users.id');
+                ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                ->select('users.id')
+                ->where('roles.name', $request->writer)->pluck('users.id');
 
             if ($request->writer == $this->inhouseWriterRole) {
                 $writerHead = User::find($this->writerHead)->id;
@@ -145,7 +147,7 @@ class AdminReportController extends AdminBaseController
         $this->cost = 0;
         foreach ($this->articles as $article) {
             $this->words += $article->word_count;
-            $this->cost += ($article->word_count*$article->rate)/1000;
+            $this->cost += ($article->word_count * $article->rate) / 1000;
         }
 
         return view('article::reportPrint', $this->data);
@@ -155,10 +157,10 @@ class AdminReportController extends AdminBaseController
     {
         $this->pageTitle = 'Daily Reports';
         $this->date = $request->date ?? Carbon::now()->format('Y-m-d');
-        $this->submittedArticles = Article::whereHas('logs', function($q){
+        $this->submittedArticles = Article::whereHas('logs', function ($q) {
             return $q->where(function ($query) {
                 return $query->where('details', 'submitted the article for approval.')
-                ->orWhere('details', 'submitted the article for approval and waiting for review.');
+                    ->orWhere('details', 'submitted the article for approval and waiting for review.');
             })->whereDate('created_at', $this->date);
         })->get();
 
@@ -166,18 +168,18 @@ class AdminReportController extends AdminBaseController
 
         $this->approvedArticles = Article::whereHas('logs', function ($q) {
             return $q->whereDate('created_at', $this->date)
-            ->where(function ($query) {
-                return $query->where('details', 'approved the article and transferred for publishing.')
-                ->orWhere('details', 'completed the article review and transferred for publishing..')
-                ->orWhere('details', 'approved the article.');
-            });
+                ->where(function ($query) {
+                    return $query->where('details', 'approved the article and transferred for publishing.')
+                        ->orWhere('details', 'completed the article review and transferred for publishing..')
+                        ->orWhere('details', 'approved the article.');
+                });
         })->get();
 
         $this->approvedArticlesWords = $this->approvedArticles->sum('word_count');
 
         $this->assignedArticles = Article::whereHas('logs', function ($q) {
             return $q->where('details', 'assigned this article.')
-            ->whereDate('created_at', $this->date);
+                ->whereDate('created_at', $this->date);
         })->get();
         $this->assignedArticlesWords = $this->assignedArticles->sum('word_count');
 

@@ -172,7 +172,7 @@
                         </td>
                         <td>
                             <span>
-                                {{$article->logs->where('details', 'submitted the article for approval.')->first()->created_at->format('d M Y')}}
+                                {{$article->completedLog->first()->created_at->format('d M Y')}}
                             </span>
                         </td>
                     </tr>

@@ -63,6 +63,12 @@ class Article extends Model
         return $this->hasMany(ArticleActivityLog::class);
     }
 
+    public function completedLog()
+    {
+        return $this->logs()->where('details', 'submitted the article for approval.')
+        ->orWhere('details', 'submitted the article for approval and waiting for review.');
+    }
+
     public function details()
     {
         return $this->hasMany(ArticleDetails::class);

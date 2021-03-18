@@ -15,17 +15,17 @@ use Carbon\Carbon;
 
 class ReportController extends MemberBaseController
 {
- public function __construct()
- {
-    parent::__construct();
-    $this->pageTitle = 'Article Reports';
-    $this->pageIcon = 'ti-stats-up';
-    $this->user = auth()->user();
-    $this->writerRole = ArticleSetting::where('type', 'writer')->first()->value;
-    $this->inhouseWriterRole = ArticleSetting::where('type', 'inhouse_writer')->first()->value;
-    $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value;
-    $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value;
-}
+    public function __construct()
+    {
+        parent::__construct();
+        $this->pageTitle = 'Article Reports';
+        $this->pageIcon = 'ti-stats-up';
+        $this->user = auth()->user();
+        $this->writerRole = ArticleSetting::where('type', 'writer')->first()->value;
+        $this->inhouseWriterRole = ArticleSetting::where('type', 'inhouse_writer')->first()->value;
+        $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value;
+        $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value;
+    }
 
     /**
      * Display a listing of the resource.
@@ -39,21 +39,23 @@ class ReportController extends MemberBaseController
         $this->endDate = $endDate->format('Y-m-d');
 
         $this->articles = $articles->where('writing_status', 2)
-        ->whereHas('logs', function ($q) use ($startDate, $endDate) {
-            return $q->where('label', 'article_writing_status')
-            ->where('details', 'submitted the article for approval.')
-            ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
-        });
-        
+            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+                return $q->where(function ($q) {
+                    return $q->where('details', 'submitted the article for approval.')
+                        ->orWhere('details', 'submitted the article for approval and waiting for review.');
+                })
+                ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+            });
+
         if ($request->project != null) {
             $this->articles =  $this->articles->where('project_id', $request->project);
         }
 
         if ($request->writer != null) {
             $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_user.role_id')
-            ->select('users.id')
-            ->where('roles.name', $request->writer)->pluck('users.id');
+                ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                ->select('users.id')
+                ->where('roles.name', $request->writer)->pluck('users.id');
 
             if ($request->writer == $this->inhouseWriterRole) {
                 $writerHead = User::find($this->writerHead)->id;
@@ -78,7 +80,7 @@ class ReportController extends MemberBaseController
         $this->cost = 0;
         foreach ($this->articles as $article) {
             $this->words += $article->word_count;
-            $this->cost += ($article->word_count*$article->rate)/1000;
+            $this->cost += ($article->word_count * $article->rate) / 1000;
         }
 
         return view('article::reports', $this->data);
@@ -122,9 +124,9 @@ class ReportController extends MemberBaseController
 
         if ($request->writer != null) {
             $writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_user.role_id')
-            ->select('users.id')
-            ->where('roles.name', $request->writer)->pluck('users.id');
+                ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                ->select('users.id')
+                ->where('roles.name', $request->writer)->pluck('users.id');
 
             if ($request->writer == $this->inhouseWriterRole) {
                 $writerHead = User::find($this->writerHead)->id;
@@ -144,7 +146,7 @@ class ReportController extends MemberBaseController
         $this->cost = 0;
         foreach ($this->articles as $article) {
             $this->words += $article->word_count;
-            $this->cost += ($article->word_count*$article->rate)/1000;
+            $this->cost += ($article->word_count * $article->rate) / 1000;
         }
 
         return view('article::reportPrint', $this->data);
