@@ -136,7 +136,7 @@ class ArticleController extends MemberBaseController
         }
 
         if ($request->project) {
-            $this->articles = $this->articles->where('articles.project_id', $request->project);
+            $this->articles = $this->articles->where('project_id', $request->project);
         }
 
         if ($request->hide == 'on') {
@@ -231,11 +231,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->editable_articles->where('articles.writing_status', 1);
         }
 
-        if ($request->type == 'edited' && !auth()->user()->hasRole('admin')) {
-            $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-                ->select('articles.*', 'article_details.label', 'article_details.value')
-                ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2)->where('article_details.value', auth()->id());
-        } elseif (auth()->user()->hasRole('admin')) {
+        if ($request->type == 'edited') {
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
                 ->select('articles.*', 'article_details.label', 'article_details.value')
                 ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
