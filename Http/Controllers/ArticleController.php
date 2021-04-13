@@ -135,7 +135,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->where('articles.type', $request->category);
         }
 
-        if ($request->project != null) {
+        if ($request->project) {
             $this->articles = $this->articles->where('articles.project_id', $request->project);
         }
 
