@@ -51,20 +51,21 @@ class ArticleFileController extends Controller
             $fileData = $file;
             $filename = $fileData->getClientOriginalName();
             $ext = strtolower(\File::extension($filename));
-            $hashname = md5(microtime()).'.'.$ext;
+            $hashname = md5(microtime());
+            $rename = $this->slugify($hashname) . '.' . $ext;
 
             for ($i = 0; $i < count($articles) ; $i++) {
                 $artfile = ArticleFile::create([
                     'user_id' => auth()->id(),
                     'article_id' => $articles[$i],
                     'filename' => $filename,
-                    'hashname' => $hashname,
+                    'hashname' => $rename,
                     'size' => $fileData->getSize()
                 ]);
                 $artfile->save();
             }
 
-            $fileData->move(public_path('user-uploads/article-files'), $hashname);
+            $fileData->move(public_path('user-uploads/article-files'), $rename);
             $getFile[] = $filename;
             $getFileId[] = $artfile->id;
         }
@@ -156,5 +157,19 @@ class ArticleFileController extends Controller
         $file->delete();
         return Reply::success('File deleted!');
             
+    }
+
+    /**
+     * Make slug from string
+     * 
+     * @param string $text
+     * @return string
+     */
+    public static function slugify(string $text)
+    {
+        $text = preg_replace("/[~`{}.'\"\!\@\#\$\%\^\&\*\(\)\=\+\/\?\>\<\,\[\]\:\;\|\\\]/", "", $text);
+        $text = preg_replace('/\s+/u', '-', trim($text));
+
+        return $text;
     }
 }

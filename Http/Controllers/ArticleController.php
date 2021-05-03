@@ -231,10 +231,10 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->editable_articles->where('articles.writing_status', 1);
         }
 
-        if ($request->type == 'edited') {
+        if ($request->type == 'edited' && !auth()->user()->hasRole('admin')) {
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
                 ->select('articles.*', 'article_details.label', 'article_details.value')
-                ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
+                ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2)->where('article_details.value', auth()->id());
         }
 
         //Editable articles
@@ -691,27 +691,28 @@ class ArticleController extends MemberBaseController
             $article->writing_status = $request->status;
             $article->save();
 
-            if ($request->status == 1) {
-                $result = ArticleDetails::updateOrCreate(
-                    [
-                        'article_id' => $article->id,
-                        'label' => 'article_review_writer',
-                    ],
-                    [
-                        'user_id' => auth()->id(),
-                        'value' => $this->defaulEditor,
-                        'description' => 'assigned the article for review'
-                    ]
-                );
+            // if ($request->status == 1) {
+            //     $result = ArticleDetails::updateOrCreate(
+            //         [
+            //             'article_id' => $article->id,
+            //             'label' => 'article_review_writer',
+            //         ],
+            //         [
+            //             'user_id' => auth()->id(),
+            //             'value' => $this->defaulEditor,
+            //             'description' => 'assigned the article for review'
+            //         ]
+            //     );
 
-                $notifyTo = User::find($this->defaulEditor);
-                Notification::send($notifyTo, new NewArticleReview($article));
-            }
+            //     $notifyTo = User::find($this->defaulEditor);
+            //     Notification::send($notifyTo, new NewArticleReview($article));
+            // }
         }
 
         //Store in log
         if ($request->status == 1) {
-            $message = 'submitted the article for approval and waiting for review.';
+            // $message = 'submitted the article for approval and waiting for review.';
+            $message = 'submitted the article for approval.';
         } elseif ($article->publishing == 1 && $request->status == 2) {
             $message = 'approved the article and transferred for publishing.';
         } elseif ($request->status == 2 && $article->publishing != 1) {

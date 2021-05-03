@@ -101,9 +101,10 @@ class ArticleCommentController extends Controller
             foreach ($files as $file) {
                 $filename = $file->getClientOriginalName();
                 $ext = strtolower(\File::extension($filename));
-                $hashname = str_replace('.'.$ext,'',$filename).'_'.date('dmys').'.'.$ext;
-                $file->move(public_path('user-uploads/temp/'), $hashname);
-                $getFiles[] = $hashname;
+                $hashname = str_replace('.'.$ext,'',$filename).'_'.date('dmys');
+                $rename = $this->slugify($hashname) . '.' . $ext;
+                $file->move(public_path('user-uploads/temp/'), $rename);
+                $getFiles[] = $rename;
             }
 
             $count = count($getFiles);
@@ -183,5 +184,19 @@ class ArticleCommentController extends Controller
         $comment->delete();
 
         return Reply::success('Comment deleted!');
+    }
+
+    /**
+     * Make slug from string
+     * 
+     * @param string $text
+     * @return string
+     */
+    public static function slugify(string $text)
+    {
+        $text = preg_replace("/[~`{}.'\"\!\@\#\$\%\^\&\*\(\)\=\+\/\?\>\<\,\[\]\:\;\|\\\]/", "", $text);
+        $text = preg_replace('/\s+/u', '-', trim($text));
+
+        return $text;
     }
 }
