@@ -163,10 +163,10 @@ a{
             @endif
             @endif
 
-            @if(($article->writing_status ==1 || $article->writing_status ==2) && (auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin')))
+            @if(($article->writing_status ==1 || $article->writing_status ==2) && (auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin') || (!is_null($article->reviewWriter) && $article->reviewWriter->value == auth()->id())))
             <a href="javascript:;" id="inCompletedButton" class="btn btn-danger btn-outline btn-sm m-b-10 btn-rounded"  onclick="markComplete('incomplete')"><i class="fa fa-arrow-left"></i> Return to Writer</a>
             @endif
-            @if($article->writing_status ==2 && ($article->publisher == auth()->user()->id || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin') == 1 || in_array(auth()->id(), explode(',', $publishers))) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
+            @if($article->writing_status ==2 && (auth()->id() == $publisher || $article->publisher == auth()->user()->id || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin') == 1 || in_array(auth()->id(), explode(',', $publishers))) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
             <div class="form-group row m-t-10">
                 <div class="col-md-6">
                     <label class="control-label required" for="publishLink">Publish Link</label>
