@@ -111,7 +111,7 @@ a{
             <a href="javascript:;" id="publishButton" class="btn btn-danger btn-sm m-b-10 btn-rounded btn-outline"  onclick="completePublish('incomplete')" ><i class="fa fa-arrow-left"></i> Return to Publisher</a>
             @endif
 
-            @if($article->writing_status ==2 && ($article->publisher == auth()->user()->id || $writerHead == auth()->id() || auth()->user()->hasRole('admin') == 1 || in_array(auth()->id(), explode(',', $publishers))) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
+            @if($article->writing_status ==2 && (auth()->id() == $publisher || $article->publisher == auth()->user()->id || $writerHead == auth()->id() || auth()->user()->hasRole('admin') == 1 || in_array(auth()->id(), explode(',', $publishers))) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
             <a href="javascript:;" id="publishButton" class="btn btn-success btn-sm m-b-10 btn-rounded"  onclick="completePublish('complete')" ><i class="fa fa-check"></i> Complete Publishing</a>
             @endif
 
