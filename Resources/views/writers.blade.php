@@ -18,15 +18,20 @@
 @endsection
 
 @push('head-script')
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.css') }}">
+<link rel="stylesheet" href="{{ asset('plugins/bower_components/custom-select/custom-select.css') }}">
 <style type="text/css">
-    .pull-left{
-        display: none;
-    }
-    .checked {
-      color: orange;
-  }
-  a{
+.pull-left{
+    display: none;
+}
+.checked {
+    color: orange;
+}
+a{
     font-weight: 600;
+}
+.sorting:after {
+    display: none;
 }
 </style>
 @endpush
@@ -36,6 +41,37 @@
 <div class="row dashboard-stats">
     <div class="col-md-12">
         <div class="white-box">
+            @section('filter-section')
+            <form>
+                <div class="row">
+                    <div class="col-md-12 p-t-10">
+                        <h5 class="box-title">Status</h5>
+                        <select class="select2 form-control" name="status" id="status">
+                            <option value="all">Select Status</option>
+                            <option value="Available" {{ request()->status == 'Available' ? 'selected' : '' }}>Available</option>
+                            <option value="Unavailable" {{ request()->status == 'Unavailable' ? 'selected' : '' }}>Unavailable</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12 p-t-10">
+                        <h5 class="box-title">Type</h5>
+                        <select class="select2 form-control" name="type" id="type">
+                            <option value="all">Select Type</option>
+                            <option value="Inhouse" {{ request()->type == 'Inhouse' ? 'selected' : '' }}>Inhouse Writers</option>
+                            <option value="Freelance" {{ request()->type == 'Freelance' ? 'selected' : '' }}>Freelance Writers</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12 m-t-15">
+                        <button class="btn btn-success btn-sm pull-right">
+                            <i class="fa fa-check"></i> Submit
+                        </button>
+                        <a href="{{ url()->current() }}" class="btn btn-inverse btn-sm pull-right m-r-5">
+                            <i class="fa fa-check"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+            @endsection
+
             <div class="row">
                 <div class="col-sm-12">
                     <h4>
@@ -76,7 +112,7 @@
                             <th>Pending Articles</th>
                             <th>Completed Articles</th>
                             <th>Words Written</th>
-                            <th>Gender</th>
+                            {{-- <th>Gender</th> --}}
                             <th>Rating</th>
                             <th>Action</th>
                         </tr>
@@ -118,7 +154,7 @@
                                     @endforeach
                                     {{$words}}
                                 </td>
-                                <td>{{ucfirst($writer->gender)}}</td>
+                                {{-- <td>{{ucfirst($writer->gender)}}</td> --}}
                                 <td>
                                     @php($rate = 0)
 
@@ -181,11 +217,21 @@
 @endsection
 
 @push('footer-script')
+<script src="{{ asset('plugins/bower_components/custom-select/custom-select.min.js') }}"></script>
+<script src="{{ asset('plugins/bower_components/bootstrap-select/bootstrap-select.min.js') }}"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
-        $('#writers').addClass('table-striped table-hover table-bordered').DataTable();
+        $('#writers').addClass('table-striped table-hover table-bordered').DataTable({
+            pageLength: 25,
+        });
+
+        $(".select2").select2({
+            formatNoMatches: function () {
+                return "{{ __('messages.noRecordFound') }}";
+            }
+        });
     })
     
     $('#entries').on('change', function(){

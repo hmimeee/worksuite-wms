@@ -208,8 +208,7 @@ class AdminArticleController extends AdminBaseController
 
         $this->all_articles = $this->articles->get();
 
-        // $this->articles = $this->articles->orderBy($orderBy, $orderType)->paginate($paginate);
-        $this->articles = $this->articles->orderBy($orderBy, $orderType)->get();
+        $this->articles = $this->articles->orderBy($orderBy, $orderType)->paginate($paginate);
 
 
         $this->projects = Project::all();
@@ -250,17 +249,29 @@ class AdminArticleController extends AdminBaseController
     {
         $this->pageTitle = 'Article Writers';
         $this->pageIcon = 'ti-user';
+        $writers = Writer::whereHas('roles', function($q){
+                return $q->whereIn('name', [$this->inhouseWriterRole, $this->writerRole]);
+            });
 
-        $this->writers = Writer::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_user.role_id')
-            ->select('users.*')
-            ->where('roles.name', $this->writerRole)
-            ->orWhere('roles.name', $this->inhouseWriterRole)
-            ->with('articles')
-            ->with('rate');
+        if ($request->status == 'Unavailable')
+            $writers = $writers->whereHas('unavailable');
 
-        $this->totalWriters = count($this->writers->get());
-        $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
+        if ($request->status == 'Available')
+            $writers = $writers->whereDoesntHave('unavailable');
+
+        if ($request->type == 'Inhouse')
+            $writers = $writers->whereHas('roles', function($q){
+                return $q->where('name', $this->inhouseWriterRole);
+            });
+
+        if ($request->type == 'Freelance')
+            $writers = $writers->whereHas('roles', function($q){
+                return $q->where('name', $this->writerRole);
+            });
+
+        $this->totalWriters = $writers->count();
+
+        $this->writers = $writers->get();
 
         return view('article::admin.writers', $this->data);
     }

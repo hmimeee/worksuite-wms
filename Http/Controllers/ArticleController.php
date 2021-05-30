@@ -877,23 +877,36 @@ class ArticleController extends MemberBaseController
         $this->pageTitle = 'Article Writers';
         $this->pageIcon = 'ti-user';
         if (auth()->id() == $this->writerHead || auth()->id() == $this->writerHeadAssistant || auth()->user()->hasRole('admin')) {
-            $this->writers = Writer::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
-                ->join('roles', 'roles.id', '=', 'role_user.role_id')
-                ->select('users.*')
-                ->where('roles.name', $this->writerRole)
-                ->orWhere('roles.name', $this->inhouseWriterRole);
-
-            $this->totalWriters = $this->writers->count();
+            $writers = Writer::whereHas('roles', function($q){
+                return $q->whereIn('name', [$this->inhouseWriterRole, $this->writerRole]);
+            });
 
             if ($request->search != null) {
-                $this->writers = $this->writers->where('users.name', $request->search);
+                $writers->where('name', $request->search);
             }
         } else {
-            $this->writers = Writer::where('id', auth()->id());
+            $writers = Writer::where('id', auth()->id());
         }
 
-        $this->writers = $this->writers->get();
-        // $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
+        if ($request->status == 'Unavailable')
+            $writers = $writers->whereHas('unavailable');
+
+        if ($request->status == 'Available')
+            $writers = $writers->whereDoesntHave('unavailable');
+
+        if ($request->type == 'Inhouse')
+            $writers = $writers->whereHas('roles', function($q){
+                return $q->where('name', $this->inhouseWriterRole);
+            });
+
+        if ($request->type == 'Freelance')
+            $writers = $writers->whereHas('roles', function($q){
+                return $q->where('name', $this->writerRole);
+            });
+
+        $this->totalWriters = $writers->count();
+
+        $this->writers = $writers->get();
 
         return view('article::writers', $this->data);
     }
