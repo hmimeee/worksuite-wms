@@ -399,7 +399,7 @@
                     @endif
 
                     <td>
-                        <span class="@if($article->task->due_date->isPast() && $article->writing_status !=2) text-danger @endif">
+                        <span class="@if($article->task && $article->task->due_date->isPast() && $article->writing_status !=2) text-danger @endif">
                             {{$article->task->due_date->format('d M Y')}}
                         </span>
                     </td>
