@@ -224,7 +224,7 @@
                                                         href="{{ route('admin.projects.show', $article->project_id) }}">{{ $article->project->project_name }}</a>
                                                 </td>
                                                 <td>{{ $article->getAssignee->name }}</td>
-                                                <td>{{ $article->reviewWriter->name }}</td>
+                                                <td>{{ \App\User::find($article->reviewWriter->details)->name }}</td>
                                                 <td>{{ $article->word_count }}</td>
                                                 <td>
                                                     <span>
