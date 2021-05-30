@@ -400,7 +400,7 @@
 
                     <td>
                         <span class="@if($article->task && $article->task->due_date->isPast() && $article->writing_status !=2) text-danger @endif">
-                            {{$article->task->due_date->format('d M Y')}}
+                            {{isset($article->task->due_date) ? $article->task->due_date->format('d M Y') : '--'}}
                         </span>
                     </td>
 
