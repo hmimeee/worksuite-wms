@@ -208,7 +208,8 @@ class AdminArticleController extends AdminBaseController
 
         $this->all_articles = $this->articles->get();
 
-        $this->articles = $this->articles->orderBy($orderBy, $orderType)->paginate($paginate);
+        // $this->articles = $this->articles->orderBy($orderBy, $orderType)->paginate($paginate);
+        $this->articles = $this->articles->orderBy($orderBy, $orderType)->get();
 
 
         $this->projects = Project::all();

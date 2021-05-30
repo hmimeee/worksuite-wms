@@ -185,10 +185,9 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
-        $('#writers').addClass('table-striped table-hover table-bordered').DataTable({
-            
-        });
+        $('#writers').addClass('table-striped table-hover table-bordered').DataTable();
     })
+    
     $('#entries').on('change', function(){
         var url = '{{route('member.article.writers')}}?{{request()->entries ? 'entries=:entries' : ''}}';
 

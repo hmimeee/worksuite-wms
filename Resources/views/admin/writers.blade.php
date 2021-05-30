@@ -52,7 +52,7 @@
                     <span class="font-12 text-muted m-l-5"> @lang('article::app.totalwriters')</span>
                 </h4>
             </div>
-            <div class="col-md-3 m-b-5"> 
+            {{-- <div class="col-md-3 m-b-5"> 
                 Show 
                 <select id="entries" class="form-control" style="width: 50%; display: inline;">
                     <option selected>{{request()->entries ? request()->entries : '...'}}</option>
@@ -62,11 +62,11 @@
                     <option @if(request()->entries == 100) selected @endif>100</option>
                 </select>
                 entries
-            </div>
+            </div> --}}
         </div>
 
         <div class="row el-element-overlay">
-            <table class="table table-bordered table-hover">
+            <table class="table table-bordered table-hover" id="writers">
                 <thead>
                     <tr role="row">
                         <th>#</th>
@@ -84,7 +84,7 @@
                     </tr>
                 </thead>
                 <tbody id="list">
-                    @forelse ($writers as $writer)
+                    @foreach ($writers as $writer)
                     <tr role="row" class="odd">
                         <td>{{$writer->id}}</td>
                         <td>
@@ -161,19 +161,8 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8">
-                            No data found!
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
-                <tfoot style="border: 0px !important;">
-                    <tr align="right" style="border: 0px !important;">
-                        <td colspan="10" style="border: 0px !important;"> {{$writers->appends(['entries' => request('entries')])->render()}} </td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -195,7 +184,12 @@
 @endsection
 
 @push('footer-script')
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
 <script type="text/javascript">
+    $(document).ready(function(){
+        $('#writers').addClass('table-striped table-hover table-bordered').DataTable();
+    })
 
     $('#entries').on('change', function(){
         var url = '{{route('admin.article.writers')}}?{{request()->entries ? 'entries=:entries' : ''}}';
