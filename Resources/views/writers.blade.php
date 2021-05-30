@@ -43,7 +43,7 @@
                         <span class="font-12 text-muted m-l-5"> @lang('article::app.totalwriters')</span>
                     </h4>
                 </div>
-                <div class="col-md-2 m-b-5"> 
+                {{-- <div class="col-md-2 m-b-5"> 
                     Show 
                     <select id="entries" class="form-control" style="width: 50%; display: inline;">
                         <option selected>{{request()->entries ? request()->entries : '...'}}</option>
@@ -53,7 +53,7 @@
                         <option @if(request()->entries == 100) selected @endif>100</option>
                     </select>
                     entries
-                </div>
+                </div> --}}
                 <!-- <div class="col-md-8">
                 </div>
                 <div class="col-md-2" align="right">
@@ -63,8 +63,8 @@
                 </div> -->
             </div>
 
-            <div class="row el-element-overlay">
-                <table class="table table-bordered table-hover m-l-10">
+            <div class="row el-element-overlay p-5 m-t-5">
+                <table class="table table-bordered table-hover m-l-10" id="writers">
                     <thead>
                         <tr role="row">
                             <th>#</th>
@@ -82,95 +82,84 @@
                         </tr>
                     </thead>
                     <tbody id="list">
-                        @forelse ($writers as $writer)
-                        <tr role="row" class="odd">
-                            <td>{{$writer->id}}</td>
-                            <td>
-                                <a href="javascript:;" onclick="viewWriter('{{$writer->id}}')">{{$writer->name}}</a> @if($writer->leaves()->where('leave_dates', 'LIKE', '%'.date('Y-m').'%')->count() > 0)
-                                <span class="label label-danger">Leaves taken</span>
+                        @foreach ($writers as $writer)
+                            <tr role="row" class="odd">
+                                <td>{{$writer->id}}</td>
+                                <td>
+                                    <a href="javascript:;" onclick="viewWriter('{{$writer->id}}')">{{$writer->name}}</a> @if($writer->leaves()->where('leave_dates', 'LIKE', '%'.date('Y-m').'%')->count() > 0)
+                                    <span class="label label-danger">Leaves taken</span>
+                                    @endif
+                                    @if($writer->unavailable)
+                                    <span class="label label-danger">Unavailable</span>
+                                    @endif
+                                </td>
+                                <td>{{App\Role::find($writer->role->last()->role_id)->display_name}}</td>
+                                @if(!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
+                                <td>{{$writer->rate ? $writer->rate->rate : '--'}}</td>
                                 @endif
-                                @if($writer->unavailable)
-                                <span class="label label-danger">Unavailable</span>
-                                @endif
-                            </td>
-                            <td>{{App\Role::find($writer->role->last()->role_id)->display_name}}</td>
-                            @if(!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
-                            <td>{{$writer->rate ? $writer->rate->rate : '--'}}</td>
-                            @endif
-                            <td>
-                                @php
-                                $pending = $writer->articles->where('writing_status', 0);
-                                $count = count($pending);
-                                @endphp
-                                {{count($pending)}}
-                            </td>
-                            <td>
-                                @php
-                                $completed = $writer->articles->where('writing_status', 2);
-                                $count = count($completed);
-                                @endphp
-                                {{count($completed)}}
-                            </td>
-                            <td>
-                                @php($words = 0)
-                                @foreach ($completed as $article)
-                                @php($words += $article->word_count)
-                                @endforeach
-                                {{$words}}
-                            </td>
-                            <td>{{ucfirst($writer->gender)}}</td>
-                            <td>
-                                @php($rate = 0)
+                                <td>
+                                    @php
+                                    $pending = $writer->articles->where('writing_status', 0);
+                                    $count = count($pending);
+                                    @endphp
+                                    {{count($pending)}}
+                                </td>
+                                <td>
+                                    @php
+                                    $completed = $writer->articles->where('writing_status', 2);
+                                    $count = count($completed);
+                                    @endphp
+                                    {{count($completed)}}
+                                </td>
+                                <td>
+                                    @php($words = 0)
+                                    @foreach ($completed as $article)
+                                    @php($words += $article->word_count)
+                                    @endforeach
+                                    {{$words}}
+                                </td>
+                                <td>{{ucfirst($writer->gender)}}</td>
+                                <td>
+                                    @php($rate = 0)
 
-                                @foreach ($completed as $article)
-                                @php($rate += $article->rating)
-                                @endforeach
+                                    @foreach ($completed as $article)
+                                    @php($rate += $article->rating)
+                                    @endforeach
 
-                                @if ($rate !=0)
-                                ({{number_format($rate/$count, 2)}}) - 
-                                @for($i=0; $i < round($rate/$count); $i++)
-                                <span class="fa fa-star checked"></span>
-                                @endfor
+                                    @if ($rate !=0)
+                                    ({{number_format($rate/$count, 2)}}) - 
+                                    @for($i=0; $i < round($rate/$count); $i++)
+                                    <span class="fa fa-star checked"></span>
+                                    @endfor
 
-                                @for($i=$i; $i < 5; $i++)
-                                <span class="fa fa-star"></span>
-                                @endfor
+                                    @for($i=$i; $i < 5; $i++)
+                                    <span class="fa fa-star"></span>
+                                    @endfor
 
-                                @else
-                                (0) - 
-                                @for($i=0; $i < 5; $i++)
-                                <span class="fa fa-star"></span>
-                                @endfor
-                                @endif
-                            </td>
-                            <td class=" text-center">
-                                <div class="btn-group dropdown m-r-10">
-                                    <button aria-expanded="false" data-toggle="dropdown" class="btn dropdown-toggle waves-effect waves-light" type="button"><i class="ti-more"></i></button>
-                                    <ul role="menu" class="dropdown-menu pull-right">
-                                        <li><a href="javascript:;" onclick="viewWriter('{{$writer->id}}')"><i class="fa fa-search" aria-hidden="true"></i> View</a></li>
-                                        @if(auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
-                                        <li><a href="{{ route('member.employees.edit', $writer->id) }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a></li>
-                                        @endif
-                                        @if(auth()->user()->hasRole('admin'))
-                                        <li><a href="javascript:;"  data-user-id="{{$writer->id}}" class="sa-params"><i class="fa fa-times" aria-hidden="true"></i> Delete</a></li>
-                                        @endif
-                                    </ul> 
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8">
-                                No data found!
-                            </td>
-                        </tr>
-                        @endforelse
+                                    @else
+                                    (0) - 
+                                    @for($i=0; $i < 5; $i++)
+                                    <span class="fa fa-star"></span>
+                                    @endfor
+                                    @endif
+                                </td>
+                                <td class=" text-center">
+                                    <div class="btn-group dropdown m-r-10">
+                                        <button aria-expanded="false" data-toggle="dropdown" class="btn dropdown-toggle waves-effect waves-light" type="button"><i class="ti-more"></i></button>
+                                        <ul role="menu" class="dropdown-menu pull-right">
+                                            <li><a href="javascript:;" onclick="viewWriter('{{$writer->id}}')"><i class="fa fa-search" aria-hidden="true"></i> View</a></li>
+                                            @if(auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
+                                            <li><a href="{{ route('member.employees.edit', $writer->id) }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a></li>
+                                            @endif
+                                            @if(auth()->user()->hasRole('admin'))
+                                            <li><a href="javascript:;"  data-user-id="{{$writer->id}}" class="sa-params"><i class="fa fa-times" aria-hidden="true"></i> Delete</a></li>
+                                            @endif
+                                        </ul> 
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
-                    <tfoot style="border: 0px !important;">
-                        <tr align="right" style="border: 0px !important;">
-                            <td colspan="10" style="border: 0px !important;"> {{$writers->appends(['entries' => request('entries'), 'search' => request('search')])->render()}} </td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
@@ -192,8 +181,14 @@
 @endsection
 
 @push('footer-script')
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
 <script type="text/javascript">
-
+    $(document).ready(function(){
+        $('#writers').addClass('table-striped table-hover table-bordered').DataTable({
+            
+        });
+    })
     $('#entries').on('change', function(){
         var url = '{{route('member.article.writers')}}?{{request()->entries ? 'entries=:entries' : ''}}';
 

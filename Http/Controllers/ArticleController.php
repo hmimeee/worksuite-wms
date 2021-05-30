@@ -634,10 +634,13 @@ class ArticleController extends MemberBaseController
      * @param int $id
      * @return Response
      */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, $id, $status)
     {
+        if(!is_numeric($status))
+        return Reply::error('Invalid status value!');
+
         $article = Article::find($id);
-        if ($article->publishing == 1 && $request->status == 2) {
+        if ($article->publishing == 1 && $status == 2) {
             if ($request->deadline != null && $request->wordCount != '') {
                 $article->writing_status = 2;
                 $article->word_count = $request->wordCount;
@@ -669,29 +672,35 @@ class ArticleController extends MemberBaseController
             } else {
                 return Reply::error('Please fill up all the fields!');
             }
-        } elseif ($request->status == 2 && $article->publishing != 1) {
+        } elseif ($status == 2 && $article->publishing != 1) {
             if ($request->wordCount == null && $request->rating == null) {
                 return Reply::error('Please fill up all the fields!');
             }
             $article->word_count = $request->wordCount;
-            $article->writing_status = $request->status;
+            $article->writing_status = $status;
             $article->rating = $request->rating;
             $article->save();
         } else {
-            if ($request->status == 0 && $article->invoice) {
+            if ($status == 0 && $article->invoice) {
                 return Reply::error('The article has a payslip, can\'t return after generating payslip!');
             }
 
-            if ($request->status == 1) {
+            if ($status == 1) {
                 $comment = $article->comments()->first();
                 if ($comment == null) {
                     return Reply::error('Please attach your worked files or write a comment first!');
                 }
+                
+                // if(!$request->submittedWordCount || !is_numeric($request->submittedWordCount)) {
+                //     return Reply::error('Please enter word count first!');
+                // }
+
+                // $article->submitted_words = $request->submittedWordCount;
             }
-            $article->writing_status = $request->status;
+            $article->writing_status = $status;
             $article->save();
 
-            // if ($request->status == 1) {
+            // if ($status == 1) {
             //     $result = ArticleDetails::updateOrCreate(
             //         [
             //             'article_id' => $article->id,
@@ -710,14 +719,14 @@ class ArticleController extends MemberBaseController
         }
 
         //Store in log
-        if ($request->status == 1) {
+        if ($status == 1) {
             // $message = 'submitted the article for approval and waiting for review.';
             $message = 'submitted the article for approval.';
-        } elseif ($article->publishing == 1 && $request->status == 2) {
+        } elseif ($article->publishing == 1 && $status == 2) {
             $message = 'approved the article and transferred for publishing.';
-        } elseif ($request->status == 2 && $article->publishing != 1) {
+        } elseif ($status == 2 && $article->publishing != 1) {
             $message = 'approved the article.';
-        } elseif ($request->status == 0) {
+        } elseif ($status == 0) {
             $message = 'returned the article for review.';
         }
         ArticleActivityLog::create([
@@ -729,13 +738,13 @@ class ArticleController extends MemberBaseController
         ]);
 
 
-        if ($request->status == 1) {
+        if ($status == 1) {
             $notifyTo = User::find([$this->writerHead, $this->writerHeadAssistant]);
             Notification::send($notifyTo, new ArticleWritingComplete($article));
-        } elseif ($request->status == 2) {
+        } elseif ($status == 2) {
             $notifyTo = Writer::find($article->assignee);
             Notification::send($notifyTo, new ArticleWritingApprove($article));
-        } elseif ($request->status == 0) {
+        } elseif ($status == 0) {
             $notifyTo = Writer::find($article->assignee);
             Notification::send($notifyTo, new ArticleWritingReturn($article));
         }
@@ -883,7 +892,8 @@ class ArticleController extends MemberBaseController
             $this->writers = Writer::where('id', auth()->id());
         }
 
-        $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
+        $this->writers = $this->writers->get();
+        // $this->writers = $this->writers->paginate(is_numeric($request->entries) ? $request->entries : 10);
 
         return view('article::writers', $this->data);
     }
@@ -912,12 +922,23 @@ class ArticleController extends MemberBaseController
             $this->rating += $article['rating'] / count($this->articles->where('writing_status', 2));
         }
 
-        request()->startDate = now()->subDays(30)->format('Y-m-d');
-        request()->endDate = now()->format('Y-m-d');
+        $startDate = request()->startDate ? Carbon::create(request()->startDate) : now()->startOfMonth();
+        $endDate = request()->endDate ? Carbon::create(request()->endDate) : now();
 
-        $startDate = Carbon::create(request()->startDate)->startOfDay();
-        $endDate = Carbon::create(request()->endDate)->endOfDay();
-        $this->range_articles = Article::where('assignee', $id)
+        request()->startDate = $startDate->format('Y-m-d');
+        request()->endDate = $endDate->format('Y-m-d');
+
+        $holidays = Holiday::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])->get();
+        $leaves = Leave::where('user_id', $id)
+            ->where('duration', '<>', 'half day')
+            ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get();
+        $halfleaves = Leave::where('user_id', $id)
+            ->where('duration', 'half day')
+            ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get();
+
+        $this->articles = Article::where('assignee', $id)
             ->whereHas('logs', function ($q) use ($startDate, $endDate) {
                 return $q->where('label', 'article_writing_status')
                     ->where(function ($q) {
@@ -929,12 +950,12 @@ class ArticleController extends MemberBaseController
             ->get();
 
         $this->range_words = 0;
-        foreach ($this->range_articles as $article) {
+        foreach ($this->articles as $article) {
             $this->range_words = $this->range_words + $article->word_count;
         }
 
-        if ($id == $this->defaulEditor) {
-            $this->range_earticles = Article::where('writing_status', 2)
+        if ($this->writer->hasRole('Inhouse_writer')) {
+            $this->edited_articles = Article::where('writing_status', 2)
                 ->whereHas('reviewWriter', function ($q) use ($id) {
                     return $q->where('value', $id);
                 })
@@ -944,19 +965,22 @@ class ArticleController extends MemberBaseController
                 })
                 ->get();
 
-            $this->range_ewords = 0;
-            foreach ($this->range_earticles as $eart) {
-                $this->range_ewords = $this->range_ewords + $eart->word_count;
+            $this->edited_words = 0;
+            foreach ($this->edited_articles as $eart) {
+                $this->edited_words += $eart->word_count;
             }
         }
+
+        $this->days = $startDate->diffInDays($endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count() / 2));
 
         return view('article::writerView', $this->data);
     }
 
     public function writerStats($id)
     {
-        $startDate = Carbon::create(request()->startDate)->startOfDay();
-        $endDate = Carbon::create(request()->endDate)->endOfDay();
+        $startDate = request()->startDate ? Carbon::create(request()->startDate) : now()->startOfMonth();
+        $endDate = request()->endDate ? Carbon::create(request()->endDate) : now();
+        $writer = Writer::find($id);
         $holidays = Holiday::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])->get();
         $leaves = Leave::where('user_id', $id)
             ->where('duration', '<>', 'half day')
@@ -968,7 +992,6 @@ class ArticleController extends MemberBaseController
             ->get();
 
         $articles = Article::where('assignee', $id)
-            ->where('writing_status', 2)
             ->whereHas('logs', function ($q) use ($startDate, $endDate) {
                 return $q->where(function ($q) {
                     return $q->where('details', 'submitted the article for approval.')
@@ -978,7 +1001,7 @@ class ArticleController extends MemberBaseController
             })
             ->get();
 
-        if ($id == $this->defaulEditor) {
+        if ($writer->hasRole('Inhouse_writer')) {
             $edited_articles = Article::where('writing_status', 2)
                 ->whereHas('reviewWriter', function ($q) use ($id) {
                     return $q->where('value', $id);
@@ -1000,9 +1023,15 @@ class ArticleController extends MemberBaseController
             $words = $words + $article->word_count;
         }
 
-        $days = Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count() / 2));
+        $days = $startDate->diffInDays($endDate) - ($holidays->count() + $leaves->count() + ($halfleaves->count() / 2));
 
-        return Reply::dataOnly(['articles' => $articles, 'words' => $words, 'days' => $days, 'earticles' => $edited_articles ?? [], 'ewords' => $ewords ?? []]);
+        return Reply::dataOnly([
+            'articles' => $articles,
+            'words' => $words,
+            'days' => $days,
+            'earticles' => $edited_articles ?? [],
+            'ewords' => $ewords ?? 0
+            ]);
     }
 
     public function writerPaymentDetails($id)

@@ -16,7 +16,9 @@ use App\Project;
 class Article extends Model
 {
     protected $table = 'articles';
-    protected $guarded = [];
+    protected $guarded = [
+        'id'
+    ];
 
     public function getAssignee()
     {

@@ -123,9 +123,15 @@ a{
             <a href="javascript:;" id="completedButton" class="btn btn-success btn-sm m-b-10 btn-rounded"  onclick="markComplete('complete')" ><i class="fa fa-check"></i> Submit for Approval</a>
             @endif
 
+            {{-- @if($article->working_status !=null && $article->writing_status ==0 && ($article->assignee == auth()->id() || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin')))
+                <div class="col-md-2 col-sm-12">
+                    <input type="number" name="submittedWordCount" id="submittedWordCount" class="form-control" placeholder="Word Count">
+                </div>
+            @endif --}}
+
             @if($article->writing_status ==1 && (is_null($article->reviewStatus) || $article->reviewStatus->value != 'completed') && (!is_null($article->reviewWriter) && ($article->reviewWriter->value == auth()->id() || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin'))))
             <a href="javascript:;" class="btn btn-success btn-sm m-b-10 btn-rounded pull-left m-r-5"  onclick="reviewStatus('completed')"><i class="fa fa-check"></i> Review Complete</a>
-            
+
             @if(is_null($article->reviewStatus) || $article->reviewStatus->value !='completed')
             <div class="form-group row m-l-5">
                 <div class="col-md-2 col-sm-12 p-l-30" style="margin-top: -6px;">
@@ -799,6 +805,15 @@ function markComplete(status) {
     } else {
         var url = "{{ route('member.article.updateStatus',['id' => ':id', 'status' => ':status']) }}";
         var url = url.replace(':id', id).replace(':status', status);
+        // if(status === 1){
+        //     let words = $('#submittedWordCount').val();
+        //     if(!words){
+        //         $.showToastr('Please enter word count!', 'error');
+        //         return false;
+        //     }
+        //     url = url+'?submittedWordCount='+words;
+        // }
+        
         $.easyAjax({
             type: 'POST',
             url: url,

@@ -10,7 +10,7 @@
 @endif
 
 @if(auth()->id() == writer_head_assistant || auth()->id() == writer_head || auth()->id() == publisher || auth()->user()->hasRole('admin') || auth()->user()->hasRole(writer) || auth()->user()->hasRole(inhouse_writer) || auth()->id() == outreach_head || in_array(auth()->id(), explode(',', team_leaders ?? '1')) || in_array(auth()->id(), explode(',', publishers)))
-<li><a href="javascript:;" class="waves-effect"><i class="ti-pencil"></i> <span class="hide-menu"> @lang('article::app.menu.article')<span class="frow"></span> </span></a>
+<li><a href="javascript:;" class="waves-effect"><i class="ti-pencil"></i> <span class="hide-menu"> @lang('article::app.menu.article') <span class="fa arrow"></span></span></a>
 	<ul class="nav nav-second-level collapse">
 		<li><a href="{{is_null(route('member.article.index')) ? 'javascript:;' : route('member.article.index')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.articles')</span></a>

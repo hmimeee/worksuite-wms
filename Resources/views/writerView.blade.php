@@ -361,41 +361,50 @@
                     </div>
                 </div>
                 <div class="col-md-12 m-b-10">
-                    <div class="rating-block row">
+                    <div class="rating-block">
                         <h5 class="box-title">@lang('app.selectDateRange')</h5>
                         <div class="input-daterange input-group" id="date-range">
                             <input type="text" name="startDate" class="form-control" id="startDate"  placeholder="@lang('app.startDate')" value="{{request()->startDate}}" />
                             <span class="input-group-addon bg-info b-0 text-white">@lang('app.to')</span>
                             <input type="text" name="endDate" class="form-control" id="endDate" placeholder="@lang('app.endDate')" value="{{request()->endDate}}" />
                         </div>
-                        <div class="col-md-3 p-20">
-                            Word Count: <span id="rangeWords" class="badge badge-info badge-lg">{{$range_words}}</span>
-                        </div>
-                        <div class="col-md-3 p-20">
-                            Article Count: <span id="rangeArticles" class="badge badge-info badge-lg">{{count($range_articles)}}</span>
-                        </div>
-                        <div class="col-md-3 p-20">
-                            Articles/Day (Avg.): <span id="rangeDayArt" class="badge badge-info badge-lg">{{number_format($range_articles->count()/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
-                        </div>
-                        <div class="col-md-3 p-20">
-                            Words/Day (Avg.): <span id="rangeDayWor" class="badge badge-info badge-lg">{{number_format($range_words/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
-                        </div>
-                        @if(isset($range_earticles))
-                        <h4 class="box-title col-md-12">Edited Articles</h4>
-                        <div class="col-md-3 p-20">
-                            Word Count: <span id="rangeEwords" class="badge badge-info badge-lg">{{$range_ewords}}</span>
-                        </div>
-                        <div class="col-md-3 p-20">
-                            Article Count: <span id="rangeEarticles" class="badge badge-info badge-lg">{{count($range_earticles)}}</span>
-                        </div>
-                        <div class="col-md-3 p-20">
-                            Articles/Day (Avg.): <span id="rangeDayEart" class="badge badge-info badge-lg">{{number_format($range_earticles->count()/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
-                        </div>
-                        <div class="col-md-3 p-20">
-                            Words/Day (Avg.): <span id="rangeDayEwor" class="badge badge-info badge-lg">{{number_format($range_ewords/Carbon\Carbon::createFromDate(request()->startDate)->diffInDays(request()->endDate))}}</span>
-                        </div>
-                        @endif
                     </div>
+                    <div class="rating-block m-t-5">
+                        <div class="row">
+                            <h4>Written Articles</h4>
+                            <div class="col-md-3 p-20">
+                                Word Count: <span id="rangeWords" class="badge badge-info badge-lg">{{$range_words}}</span>
+                            </div>
+                            <div class="col-md-3 p-20">
+                                Article Count: <span id="rangeArticles" class="badge badge-info badge-lg">{{count($articles)}}</span>
+                            </div>
+                            <div class="col-md-3 p-20">
+                                Articles/Day (Avg.): <span id="rangeDayArt" class="badge badge-info badge-lg">{{number_format($articles->count()/$days)}}</span>
+                            </div>
+                            <div class="col-md-3 p-20">
+                                Words/Day (Avg.): <span id="rangeDayWor" class="badge badge-info badge-lg">{{number_format($range_words/$days)}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @if(isset($edited_articles))
+                    <div class="rating-block m-t-5">
+                        <div class="row">
+                            <h4>Reviewed Articles</h4>
+                            <div class="col-md-3 p-20">
+                                Word Count: <span id="rangeEwords" class="badge badge-info badge-lg">{{$edited_words}}</span>
+                            </div>
+                            <div class="col-md-3 p-20">
+                                Article Count: <span id="rangeEarticles" class="badge badge-info badge-lg">{{count($edited_articles)}}</span>
+                            </div>
+                            <div class="col-md-3 p-20">
+                                Articles/Day (Avg.): <span id="rangeDayEart" class="badge badge-info badge-lg">{{number_format($edited_articles->count()/$days)}}</span>
+                            </div>
+                            <div class="col-md-3 p-20">
+                                Words/Day (Avg.): <span id="rangeDayEwor" class="badge badge-info badge-lg">{{number_format($edited_words/$days)}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
             <div class="row">
