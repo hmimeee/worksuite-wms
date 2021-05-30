@@ -74,6 +74,7 @@ Route::prefix('member')->group(function() {
 	Route::post('article-management/comment/store-files', 'ArticleCommentController@storeFiles')->name('member.article.storeCommentFiles');
 
 	//Reports
+	Route::get('article-management/daily-reports', 'ReportController@dailyReports')->name('member.article.dailyReports');
 	Route::get('article-management/reports', 'ReportController@index')->name('member.article.reports');
 	Route::get('article-management/reports/print', 'ReportController@show')->name('member.article.reportPrint');
 

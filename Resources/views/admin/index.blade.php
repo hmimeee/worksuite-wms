@@ -311,7 +311,7 @@
                     <th>#</th>
                     <th>Title</th>
                     @if(!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
-                    <th>Project</th>
+                    <th width="20">Project</th>
                     @endif
                     <th>Status</th>
                     <th>Writer</th>
@@ -323,6 +323,7 @@
                     @if(request()->type =='pendingAproval')
                     <th>Completed Writing</th>
                     @endif
+                    <th>Parent Deadline</th>
                     <th>Deadline</th>
                     <th>Action</th>
                 </tr>
@@ -396,6 +397,12 @@
                         {{$log ? $log->created_at->format('d M Y') : '-'}}
                     </td>
                     @endif
+
+                    <td>
+                        <span class="@if($article->task->due_date->isPast() && $article->writing_status !=2) text-danger @endif">
+                            {{$article->task->due_date->format('d M Y')}}
+                        </span>
+                    </td>
 
                     <td> 
                         @if(auth()->id() == $publisher)

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('article::layouts.member-app')
 
 @section('page-title')
 <div class="row bg-title">

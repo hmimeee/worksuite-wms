@@ -21,6 +21,9 @@
 		</li>
 		@endif
 		@if(auth()->id() == writer_head_assistant || auth()->id() == writer_head || auth()->user()->hasRole('admin') || auth()->user()->hasRole(writer) || auth()->user()->hasRole(inhouse_writer) || in_array(auth()->id(), explode(',', team_leaders ?? '1')))
+		<li><a href="{{route('member.article.dailyReports')}}" class="waves-effect">
+			<span class="hide-menu">@lang('article::app.dailyReports')</span></a>
+		</li>
 		<li><a href="{{is_null(route('member.article.writers')) ? 'javascript:;' : route('member.article.writers')}}" class="waves-effect">
 			<span class="hide-menu">@if(auth()->id() == writer_head || auth()->id() == writer_head_assistant || auth()->user()->hasRole('admin')) @lang('article::app.writers') @else Profile @endif</span></a>
 		</li>
