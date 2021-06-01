@@ -224,7 +224,7 @@
                                                         href="{{ route('admin.projects.show', $article->project_id) }}">{{ $article->project->project_name }}</a>
                                                 </td>
                                                 <td>{{ $article->getAssignee->name }}</td>
-                                                <td>{{ \App\User::find($article->reviewWriter->details)->name }}</td>
+                                                <td>{{ $article->reviewWriter ? \App\User::find($article->reviewWriter->value)->name : '--' }}</td>
                                                 <td>{{ $article->word_count }}</td>
                                                 <td>
                                                     <span>
@@ -234,14 +234,14 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8">
+                                                <td colspan="9">
                                                     No data found!
                                                 </td>
                                             </tr>
                                         @endforelse
                                         @if($approvedArticles->count() > 0)
                                             <tr>
-                                                <td colspan="4" class="text-right font-bold">Word Count: </td>
+                                                <td colspan="5" class="text-right font-bold">Word Count: </td>
                                                 <td colspan="2" class="font-bold text-info">{{ $approvedArticlesWords }}
                                                 </td>
                                             </tr>

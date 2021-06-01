@@ -951,6 +951,8 @@ class ArticleController extends MemberBaseController
             ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
+        $this->incompleteArticles = Article::where('assignee', $id)->where('writing_status', '<>', 2)->get();
+
         $this->articles = Article::where('assignee', $id)
             ->whereHas('logs', function ($q) use ($startDate, $endDate) {
                 return $q->where('label', 'article_writing_status')

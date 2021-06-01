@@ -379,10 +379,10 @@
                                 Article Count: <span id="rangeArticles" class="badge badge-info badge-lg">{{count($articles)}}</span>
                             </div>
                             <div class="col-md-3 p-20">
-                                Articles/Day (Avg.): <span id="rangeDayArt" class="badge badge-info badge-lg">{{number_format($articles->count()/$days)}}</span>
+                                Articles/Day (Avg.): <span id="rangeDayArt" class="badge badge-info badge-lg">{{ $articles->count() ? number_format($articles->count()/$days) : 0 }}</span>
                             </div>
                             <div class="col-md-3 p-20">
-                                Words/Day (Avg.): <span id="rangeDayWor" class="badge badge-info badge-lg">{{number_format($range_words/$days)}}</span>
+                                Words/Day (Avg.): <span id="rangeDayWor" class="badge badge-info badge-lg">{{ $range_words ? number_format($range_words/$days) : 0}}</span>
                             </div>
                         </div>
                     </div>
@@ -397,10 +397,10 @@
                                 Article Count: <span id="rangeEarticles" class="badge badge-info badge-lg">{{count($edited_articles)}}</span>
                             </div>
                             <div class="col-md-3 p-20">
-                                Articles/Day (Avg.): <span id="rangeDayEart" class="badge badge-info badge-lg">{{number_format($edited_articles->count()/$days)}}</span>
+                                Articles/Day (Avg.): <span id="rangeDayEart" class="badge badge-info badge-lg">{{ $edited_articles->count() ? number_format($edited_articles->count()/$days) : 0}}</span>
                             </div>
                             <div class="col-md-3 p-20">
-                                Words/Day (Avg.): <span id="rangeDayEwor" class="badge badge-info badge-lg">{{number_format($edited_words/$days)}}</span>
+                                Words/Day (Avg.): <span id="rangeDayEwor" class="badge badge-info badge-lg">{{$edited_articles->count() ? number_format($edited_words/$days) : 0}}</span>
                             </div>
                         </div>
                     </div>
@@ -617,7 +617,7 @@
                     </tr>
                 </thead>
                 <tbody id="list">
-                    @forelse ($articles->where('writing_status', '!=', 2) as $article)
+                    @forelse ($incompleteArticles as $article)
                     <tr role="row" class="odd">
                         <td>{{$article->id}}</td>
                         <td>
