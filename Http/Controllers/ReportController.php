@@ -38,8 +38,7 @@ class ReportController extends MemberBaseController
         $this->startDate = $startDate->format('Y-m-d');
         $this->endDate = $endDate->format('Y-m-d');
 
-        $this->articles = $articles->where('writing_status', 2)
-            ->whereHas('logs', function ($q) use ($startDate, $endDate) {
+        $this->articles = $articles->whereHas('logs', function ($q) use ($startDate, $endDate) {
                 return $q->where(function ($q) {
                     return $q->where('details', 'submitted the article for approval.')
                         ->orWhere('details', 'submitted the article for approval and waiting for review.');
