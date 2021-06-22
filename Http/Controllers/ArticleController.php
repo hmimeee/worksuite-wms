@@ -636,8 +636,8 @@ class ArticleController extends MemberBaseController
      */
     public function updateStatus(Request $request, $id, $status)
     {
-        if(!is_numeric($status))
-        return Reply::error('Invalid status value!');
+        if (!is_numeric($status))
+            return Reply::error('Invalid status value!');
 
         $article = Article::find($id);
         if ($article->publishing == 1 && $status == 2) {
@@ -690,7 +690,7 @@ class ArticleController extends MemberBaseController
                 if ($comment == null) {
                     return Reply::error('Please attach your worked files or write a comment first!');
                 }
-                
+
                 // if(!$request->submittedWordCount || !is_numeric($request->submittedWordCount)) {
                 //     return Reply::error('Please enter word count first!');
                 // }
@@ -877,7 +877,7 @@ class ArticleController extends MemberBaseController
         $this->pageTitle = 'Article Writers';
         $this->pageIcon = 'ti-user';
         if (auth()->id() == $this->writerHead || auth()->id() == $this->writerHeadAssistant || auth()->user()->hasRole('admin')) {
-            $writers = Writer::whereHas('roles', function($q){
+            $writers = Writer::whereHas('roles', function ($q) {
                 return $q->whereIn('name', [$this->inhouseWriterRole, $this->writerRole]);
             });
 
@@ -895,12 +895,12 @@ class ArticleController extends MemberBaseController
             $writers = $writers->whereDoesntHave('unavailable');
 
         if ($request->type == 'Inhouse')
-            $writers = $writers->whereHas('roles', function($q){
+            $writers = $writers->whereHas('roles', function ($q) {
                 return $q->where('name', $this->inhouseWriterRole);
             });
 
         if ($request->type == 'Freelance')
-            $writers = $writers->whereHas('roles', function($q){
+            $writers = $writers->whereHas('roles', function ($q) {
                 return $q->where('name', $this->writerRole);
             });
 
@@ -993,8 +993,8 @@ class ArticleController extends MemberBaseController
 
     public function writerStats($id)
     {
-        $startDate = request()->startDate ? Carbon::create(request()->startDate) : now()->startOfMonth();
-        $endDate = request()->endDate ? Carbon::create(request()->endDate) : now();
+        $startDate = (request()->startDate ? Carbon::create(request()->startDate, 'Asia/Dhaka') : now()->startOfMonth())->setTimezone($this->global->timezone)->startOfDay();
+        $endDate = (request()->endDate ? Carbon::create(request()->endDate, 'Asia/Dhaka') : now())->setTimezone($this->global->timezone)->endOfDay();
         $writer = Writer::find($id);
         $holidays = Holiday::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])->get();
         $leaves = Leave::where('user_id', $id)
@@ -1006,24 +1006,25 @@ class ArticleController extends MemberBaseController
             ->whereBetween('leave_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
-        $articles = Article::where('assignee', $id)
+        $articles = Article::with('logs')
+            ->where('assignee', $id)
             ->whereHas('logs', function ($q) use ($startDate, $endDate) {
                 return $q->where(function ($q) {
                     return $q->where('details', 'submitted the article for approval.')
                         ->orWhere('details', 'submitted the article for approval and waiting for review.');
                 })
-                    ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+                ->whereBetween('created_at', [$startDate, $endDate]);
             })
             ->get();
 
         if ($writer->hasRole('Inhouse_writer')) {
-            $edited_articles = Article::where('writing_status', 2)
+            $edited_articles = Article::with('logs')
                 ->whereHas('reviewWriter', function ($q) use ($id) {
                     return $q->where('value', $id);
                 })
                 ->whereHas('logs', function ($q) use ($startDate, $endDate) {
                     return $q->where('label', 'article_review')
-                        ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+                        ->whereBetween('created_at', [$startDate, $endDate]);
                 })
                 ->get();
 
@@ -1046,7 +1047,7 @@ class ArticleController extends MemberBaseController
             'days' => $days,
             'earticles' => $edited_articles ?? [],
             'ewords' => $ewords ?? 0
-            ]);
+        ]);
     }
 
     public function writerPaymentDetails($id)

@@ -33,8 +33,8 @@ class ReportController extends MemberBaseController
      */
     public function index(Request $request, Article $articles)
     {
-        $startDate = $request->start_date ? Carbon::create($request->start_date)->startOfDay() : Carbon::now()->subDays(7)->startOfDay();
-        $endDate = $request->end_date ? Carbon::create($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        $startDate = ($request->start_date ? Carbon::create($request->start_date, 'Asia/Dhaka')->startOfDay() : Carbon::now()->subDays(7)->startOfDay())->setTimezone($this->global->timezone);
+        $endDate = ($request->end_date ? Carbon::create($request->end_date, 'Asia/Dhaka')->endOfDay() : Carbon::now()->endOfDay())->setTimezone($this->global->timezone);
         $this->startDate = $startDate->format('Y-m-d');
         $this->endDate = $endDate->format('Y-m-d');
 
@@ -43,7 +43,7 @@ class ReportController extends MemberBaseController
                     return $q->where('details', 'submitted the article for approval.')
                         ->orWhere('details', 'submitted the article for approval and waiting for review.');
                 })
-                ->whereBetween('created_at', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+                ->whereBetween('created_at', [$startDate, $endDate]);
             });
 
         if ($request->project != null) {
