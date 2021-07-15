@@ -18,6 +18,9 @@
 		<li><a href="{{route('admin.article.invoices')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.invoices')</span></a>
 		</li>
+		<li><a href="{{route('admin.article.sop')}}" class="waves-effect">
+			<span class="hide-menu">@lang('article::app.sop')</span></a>
+		</li>
 		<li><a href="{{route('admin.article.settings')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.settings')</span></a>
 		</li>

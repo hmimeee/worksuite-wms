@@ -11,6 +11,7 @@ return array(
     'leaves' => 'Leaves',
     'totalwriters' => 'Total Writers',
     'writers' => 'Writers',
+    'sop' => 'SOP',
     'settings' => 'Settings',
     'storeSettingSuccess' => 'Settings changed successfully',
     'storeTypeEmptyName' => 'Name field cannot be empty!',

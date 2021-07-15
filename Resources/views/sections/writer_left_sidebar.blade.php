@@ -102,6 +102,11 @@
                     <span class="hide-menu">@lang('article::app.invoices')</span></a>
                 </li>
                 @endif
+                
+                <li><a href="{{route('member.article.sop')}}" class="waves-effect">
+                    <span class="hide-menu">@lang('article::app.sop')</span></a>
+                </li>
+
                 @if(auth()->id() == writer_head || auth()->user()->hasRole('admin'))
                 <li><a href="{{is_null(route('member.article.settings')) ? 'javascript:;' : route('member.article.settings')}}" class="waves-effect">
                     <span class="hide-menu">@lang('article::app.settings')</span></a>

@@ -36,6 +36,9 @@ Route::prefix('admin')->group(function() {
 
 	//Invoices
 	Route::get('article-management/invoices', 'AdminInvoiceController@index')->name('admin.article.invoices');
+
+	//SOP
+	Route::get('article-management/sop', 'AdminSopController@index')->name('admin.article.sop');
 });
 
 //Member Route
@@ -116,5 +119,8 @@ Route::prefix('member')->group(function() {
 	Route::post('article-management/invoices/{invoice}/receipt', 'InvoiceController@receipt')->name('member.article.receiptUpload');
 	Route::get('article-management/invoices/{invoice}/receipt/{receipt}', 'InvoiceController@downloadReceipt')->name('member.article.receiptDownload');
 	Route::delete('article-management/invoices/{invoice}/receipt/{receipt}', 'InvoiceController@receiptDelete')->name('member.article.receiptDelete');
+	
+	//SOP
+	Route::get('article-management/sop', 'SopController@index')->name('member.article.sop');
 });
 
