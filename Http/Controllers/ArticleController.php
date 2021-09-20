@@ -1013,7 +1013,7 @@ class ArticleController extends MemberBaseController
                     return $q->where('details', 'submitted the article for approval.')
                         ->orWhere('details', 'submitted the article for approval and waiting for review.');
                 })
-                ->whereBetween('created_at', [$startDate, $endDate]);
+                    ->whereBetween('created_at', [$startDate, $endDate]);
             })
             ->get();
 
@@ -1175,5 +1175,28 @@ class ArticleController extends MemberBaseController
         // Notification::send($notifyTo, new WriterUnavailability($writer));
 
         return Reply::success(ucfirst($message));
+    }
+
+    public function changePublisher(Request $request, $id)
+    {
+        $article = Article::find($id);
+
+        if (!$article)
+            return false;
+
+        $article->update([
+            'publisher' => $request->publisher
+        ]);
+
+        //Store in log
+        ArticleActivityLog::create([
+            'user_id' => auth()->id(),
+            'type' => 'Article',
+            'article_id' => $article->id,
+            'label' => 'article_update',
+            'details' => 'updated the publisher'
+        ]);
+
+        return Reply::success('Publisher updated successfully');
     }
 }

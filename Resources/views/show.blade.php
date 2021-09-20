@@ -338,6 +338,20 @@ a{
                     <label class="font-12" for="">Assigned Publisher</label><br>
                     <img src="@if ($article->getPublisher->image ==null){{url('/img/default-profile-2.png')}} @else {{url('/user-uploads/avatar/'.$article->getPublisher->image)}} @endif" class="img-circle" width="25" height="25" alt="">
                     {{$article->getPublisher->name}}
+
+                    @if(user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin'))
+                    <a href="javascript:;" id="updatePublisherBtn" class="label label-info">Change</a>
+                    <div class="m-t-5" id="changePublisher" style="display: none;">
+                        <select class="select2 form-control" data-placeholder="@lang('modules.tasks.chooseAssignee')"
+                        name="user_id[]" id="user_id">
+                            @foreach(\App\User::all() as $employee)
+                                <option value="{{ $employee->id }}" {{ $article->publisher == $employee->id ? 'selected' : '' }}>{{ ucwords($employee->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button href="javascript:;" id="changePublisherSave" class="btn btn-success btn-sm m-t-5">Save</button>
+                    </div>
+                    @endif
                 </div>
                 @endif
 
@@ -1001,11 +1015,33 @@ function parentTask(id) {
     });
 
 }
-// if ($("#subTaskModal").modal('toggle')) {location.reload(true);}
 
-</script>
+$('#updatePublisherBtn').on('click', function(){
+    $('#changePublisher').toggle('show');
+    $(this).toggleClass('label-inverse label-info');
+    $(this).html($(this).html() =='Change' ? 'Cancel' : 'Change');
+});
 
-<script type="text/javascript">
+$('#changePublisherSave').click(function(){
+    var url = "{{route('member.article.change-publisher', $article->id)}}";
+    var publisher = $('#changePublisher').children('select').val();
+    $.easyAjax({
+        url: url,
+        type: "POST",
+        data: {'publisher': publisher, '_token': '{{csrf_token()}}'},
+        success: function(response){
+            if(response.status)
+                location.reload();
+        }
+    })
+});
+
+$("select.select2").select2({
+    formatNoMatches: function () {
+        return "{{ __('messages.noRecordFound') }}";
+    }
+});
+
 $('.summernote').summernote({
     height: 100, // set editor height
     minHeight: null, // set minimum height of editor

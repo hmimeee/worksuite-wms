@@ -53,6 +53,7 @@ Route::prefix('member')->group(function() {
 	Route::get('article-management/articles/{id}/modal', 'ArticleController@showModal')->name('member.article.showModal');
 	Route::get('article-management/articles/{id}/edit', 'ArticleController@edit')->name('member.article.edit');
 	Route::post('article-management/articles/{id}/edit', 'ArticleController@update')->name('member.article.update');
+	Route::post('article-management/articles/{id}/change-publisher', 'ArticleController@changePublisher')->name('member.article.change-publisher');
 
 	//Article status
 	Route::post('article-management/articles/{id}/update/{status}', 'ArticleController@updateStatus')->name('member.article.updateStatus');

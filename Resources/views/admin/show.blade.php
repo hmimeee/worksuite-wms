@@ -304,12 +304,25 @@
                     <img src="@if (App\User::find($article->assignee)->image ==null){{url('/img/default-profile-2.png')}} @else {{url('/user-uploads/avatar/'.App\User::find($article->assignee)->image)}} @endif" data-toggle="tooltip" data-original-title="{{App\User::find($article->assignee)->name}}" data-placement="right" class="img-circle" width="25" height="25" alt="">
                     {{App\User::find($article->assignee)->name}}
                 </div>
+
                 @if ($article->publishing ==1 && $article->writing_status ==2 && $article->publisher !=null && !auth()->user()->hasRole($writerRole))
                 <div class="col-xs-6 col-md-3 font-12 m-t-10">
                     <label class="font-12" for="">@lang('modules.tasks.assignTo') Publisher</label><br>
                     <img src="@if ($article->getPublisher->image ==null){{url('/img/default-profile-2.png')}} @else {{url('/user-uploads/avatar/'.$article->getPublisher->image)}} @endif" class="img-circle" width="25" height="25" alt="">
 
                     {{$article->getPublisher->name}}
+
+                    <a href="javascript:;" id="updatePublisherBtn" class="label label-info">Change</a>
+                    <div class="m-t-5" id="changePublisher" style="display: none;">
+                        <select class="select2 form-control" data-placeholder="@lang('modules.tasks.chooseAssignee')"
+                        name="user_id[]" id="user_id">
+                            @foreach(\App\User::all() as $employee)
+                                <option value="{{ $employee->id }}" {{ $article->publisher == $employee->id ? 'selected' : '' }}>{{ ucwords($employee->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button href="javascript:;" id="changePublisherSave" class="btn btn-success btn-sm m-t-5">Save</button>
+                    </div>
                 </div>
                 @endif
 
@@ -909,6 +922,32 @@ function parentTask(id) {
         }
     });
 }
+
+$('#updatePublisherBtn').on('click', function(){
+    $('#changePublisher').toggle('show');
+    $(this).toggleClass('label-inverse label-info');
+    $(this).html($(this).html() =='Change' ? 'Cancel' : 'Change');
+});
+
+$('#changePublisherSave').click(function(){
+    var url = "{{route('member.article.change-publisher', $article->id)}}";
+    var publisher = $('#changePublisher').children('select').val();
+    $.easyAjax({
+        url: url,
+        type: "POST",
+        data: {'publisher': publisher, '_token': '{{csrf_token()}}'},
+        success: function(response){
+            if(response.status)
+                location.reload();
+        }
+    })
+});
+
+$("select.select2").select2({
+    formatNoMatches: function () {
+        return "{{ __('messages.noRecordFound') }}";
+    }
+});
 
 // if ($("#subTaskModal").modal('toggle')) {location.reload(true);}
 </script>
