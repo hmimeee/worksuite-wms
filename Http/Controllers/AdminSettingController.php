@@ -39,6 +39,7 @@ public function index()
     $this->defaulEditor = ArticleSetting::where('type', 'default_editor')->first()->value ?? '';
     $this->publisher = ArticleSetting::where('type', 'publisher')->first()->value ?? '';
     $this->outreachHead = ArticleSetting::where('type', 'outreach_head')->first()->value ?? '';
+    $this->outreachAssistants = ArticleSetting::where('type', 'outreach_assistants')->first()->value ?? '';
     $this->teamLeaders = ArticleSetting::where('type', 'team_leaders')->first()->value ?? '';
     $this->publishers = ArticleSetting::where('type', 'publishers')->first()->value ?? '';
     $this->outreachCategory = ArticleSetting::where('type', 'outreach_category')->first()->value ?? '';
@@ -110,6 +111,7 @@ public function update(Request $request)
             'inhouse_writer',
             'team_leaders',
             'publishers',
+            'outreach_assistants'
     ]);
 
     foreach ($updateKeys as $key => $value) {

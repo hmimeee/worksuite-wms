@@ -131,9 +131,20 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                         <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Outreach Head</label>
                             <div class="col-md-8">
-                                <select class="custom-select custom-multiple" name="outreach_head[]" id="outreach_head" multiple>
+                                <select class="form-control custom-select" name="outreach_head" id="outreach_head">
                                     @foreach ($employees as $employee)
-                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $outreachHead)) ? 'selected' : '' }}>{{$employee->name}}</option>
+                                    <option value="{{$employee->id}}" @if($outreachHead == $employee->id) selected @endif>{{$employee->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-md-12">
+                            <label class="control-label col-md-4">Outreach Assistants</label>
+                            <div class="col-md-8">
+                                <select class="custom-select custom-multiple" name="outreach_assistants[]" id="outreach_assistants" multiple>
+                                    @foreach ($employees as $employee)
+                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $outreachAssistants)) ? 'selected' : '' }}>{{$employee->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
