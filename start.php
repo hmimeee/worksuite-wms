@@ -1,5 +1,7 @@
 <?php
 
+use Modules\Article\Entities\ArticleSetting;
+
 /*
 |--------------------------------------------------------------------------
 | Register Namespaces And Routes

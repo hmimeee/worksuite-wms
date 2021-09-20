@@ -85,27 +85,29 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                                 </select>
                             </div>
                         </div>
+                        
                         <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Writer Head</label>
                             <div class="col-md-8">
-                                <select class="form-control custom-select" name="writer_head" id="writerHead">
+                                <select class="custom-select custom-multiple" name="writer_head[]" id="writer_head" multiple>
                                     @foreach ($employees as $employee)
-                                    <option value="{{$employee->id}}" @if($writerHead == $employee->id) selected @endif>{{$employee->name}}</option>
+                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $writerHead)) ? 'selected' : '' }}>{{$employee->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
+
                         <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Writer Head Assistant</label>
                             <div class="col-md-8">
-                                <select class="form-control custom-select" name="writer_head_assistant" id="writerHeadAssistant">
+                                <select class="custom-select custom-multiple" name="writer_head_assistant[]" id="writer_head_assistant" multiple>
                                     @foreach ($employees as $employee)
-                                    <option value="{{$employee->id}}" @if($writerHeadAssistant == $employee->id) selected @endif>{{$employee->name}}</option>
+                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $writerHeadAssistant)) ? 'selected' : '' }}>{{$employee->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group col-md-12">
+                        {{-- <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Default Editor</label>
                             <div class="col-md-8">
                                 <select class="form-control custom-select" name="default_editor" id="defaultEditor">
@@ -114,7 +116,7 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Publisher Head</label>
                             <div class="col-md-8">
@@ -125,32 +127,24 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                                 </select>
                             </div>
                         </div>
+
                         <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Outreach Head</label>
                             <div class="col-md-8">
-                                <select class="form-control custom-select" name="outreach_head" id="outreach_head">
+                                <select class="custom-select custom-multiple" name="outreach_head[]" id="outreach_head" multiple>
                                     @foreach ($employees as $employee)
-                                    <option value="{{$employee->id}}" @if($outreachHead == $employee->id) selected @endif>{{$employee->name}}</option>
+                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $outreachHead)) ? 'selected' : '' }}>{{$employee->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
+
                         <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Outreach Article Category</label>
                             <div class="col-md-8">
                                 <select class="form-control custom-select" name="outreach_category" id="outreach_category">
                                     @foreach ($categories as $category)
                                     <option value="{{$category->id}}" @if($outreachCategory == $category->id) selected @endif>{{$category->name}}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group col-md-12">
-                            <label class="control-label col-md-4">Team Leader</label>
-                            <div class="col-md-8">
-                                <select class="form-control custom-select" name="team_leaders[]" id="team_leaders">
-                                    @foreach ($employees as $employee)
-                                    <option value="{{$employee->id}}"{{ in_array($employee->id, explode(',', $teamLeaders)) ? 'selected' : '' }}>{{$employee->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -254,7 +248,7 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                     @endforelse
                 </tbody>
                 <tfoot style="border: 0px !important;">
-                    <tr align="right" style="border: 0px !important;">
+                    <tr style="border: 0px !important;">
                         <td colspan="8" style="border: 0px !important;"> {{$types->render()}} </td>
                     </tr>
                 </tfoot>
