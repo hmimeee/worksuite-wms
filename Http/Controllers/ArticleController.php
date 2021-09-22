@@ -123,8 +123,11 @@ class ArticleController extends MemberBaseController
             $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id())->where('article_details.label', 'article_review_writer');
         }
 
-        if (user()->is_outreach_member()) {
+        if (user()->is_outreach_member() && $this->publisher == auth()->id()) {
             $this->articles = $this->articles->where('publisher', auth()->id());
+        } elseif (user()->is_outreach_member()) {
+            $cat = ArticleType::find($this->outreachCategory);
+            $this->articles = $this->articles->where('type', $cat->name);
         }
 
         if ($request->writer != null) {
@@ -143,7 +146,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->where('articles.writing_status', '<>', 2);
         }
 
-        if (user()->is_writer_head_assistant() && (user()->is_writer() || user()->is_inhouse_writer())) {
+        if (!user()->is_writer_head_assistant() && (user()->is_writer() || user()->is_inhouse_writer())) {
             $this->articles = $this->articles->where('assignee', auth()->id());
         }
 
@@ -168,8 +171,14 @@ class ArticleController extends MemberBaseController
                 $this->articles = $this->articles->where('assignee', auth()->id())->where('writing_status', 0);
             } elseif (user()->is_publisher()) {
                 $this->articles = $this->articles->whereNull('publishing_status')->whereNotNull('publisher')->where('writing_status', 2);
+            } elseif (user()->is_outreach_member()) {
+                $this->articles = $this->articles->where(function($q) {
+                    return $q->where('publishing_status', null)->orWhere('publishing_status', 0);
+                });
             } else {
-                $this->articles = $this->articles->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
+                $this->articles = $this->articles->where(function($q) {
+                    return $q->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
+                });
             }
         }
 
