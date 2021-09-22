@@ -11,6 +11,7 @@
 		<li><a href="{{is_null(route('member.article.index')) ? 'javascript:;' : route('member.article.index')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.articles')</span></a>
 		</li>
+
 		@if(user()->is_writer_head_assistant() || user()->is_writer_head() || user()->hasRole('admin'))
 		<li><a href="{{route('member.article.dailyReports')}}" class="waves-effect">
 			<span class="hide-menu">@lang('article::app.dailyReports')</span></a>

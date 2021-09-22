@@ -69,7 +69,7 @@ class InvoiceController extends MemberBaseController
             $invoices = $invoices->whereBetween('created_at', [$request->startDate, $request->endDate]);
         }
 
-        if (auth()->user()->hasRole($this->writerRole)) {
+        if (user()->is_writer()) {
             $invoices = $invoices->where('paid_to', auth()->id());
         }
 

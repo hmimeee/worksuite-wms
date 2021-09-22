@@ -37,7 +37,7 @@ class SettingController extends MemberBaseController
         $this->employees = User::all();
         $this->types = ArticleType::paginate(10);
 
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole($this->writerRole) && !auth()->user()->hasRole($this->inhouseWriterRole) && auth()->id() != $this->writerHead) {
+        if (!user()->hasRole('admin') && !user()->is_writer() && !user()->is_inhouse_writer() && user()->is_writer()) {
             return abort(403);
         }
 

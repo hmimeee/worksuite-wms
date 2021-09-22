@@ -130,7 +130,7 @@ a{
                                     @endif
                                 </td>
                                 <td>{{App\Role::find($writer->role->last()->role_id)->display_name}}</td>
-                                @if(!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
+                                @if(!user()->is_writer() && !user()->is_inhouse_writer())
                                 <td>{{$writer->rate ? $writer->rate->rate : '--'}}</td>
                                 @endif
                                 <td>
@@ -184,7 +184,7 @@ a{
                                         <button aria-expanded="false" data-toggle="dropdown" class="btn dropdown-toggle waves-effect waves-light" type="button"><i class="ti-more"></i></button>
                                         <ul role="menu" class="dropdown-menu pull-right">
                                             <li><a href="javascript:;" onclick="viewWriter('{{$writer->id}}')"><i class="fa fa-search" aria-hidden="true"></i> View</a></li>
-                                            @if(auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
+                                            @if(auth()->user()->hasRole('admin') || user()->is_writer_head())
                                             <li><a href="{{ route('member.employees.edit', $writer->id) }}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a></li>
                                             @endif
                                             @if(auth()->user()->hasRole('admin'))

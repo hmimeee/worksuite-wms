@@ -119,11 +119,11 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->whereBetween(\DB::raw('DATE(articles.`writing_deadline`)'), [$this->startDate, $this->endDate]);
         }
 
-        if (auth()->user()->hasRole($this->inhouseWriterRole)) {
+        if (user()->is_inhouse_writer()) {
             $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id())->where('article_details.label', 'article_review_writer');
         }
 
-        if (auth()->id() == $this->outreachHead) {
+        if (user()->is_outreach_member()) {
             $this->articles = $this->articles->where('publisher', auth()->id());
         }
 
@@ -143,11 +143,11 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->where('articles.writing_status', '<>', 2);
         }
 
-        if (auth()->id() != $this->writerHeadAssistant && (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole))) {
+        if (user()->is_writer_head_assistant() && (user()->is_writer() || user()->is_inhouse_writer())) {
             $this->articles = $this->articles->where('assignee', auth()->id());
         }
 
-        if (auth()->id() == $this->publisher) {
+        if (user()->is_publisher()) {
             $this->articles = $this->articles->where('publisher', auth()->id());
         }
 
@@ -164,9 +164,9 @@ class ArticleController extends MemberBaseController
         }
 
         if ($type == "myArticles") {
-            if (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)) {
+            if (user()->is_writer() || user()->is_inhouse_writer()) {
                 $this->articles = $this->articles->where('assignee', auth()->id())->where('writing_status', 0);
-            } elseif (in_array(auth()->id(), explode(',', $this->publishers))) {
+            } elseif (user()->is_publisher()) {
                 $this->articles = $this->articles->whereNull('publishing_status')->whereNotNull('publisher')->where('writing_status', 2);
             } else {
                 $this->articles = $this->articles->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
@@ -182,7 +182,7 @@ class ArticleController extends MemberBaseController
         }
 
         if ($type == "completedArticles") {
-            if (auth()->user()->hasRole($this->writerRole)) {
+            if (user()->is_writer()) {
                 $this->articles = $this->articles->where('article_status', null)->where('writing_status', 2)->where('assignee', auth()->id());
             } else {
                 $this->articles = $this->articles->where('article_status', null)->where('writing_status', 2);
@@ -191,14 +191,14 @@ class ArticleController extends MemberBaseController
 
         if ($type == "paidArticles") {
             $this->articles = $this->articles->leftJoin('article_invoices', 'article_invoices.id', '=', 'articles.invoice_id')->where('article_status', 1)->where('article_invoices.status', 1)->where('writing_status', 2);
-            if (auth()->user()->hasRole($this->writerRole)) {
+            if (user()->is_writer()) {
                 $this->articles = $this->articles->where('assignee', auth()->id());
             }
         }
 
         if ($type == "unpaidArticles") {
             $this->articles = $this->articles->leftJoin('article_invoices', 'article_invoices.id', '=', 'articles.invoice_id')->where('article_status', 1)->where('article_invoices.status', '<>', 1)->where('writing_status', 2);
-            if (auth()->user()->hasRole($this->writerRole)) {
+            if (user()->is_writer()) {
                 $this->articles = $this->articles->where('assignee', auth()->id());
             }
         }
@@ -220,7 +220,7 @@ class ArticleController extends MemberBaseController
         }
 
         if ($type == "search") {
-            if (auth()->user()->hasRole($this->writerRole) || auth()->user()->hasRole($this->inhouseWriterRole)) {
+            if (user()->is_writer() || user()->is_inhouse_writer()) {
                 $this->articles = $this->articles->where('articles.assignee', auth()->id())->where('title', 'LIKE', '%' . $request->q . '%');
             } else {
                 $this->articles = $this->articles->where('articles.id', 'LIKE', '%' . $request->q . '%')->orWhere('title', 'LIKE', '%' . $request->q . '%')->orWhere('projects.project_name', 'LIKE', '%' . $request->q . '%')->orWhere('users.name', 'LIKE', '%' . $request->q . '%');
@@ -231,7 +231,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->editable_articles->where('articles.writing_status', 1);
         }
 
-        if ($request->type == 'edited' && !auth()->user()->hasRole('admin')) {
+        if ($request->type == 'edited' && !user()->hasRole('admin')) {
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
                 ->select('articles.*', 'article_details.label', 'article_details.value')
                 ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2)->where('article_details.value', auth()->id());
@@ -355,7 +355,7 @@ class ArticleController extends MemberBaseController
     public function showModal($id)
     {
         $this->article = Article::findOrFail($id);
-        if ($this->article->assignee != auth()->id() && auth()->user()->hasRole($this->writerRole)) {
+        if ($this->article->assignee != auth()->id() && user()->is_writer()) {
             return Reply::error('You are not authorized for this task!');
         }
 
@@ -371,7 +371,7 @@ class ArticleController extends MemberBaseController
     public function show($id)
     {
         $this->article = Article::findOrFail($id);
-        if ($this->article->assignee != auth()->id() && auth()->user()->hasRole($this->writerRole)) {
+        if ($this->article->assignee != auth()->id() && user()->is_writer()) {
             return abort(403);
         }
 
@@ -429,18 +429,19 @@ class ArticleController extends MemberBaseController
 
         //If Change Writer
         $assignee = $request->self ? $request->self : $request->assignee;
+        $employee = Writer::find($assignee);
         if ($this->article->assignee != $assignee) {
-            if (Writer::find($assignee)->hasRole($this->inhouseWriterRole) || $assignee == $this->writerHead) {
+            if ($employee->is_inhouse_writer() || $employee->is_writer()) {
                 $writerRate = 0;
             } else {
-                if (Writer::find($assignee)->rate == null) {
+                if ($employee->rate == null) {
                     return Reply::error("Please update writer's rate for this writer!");
                 }
-                $writerRate = Writer::find($assignee)->rate->rate;
+                $writerRate = $employee->rate->rate;
             }
             $this->article->rate = $writerRate;
 
-            $message = 'updated the details & changed the writer ' . $this->article->getAssignee->name . ' to ' . Writer::find($assignee)->name;
+            $message = 'updated the details & changed the writer ' . $this->article->getAssignee->name . ' to ' . $employee->name;
             $this->article->assignee = $assignee;
         }
 
@@ -871,12 +872,12 @@ class ArticleController extends MemberBaseController
      */
     public function writers(Request $request)
     {
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole($this->writerRole) && !auth()->user()->hasRole($this->inhouseWriterRole) && auth()->id() != $this->writerHead && !in_array(auth()->id(), explode(',', $this->teamLeaders))) {
+        if (!user()->hasRole('admin') && !user()->is_writer() && !user()->is_inhouse_writer() && user()->is_writer() && !in_array(auth()->id(), explode(',', $this->teamLeaders))) {
             return abort(403);
         }
         $this->pageTitle = 'Article Writers';
         $this->pageIcon = 'ti-user';
-        if (auth()->id() == $this->writerHead || auth()->id() == $this->writerHeadAssistant || auth()->user()->hasRole('admin')) {
+        if (user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin')) {
             $writers = Writer::whereHas('roles', function ($q) {
                 return $q->whereIn('name', [$this->inhouseWriterRole, $this->writerRole]);
             });
@@ -918,7 +919,7 @@ class ArticleController extends MemberBaseController
     public function writerView($id)
     {
         $this->writer = Writer::findOrFail($id);
-        if (auth()->id() == $id || auth()->id() == $this->writerHead || in_array(auth()->id(), explode(',', $this->writerHeadAssistant)) || auth()->user()->hasRole('admin')) {
+        if (auth()->id() == $id || user()->is_writer_head() || user()->is_writer_head_assistant() || auth()->user()->hasRole('admin')) {
             //Continue
         } else {
             return Reply::error('You are not authorized to view this page!');
@@ -969,7 +970,7 @@ class ArticleController extends MemberBaseController
             $this->range_words = $this->range_words + $article->word_count;
         }
 
-        if ($this->writer->hasRole('Inhouse_writer')) {
+        if ($this->writer->is_inhouse_writer()) {
             $this->edited_articles = Article::where('writing_status', 2)
                 ->whereHas('reviewWriter', function ($q) use ($id) {
                     return $q->where('value', $id);

@@ -12,7 +12,7 @@
     <!-- /.page title -->
     <!-- .breadcrumb -->
     <div class="col-lg-4 col-sm-8 col-md-8 col-xs-12 text-right">
-        @if($user->id == $writerHead || $user->hasRole('admin'))
+        @if(user()->is_writer_head() || $user->hasRole('admin'))
         <a href="#" class="btn btn-outline btn-success btn-sm pull-right" id="createInvoice"><i class="fa fa-plus" aria-hidden="true"></i> Add New Payslip</a>
         @endif
     </div>

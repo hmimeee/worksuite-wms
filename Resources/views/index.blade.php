@@ -53,7 +53,7 @@
                 </div>
             </div>
             <div class="col-md-12">
-                @if(auth()->id() == $publisher || auth()->id() == $outreachHead)
+                @if(user()->is_publisher() || user()->is_outreach_member())
                 @php($myArticles = count($all_articles->where('publisher', auth()->id())->where('publishing_status', '<>' , 1)))
                 @else
                 @php($myArticles = count($all_articles->where('assignee', auth()->id())->where('writing_status', 0)))
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        @if (auth()->user()->hasRole('admin') || auth()->id() == $writerHeadAssistant || auth()->id() == $writerHead)
+        @if (user()->hasRole('admin') || user()->is_writer_head_assistant() || user()->is_writer_head())
         <div class="col-md-12 p-t-10">
             @php($assignByMe = count($all_articles->where('creator', auth()->id())->where('writing_status', 0)))
             <div class="form-group">
@@ -97,7 +97,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasRole($inhouseWriterRole) || auth()->id() == $writerHead || auth()->user()->hasRole('admin'))
+        @if(auth()->user()->hasRole($inhouseWriterRole) || user()->is_writer_head() || user()->hasRole('admin'))
         <div class="col-md-12 p-t-10">
             <div class="form-group">
                 <a href="?type=editable">
@@ -124,7 +124,7 @@
         </div>
         @endif
 
-        @if (auth()->user()->hasRole($inhouseWriterRole) || auth()->id() == $writerHead || auth()->user()->hasRole($writerRole) || auth()->user()->hasRole('admin'))
+        @if (user()->is_inhouse_writer() || user()->is_writer_head() || user()->is_writer() || user()->hasRole('admin'))
         <div class="col-md-12 p-t-10">
             <div class="form-group">
                 <a href="?type=completedArticles">
@@ -148,7 +148,7 @@
         </div>
         @endif
 
-        @if (auth()->id() == $writerHeadAssistant || (!auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole)))
+        @if (user()->is_writer_head_assistant() || (!user()->is_writer() && !user()->is_inhouse_writer()))
         <form>
             <div class="col-md-12">
                 <h5 class="box-title">@lang('app.selectDateRange') (Writing Deadline)</h5>
@@ -178,7 +178,7 @@
                 </select>
             </div>
 
-            @if (auth()->id() == $writerHeadAssistant || auth()->id() == $writerHead || auth()->user()->hasRole($writerRole) || auth()->user()->hasRole('admin'))
+            @if (user()->is_writer_head_assistant() || user()->is_writer() || user()->is_writer() || user()->hasRole('admin'))
             <div class="col-md-12 p-t-10">
                 <h5 style="margin-left: 5px;">Writer</h5>
                 <select class="select2 form-control col-md-6" name="writer" id="writer" data-style="form-control">
@@ -210,7 +210,7 @@
                     @endforeach
                 </select>
             </div>
-            @if (auth()->id() != $publisher && !auth()->user()->hasRole($inhouseWriterRole) && auth()->id() != $outreachHead)
+            @if (user()->is_publisher() && !user()->is_inhouse_writer() && user()->is_outreach_member())
             <div class="col-md-12 m-t-10 m-b-10">
                 <div class="checkbox checkbox-info">
                     <input type="checkbox" name="hide" id="hide-completed-tasks" {{ request()->hide == 'on' ? 'checked' : '' }}>
@@ -308,13 +308,13 @@
                 <tr role="row">
                     <th>#</th>
                     <th>Title</th>
-                    @if(!auth()->user()->hasRole($writerRole))
+                    @if(!user()->is_writer())
                     <th width="20">Project</th>
                     @endif
                     <th>Status</th>
                     <th>Writer</th>
                     <th>Reviewed By</th>
-                    @if(!auth()->user()->hasRole($writerRole) && request()->type !='pendingAproval')
+                    @if(!user()->is_writer() && request()->type !='pendingAproval')
                     <th>Published Link</th>
                     @endif
                     <th>Word Count</th>
@@ -341,7 +341,7 @@
                             @endif
                         </a>
                     </td>
-                    @if(!auth()->user()->hasRole($writerRole))
+                    @if(!user()->is_writer())
                     <td>
                         <a target="_blank" href="{{route('member.projects.show', $article->project_id)}}" class="@if($article->writing_status == 1) text-warning @endif" style="font-weight: 350;@if($article->writing_status == 2 && $article->assignee == auth()->id()) color: rgba(132,128,144,0.8); @elseif($article->publishing == 1 && $article->publishing_status == 1 && $article->writing_status == 2) color: rgba(132,128,144,0.8); @elseif($article->publishing != 1 && $article->writing_status == 2) color: rgba(132,128,144,0.8); @elseif($article->writing_status == 0) color: rgba(0,0,0,1); @endif">{{$article->project->project_name}}</a>
                     </td>
@@ -384,7 +384,7 @@
                         {{!is_null($article->reviewWriter) ? App\User::find($article->reviewWriter->value)->name : ''}}
                     </td>
 
-                    @if(!auth()->user()->hasRole($writerRole) && request()->type !='pendingAproval')
+                    @if(!user()->is_writer() && request()->type !='pendingAproval')
                     <td>
                         @if($article->publish_link !=null && $article->publish_link !='')
                         <a target="_blank" href="{{$article->publish_link}}">Link</a>

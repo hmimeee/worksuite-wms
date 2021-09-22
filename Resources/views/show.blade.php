@@ -54,12 +54,12 @@ a{
 <div class="row">
     <div class="col-xs-12">
 
-        <div class="white-box" style="padding: 10px; @if(auth()->id() != $writerHead && !auth()->user()->hasRole('admin') && !in_array(auth()->id(), explode(',', $writerHeadAssistant))) height: 100px; @endif"> 
-            @if(auth()->user()->hasRole('admin'))
+        <div class="white-box" style="padding: 10px; @if(user()->is_writer_head() && !user()->hasRole('admin') && !user()->is_writer_head_assistant()) height: 100px; @endif"> 
+            @if(user()->hasRole('admin'))
             <a href="javascript:;" class="btn btn-danger btn-sm m-b-10 btn-rounded btn-outline pull-right m-l-5" onclick="deleteArticle('{{$article->id}}')"> <i class="fa fa-trash"></i> Delete</a>
             @endif
 
-            @if (auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin'))
+            @if (user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin'))
             <a href="javascript:;" class="btn btn-info btn-sm m-b-10 btn-rounded btn-outline pull-right m-l-5" onclick="editArticle('{{$article->id}}')"> <i class="fa fa-edit"></i> Edit</a>
             @endif
 
@@ -68,7 +68,7 @@ a{
             <a href="javascript:;" id="copyLink" onclick="copyLink()" class="btn btn-info btn-sm m-b-10 btn-rounded btn-outline pull-right" title="Copy Link" style="margin-left: 5px;"><i class="fa fa-link"></i> Copy Link</a>
             <!-- ## Copy Link Ends ## -->
 
-            @if(($article->writing_status == 0 || ($article->publisher !=null && $article->publishing_status !=1)) && (auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin')))
+            @if(($article->writing_status == 0 || ($article->publisher !=null && $article->publishing_status !=1)) && (user()->is_writer_head() || user()->is_writer_head_assistant() || auth()->user()->hasRole('admin')))
             <a href="javascript:;" id="reminderButton" onclick="sendReminder('{{$article->id}}')" class="btn btn-info btn-sm m-b-10 btn-rounded btn-outline pull-right" title="@lang('messages.remindToAssignedEmployee')"><i class="fa fa-envelope"></i> @lang('modules.tasks.reminder')</a>
             @endif
 
@@ -90,7 +90,7 @@ a{
             @endif
 
             @elseif($article->writing_status == 2)
-            @if($article->publishing == 1 && !auth()->user()->hasRole($writerRole))
+            @if($article->publishing == 1 && !user()->is_writer())
             @if($article->publishing_status == 1)
             <label class="btn-sm btn-outline btn-default m-r-5 btn-default pull-right" style="color: grey;">Completed Publishing</label>
             @elseif($article->publishing_status != 1 && $article->publish != null)
@@ -103,23 +103,23 @@ a{
             @endif
             @endif
 
-            @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', $publishers))) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
+            @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || user()->hasRole('admin') || user()->is_publisher()) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
             <a href="javascript:;" id="startPublishing" class="btn btn-info btn-sm m-b-10 btn-rounded"  onclick="startPublishing('start')"><i class="fa fa-hourglass-start"></i> Start Publishing</a>
             @endif
 
-            @if($article->writing_status ==2 && ($writerHead == auth()->id() || auth()->user()->hasRole('admin')) && $article->publishing_status ==1)
+            @if($article->writing_status ==2 && (user()->is_writer_head() || user()->hasRole('admin')) && $article->publishing_status ==1)
             <a href="javascript:;" id="publishButton" class="btn btn-danger btn-sm m-b-10 btn-rounded btn-outline"  onclick="completePublish('incomplete')" ><i class="fa fa-arrow-left"></i> Return to Publisher</a>
             @endif
 
-            @if($article->writing_status ==2 && (auth()->id() == $publisher || $article->publisher == auth()->user()->id || $writerHead == auth()->id() || auth()->user()->hasRole('admin') == 1 || in_array(auth()->id(), explode(',', $publishers))) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
+            @if($article->writing_status ==2 && (user()->is_publisher() || $article->publisher == auth()->id() || user()->is_writer_head() || user()->hasRole('admin') || user()->is_publisher()) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
             <a href="javascript:;" id="publishButton" class="btn btn-success btn-sm m-b-10 btn-rounded"  onclick="completePublish('complete')" ><i class="fa fa-check"></i> Complete Publishing</a>
             @endif
 
-            @if(($article->assignee == auth()->id() || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin')) && $article->writing_status == 0 && $article->working_status == null)
+            @if(($article->assignee == auth()->id() || user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin')) && $article->writing_status == 0 && $article->working_status == null)
             <a href="javascript:;" id="startWork" class="btn btn-info btn-sm m-b-10 btn-rounded"  onclick="startWork('start')"><i class="fa fa-hourglass-start"></i> Start Working</a>
             @endif
 
-            @if($article->working_status !=null && $article->writing_status ==0 && ($article->assignee == auth()->id() || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin')))
+            @if($article->working_status !=null && $article->writing_status ==0 && ($article->assignee == auth()->id() || user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin')))
             <a href="javascript:;" id="completedButton" class="btn btn-success btn-sm m-b-10 btn-rounded"  onclick="markComplete('complete')" ><i class="fa fa-check"></i> Submit for Approval</a>
             @endif
 
@@ -129,7 +129,7 @@ a{
                 </div>
             @endif --}}
 
-            @if($article->writing_status ==1 && (is_null($article->reviewStatus) || $article->reviewStatus->value != 'completed') && (!is_null($article->reviewWriter) && ($article->reviewWriter->value == auth()->id() || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin'))))
+            @if($article->writing_status ==1 && (is_null($article->reviewStatus) || $article->reviewStatus->value != 'completed') && (!is_null($article->reviewWriter) && ($article->reviewWriter->value == auth()->id() || user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin'))))
             <a href="javascript:;" class="btn btn-success btn-sm m-b-10 btn-rounded pull-left m-r-5"  onclick="reviewStatus('completed')"><i class="fa fa-check"></i> Review Complete</a>
 
             @if(is_null($article->reviewStatus) || $article->reviewStatus->value !='completed')
@@ -169,10 +169,10 @@ a{
             @endif
             @endif
 
-            @if(($article->writing_status ==1 || $article->writing_status ==2) && (auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin') || (!is_null($article->reviewWriter) && $article->reviewWriter->value == auth()->id())))
+            @if(($article->writing_status ==1 || $article->writing_status ==2) && (user()->is_writer_head() || user()->is_writer_head_assistant() ||user()->hasRole('admin') || (!is_null($article->reviewWriter) && $article->reviewWriter->value == auth()->id())))
             <a href="javascript:;" id="inCompletedButton" class="btn btn-danger btn-outline btn-sm m-b-10 btn-rounded"  onclick="markComplete('incomplete')"><i class="fa fa-arrow-left"></i> Return to Writer</a>
             @endif
-            @if($article->writing_status ==2 && (auth()->id() == $publisher || $article->publisher == auth()->user()->id || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin') == 1 || in_array(auth()->id(), explode(',', $publishers))) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
+            @if($article->writing_status ==2 && (auth()->id() == $publisher || $article->publisher == auth()->id() || user()->is_writer_head() || user()->is_writer_head_assistant() ||user()->hasRole('admin') || user()->is_publisher()) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
             <div class="form-group row m-t-10">
                 <div class="col-md-6">
                     <label class="control-label required" for="publishLink">Publish Link</label>
@@ -182,7 +182,7 @@ a{
             @endif
 
             @if(is_null($article->reviewWriter))
-            @if($article->writing_status ==1 && (auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin')))
+            @if($article->writing_status ==1 && (user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin')))
             <a href="javascript:;" id="finishButton" class="btn btn-success btn-sm m-b-10 m-r-5 btn-rounded pull-left"  onclick="markComplete('finish')"><i class="fa fa-check"></i> Accept and Finish</a>
             <div class="form-group row m-l-5">
                 <div class="col-md-2">
@@ -223,7 +223,7 @@ a{
         </div>
     </div>
 
-    @if($article->writing_status ==1 && (auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->user()->hasRole('admin')))
+    @if($article->writing_status ==1 && (user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin')))
     <div class="col-xs-12">
         <div class="white-box" style="padding: 10px;">
             <div class="form-group row m-l-5">
@@ -284,11 +284,11 @@ a{
             <h5 style="font-weight: 500; color: #337ab7;">{{$article->title}} <label class="label label-default text-dark m-l-5 font-light">{{$article->type}}</label> <label class="label @if($article->priority =='low') label-success @elseif($article->priority =='medium') label-warning @else label-danger @endif"><span class="text-dark">Priority > </span>@if($article->priority =='low') Low @elseif($article->priority =='medium') Medium @else High @endif</label>
             </h5>
 
-            @if(!auth()->user()->hasRole($writerRole) && $article->project)
+            @if(!user()->is_writer() && $article->project)
             <p><i class="icon-layers"></i> Project: <a style="font-weight: 400;" target="_blank" href="@if(auth()->user()->hasRole('admin')){{ route('admin.projects.show', $article->project->id) }}@else{{ route('member.projects.show', $article->project->id) }}@endif"> {{$article->project->project_name}} </a> </p>
             @endif
 
-            @if(!auth()->user()->hasRole($writerRole) && $article->parent_task)
+            @if(!user()->is_writer() && $article->parent_task)
             <p><i class="fa fa-tasks"></i> Parent Task: <a style="font-weight: 400;" href="javascript:;" onclick="parentTask('{{$article->parent_task}}')">{{$article->task->heading}} </a> </p>
             @endif
             <p><i class="ti-write"></i> @if($article->writing_status ==2) Word Count: @else Assigned Word: @endif {{$article->word_count}}</p>
@@ -296,7 +296,7 @@ a{
             @if($article->writing_status != 0)
             <p><i class="icon-clock"></i> Writing Deadline: {{\Carbon\Carbon::create($article->writing_deadline)->format('d M Y')}} </p>
             @endif
-            @if ($article->rating !=null && (!auth()->user()->hasRole($writerRole) || !auth()->user()->hasRole($inhouseWriterRole)))
+            @if ($article->rating !=null && (!user()->is_writer() || !user()->is_inhouse_writer()))
             <p><i class="fa fa-thumbs-up"></i> Rating: 
                 <span class="fa fa-star @if ($article->rating+1 > 1) checked @endif"></span>
                 <span class="fa fa-star @if ($article->rating+1 > 2) checked @endif"></span>
@@ -306,13 +306,13 @@ a{
             </p>
             @endif
 
-            @if ($article->publishing ==1 && $article->writing_status ==2 && $article->publisher !=null && !auth()->user()->hasRole($writerRole) && $article->publish_website !=null)
+            @if ($article->publishing ==1 && $article->writing_status ==2 && $article->publisher !=null && !user()->is_writer() && $article->publish_website !=null)
             <p><i class="fa fa-globe"></i> Publish Website:
                 <b>{{$article->publish_website->value}}</b>
             </p>
             @endif
 
-            @if ($article->publishing_status ==1 && !auth()->user()->hasRole($writerRole) && !auth()->user()->hasRole($inhouseWriterRole))
+            @if ($article->publishing_status ==1 && !user()->is_writer() && !user()->is_inhouse_writer())
             <p><i class="fa fa-link"></i> Published Link: <a style="font-weight: 400;" target="_blank" href="{{$article->publish_link}}"> Click Here to Visit</a></p>
             @endif
         </div>
@@ -333,7 +333,7 @@ a{
                     {{App\User::find($article->assignee)->name}}
                 </div>
 
-                @if ($article->publishing ==1 && $article->writing_status ==2 && $article->publisher !=null && !auth()->user()->hasRole($writerRole))
+                @if ($article->publishing ==1 && $article->writing_status ==2 && $article->publisher !=null && !user()->is_writer())
                 <div class="col-xs-6 col-md-3 font-12 m-t-10">
                     <label class="font-12" for="">Assigned Publisher</label><br>
                     <img src="@if ($article->getPublisher->image ==null){{url('/img/default-profile-2.png')}} @else {{url('/user-uploads/avatar/'.$article->getPublisher->image)}} @endif" class="img-circle" width="25" height="25" alt="">
@@ -364,7 +364,7 @@ a{
                 </div>
                 @endif
 
-                @if($article->publishing ==1 && $article->writing_status ==2 && !auth()->user()->hasRole($writerRole))
+                @if($article->publishing ==1 && $article->writing_status ==2 && !user()->is_writer())
                 <div class="col-xs-6 col-md-3 font-12 m-t-10">
                     <label class="font-12" for="">Publishing Due Date</label><br>
                     <span class="@if(\Carbon\Carbon::parse($article->writing_deadline)->isPast()) text-danger @else text-info @endif">
@@ -397,7 +397,7 @@ a{
                                      @endif
                                  </a> 
 
-                                 @if($article->creator == auth()->user()->id || auth()->user()->hasRole('admin'))
+                                 @if($article->creator == auth()->id() || user()->hasRole('admin'))
                                  <a href="javascript:;" class="btn btn-danger btn-sm btn-rounded btn-outline" onclick="deleteFile('{{$file->id}}')" id="btn-{{$file->id}}"><i class="fa fa-trash"></i></a>
                                  @endif
                              </div>
@@ -418,7 +418,7 @@ a{
                                     <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->format('d M Y')}}
                                 </div>
 
-                                @if($writerHead == auth()->user()->id || auth()->user()->hasRole('admin'))
+                                @if($writerHead == auth()->id() || user()->hasRole('admin'))
                                 <div class="col-xs-2 text-right">
                                     <a href="javascript:;" onclick="delComment('{{$comment->id}}')">@lang('app.delete')</a>
                                 </div>
@@ -447,7 +447,7 @@ a{
                             </div>
                             @endforeach
                         </div>
-                        @if(auth()->id() == $article->assignee || (!is_null($article->reviewWriter) && auth()->id() == $article->reviewWriter->value) || auth()->id() == $writerHead || in_array(auth()->id(), explode(',', $writerHeadAssistant)) || auth()->id() == $article->publisher || auth()->user()->hasRole('admin') || auth()->id() == $writerHead)
+                        @if(auth()->id() == $article->assignee || (!is_null($article->reviewWriter) && auth()->id() == $article->reviewWriter->value) || user()->is_writer_head() || user()->is_writer_head_assistant() || auth()->id() == $article->publisher || user()->hasRole('admin') || user()->is_writer_head())
                         <div class="form-group" id="comment-box">
                             <form id='Comment' method='POST' enctype="multipart/form-data">
                                 @csrf

@@ -508,11 +508,11 @@
                         <th class="info">Availability Status</th>
                         <td>
                             <div class="form-group">
-                                @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', $writerHeadAssistant)))
-                                <label class="switch">
-                                    <input type="checkbox" id="unavailableWriter" {{$writer->unavailable ? 'checked' : ''}}>
-                                    <span class="slider round"></span>
-                                </label>
+                                @if(user()->is_writer_head() || auth()->user()->hasRole('admin') || user()->is_writer_head_assistant())
+                                    <label class="switch">
+                                        <input type="checkbox" id="unavailableWriter" {{$writer->unavailable ? 'checked' : ''}}>
+                                        <span class="slider round"></span>
+                                    </label>
                                 @endif
                                 <p>
                                     <label class="p-10 text-{{$writer->unavailable ? 'danger' : 'success'}}">
@@ -524,7 +524,7 @@
                                 </p>
                             </div>
 
-                            @if(auth()->id() == $writerHead || auth()->user()->hasRole('admin') || in_array(auth()->id(), explode(',', $writerHeadAssistant)))
+                            @if(user()->is_writer_head() || user()->hasRole('admin') || user()->is_writer_head_assistant())
                             <div class="form-group" id="unavailableNote" style="display: none;">
                                 <textarea class="form-control" placeholder="Write a note for unavailability"></textarea>
                                 <br>
@@ -534,7 +534,7 @@
                         </td>
                     </tr>
 
-                    @if($writer->hasRole($writerRole))
+                    @if($writer->is_writer())
                     <tr>
                         <th class="label-info" style="vertical-align: middle;">
                             Payment Details (Default)
@@ -551,10 +551,10 @@
                             </div>
                         </td>
 
-                        @if(auth()->user()->hasRole($writerRole) || auth()->user()->hasRole('admin'))
+                        @if(user()->is_writer() || user()->hasRole('admin'))
                         <td id="changeDefaultPayment" class="row" style="display: none;">
                             <div class="col-md-8">
-                                @if($writer->paymentDetails ==null || auth()->user()->hasRole('admin'))
+                                @if($writer->paymentDetails ==null || user()->hasRole('admin'))
                                 <select name="payment_method" id="payment_method" class="form-control">
                                     @foreach ($writer->paymentInfos as $payInfo)
                                     <option value="{{$payInfo->id}}">#{{$payInfo->id}}: {{$payInfo->payment_method}} ({{strip_tags(str_replace('<br/>', ', ', $payInfo->payment_details))}})</option>
@@ -580,7 +580,7 @@
                         @endif
                     </tr>
 
-                    @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole($writerRole))
+                    @if(user()->hasRole('admin') || user()->is_writer())
                     <tr>
                         <th class="info" style="vertical-align: middle;">
                             Added Payment Information
@@ -590,7 +590,7 @@
                             <div class="p-10 label-default m-b-5" id="paymentDetails-{{$payInfo->id}}">
                                 #{{$payInfo->id}}: {{$payInfo->payment_method}} ({{strip_tags(str_replace('<br/>', ', ', $payInfo->payment_details))}})
 
-                                @if(auth()->user()->hasRole('admin'))
+                                @if(user()->hasRole('admin'))
                                 <a href="javascript:;" onclick="deleteDetails('{{$payInfo->id}}')" class="label label-danger">Delete</a>
                                 @endif
                             </div>
@@ -720,7 +720,7 @@
         })
     })
 
-    @if(!$writer->hasRole($inhouseWriterRole))
+    @if(!$writer->is_inhouse_writer())
     $('#update-payment').click(function(){
 
      var buttons = {
