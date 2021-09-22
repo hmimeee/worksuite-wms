@@ -123,11 +123,11 @@ class ArticleController extends MemberBaseController
             $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id())->where('article_details.label', 'article_review_writer');
         }
 
-        if (user()->is_outreach_member() && $this->publisher == auth()->id()) {
+        if (user()->is_outreach_member() && $this->outreachHead == auth()->id()) {
             $this->articles = $this->articles->where('publisher', auth()->id());
         } elseif (user()->is_outreach_member()) {
             $cat = ArticleType::find($this->outreachCategory);
-            $this->articles = $this->articles->where('type', $cat->name);
+            $this->articles = $this->articles->where('type', $cat->name)->whereNotNull('publisher');
         }
 
         if ($request->writer != null) {
@@ -174,7 +174,9 @@ class ArticleController extends MemberBaseController
             } elseif (user()->is_outreach_member()) {
                 $this->articles = $this->articles->where(function($q) {
                     return $q->where('publishing_status', null)->orWhere('publishing_status', 0);
-                });
+                })
+                ->doesntHave('publish')
+                ->where('writing_status', 2);
             } else {
                 $this->articles = $this->articles->where(function($q) {
                     return $q->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
