@@ -103,7 +103,7 @@ a{
             @endif
             @endif
 
-            @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || user()->hasRole('admin') || user()->is_publisher()) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
+            @if(($article->publisher == auth()->id() || $article->creator == auth()->id() || user()->hasRole('admin') || user()->is_publisher() || ($article->type == $cat->name && user()->is_outreach_member())) && $article->writing_status == 2 && $article->publishing == 1 && $article->publish == null)
             <a href="javascript:;" id="startPublishing" class="btn btn-info btn-sm m-b-10 btn-rounded"  onclick="startPublishing('start')"><i class="fa fa-hourglass-start"></i> Start Publishing</a>
             @endif
 
@@ -111,7 +111,7 @@ a{
             <a href="javascript:;" id="publishButton" class="btn btn-danger btn-sm m-b-10 btn-rounded btn-outline"  onclick="completePublish('incomplete')" ><i class="fa fa-arrow-left"></i> Return to Publisher</a>
             @endif
 
-            @if($article->writing_status ==2 && (user()->is_publisher() || $article->publisher == auth()->id() || user()->is_writer_head() || user()->hasRole('admin') || user()->is_publisher()) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
+            @if($article->writing_status ==2 && (user()->is_publisher() || $article->publisher == auth()->id() || user()->is_writer_head() || user()->hasRole('admin') || user()->is_publisher()  || ($article->type == $cat->name && user()->is_outreach_member())) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
             <a href="javascript:;" id="publishButton" class="btn btn-success btn-sm m-b-10 btn-rounded"  onclick="completePublish('complete')" ><i class="fa fa-check"></i> Complete Publishing</a>
             @endif
 
@@ -172,7 +172,7 @@ a{
             @if(($article->writing_status ==1 || $article->writing_status ==2) && (user()->is_writer_head() || user()->is_writer_head_assistant() ||user()->hasRole('admin') || (!is_null($article->reviewWriter) && $article->reviewWriter->value == auth()->id())))
             <a href="javascript:;" id="inCompletedButton" class="btn btn-danger btn-outline btn-sm m-b-10 btn-rounded"  onclick="markComplete('incomplete')"><i class="fa fa-arrow-left"></i> Return to Writer</a>
             @endif
-            @if($article->writing_status ==2 && (auth()->id() == $publisher || $article->publisher == auth()->id() || user()->is_writer_head() || user()->is_writer_head_assistant() ||user()->hasRole('admin') || user()->is_publisher()) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
+            @if($article->writing_status ==2 && (auth()->id() == $publisher || $article->publisher == auth()->id() || user()->is_writer_head() || user()->is_writer_head_assistant() ||user()->hasRole('admin') || user()->is_publisher() || ($article->type == $cat->name && user()->is_outreach_member())) && ($article->publishing_status ==null || $article->publishing_status ==0) && $article->publishing == 1 && $article->publish != null)
             <div class="form-group row m-t-10">
                 <div class="col-md-6">
                     <label class="control-label required" for="publishLink">Publish Link</label>

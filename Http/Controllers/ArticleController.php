@@ -172,13 +172,13 @@ class ArticleController extends MemberBaseController
             } elseif (user()->is_publisher()) {
                 $this->articles = $this->articles->whereNull('publishing_status')->whereNotNull('publisher')->where('writing_status', 2);
             } elseif (user()->is_outreach_member()) {
-                $this->articles = $this->articles->where(function($q) {
+                $this->articles = $this->articles->where(function ($q) {
                     return $q->where('publishing_status', null)->orWhere('publishing_status', 0);
                 })
-                ->doesntHave('publish')
-                ->where('writing_status', 2);
+                    ->doesntHave('publish')
+                    ->where('writing_status', 2);
             } else {
-                $this->articles = $this->articles->where(function($q) {
+                $this->articles = $this->articles->where(function ($q) {
                     return $q->where('publisher', auth()->id())->where('publishing_status', null)->orWhere('publishing_status', 0);
                 });
             }
@@ -392,6 +392,7 @@ class ArticleController extends MemberBaseController
             ->select('roles.name', 'users.*')
             ->where('roles.name', $this->inhouseWriterRole)
             ->get();
+        $this->cat = ArticleType::find($this->outreachCategory);
 
         return view('article::show', $this->data);
     }
