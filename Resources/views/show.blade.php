@@ -418,7 +418,7 @@ a{
                                     <a href="javascript:;"><b>{{$comment->user->name}}</b></a> {{$comment->created_at->format('d M Y')}}
                                 </div>
 
-                                @if($writerHead == auth()->id() || user()->hasRole('admin'))
+                                @if(user()->is_writer_head() || user()->is_writer_head_assistant() || user()->hasRole('admin'))
                                 <div class="col-xs-2 text-right">
                                     <a href="javascript:;" onclick="delComment('{{$comment->id}}')">@lang('app.delete')</a>
                                 </div>
