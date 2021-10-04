@@ -107,7 +107,7 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                                 </select>
                             </div>
                         </div>
-                        {{-- <div class="form-group col-md-12">
+                        <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Default Editor</label>
                             <div class="col-md-8">
                                 <select class="form-control custom-select" name="default_editor" id="defaultEditor">
@@ -116,7 +116,7 @@ href="{{ asset('plugins/bower_components/bootstrap-datepicker/bootstrap-datepick
                                     @endforeach
                                 </select>
                             </div>
-                        </div> --}}
+                        </div>
                         <div class="form-group col-md-12">
                             <label class="control-label col-md-4">Publisher Head</label>
                             <div class="col-md-8">
