@@ -713,22 +713,22 @@ class ArticleController extends MemberBaseController
             $article->writing_status = $status;
             $article->save();
 
-            if ($status == 1) {
-                $result = ArticleDetails::updateOrCreate(
-                    [
-                        'article_id' => $article->id,
-                        'label' => 'article_review_writer',
-                    ],
-                    [
-                        'user_id' => auth()->id(),
-                        'value' => $this->defaulEditor,
-                        'description' => 'assigned the article for review'
-                    ]
-                );
+            // if ($status == 1) {
+            //     $result = ArticleDetails::updateOrCreate(
+            //         [
+            //             'article_id' => $article->id,
+            //             'label' => 'article_review_writer',
+            //         ],
+            //         [
+            //             'user_id' => auth()->id(),
+            //             'value' => $this->defaulEditor,
+            //             'description' => 'assigned the article for review'
+            //         ]
+            //     );
 
-                $notifyTo = User::find($this->defaulEditor);
-                Notification::send($notifyTo, new NewArticleReview($article));
-            }
+            //     $notifyTo = User::find($this->defaulEditor);
+            //     Notification::send($notifyTo, new NewArticleReview($article));
+            // }
         }
 
         //Store in log

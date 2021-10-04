@@ -405,11 +405,15 @@
 
                                     @for($i=0; $i < $count; $i++)
                                     <a style='font-weight: 500;' href='javascript:;' onclick='commentDownload("{{$file[$i]}}")' class='m-t-5'><i class="fa fa-paperclip"></i> {{$file[$i]}}</a>
+                                    @if(file_exists(public_path('/user-uploads/article-comment-files/').$file[$i]))
                                     @php($size = filesize(public_path('/user-uploads/article-comment-files/').$file[$i])/1024)
                                     @if($size < 1024)
                                     ({{number_format($size, 2)}} KB)
                                     @elseif($size > 1024)
                                     ({{number_format($size/1024, 2)}} MB)
+                                    @endif
+                                    @else
+                                    (0 KB)
                                     @endif
                                     <br/>
                                     @endfor
