@@ -321,7 +321,9 @@
                     @if(request()->type =='pendingAproval')
                     <th>Completed Writing</th>
                     @endif
+                    @if(!user()->is_writer())
                     <th>Parent Deadline</th>
+                    @endif
                     <th>Deadline</th>
                     <th>Action</th>
                 </tr>
@@ -400,12 +402,15 @@
                         {{$log ? $log->created_at->format('d M Y') : '-'}}
                     </td>
                     @endif
+                    
+                    @if(!user()->is_writer())
                     <td>
                         <span class="@if($article->task && $article->task->due_date->isPast() && $article->writing_status !=2) text-danger @endif">
                             {{isset($article->task->due_date) ? $article->task->due_date->format('d M Y') : '--'}}
                         </span>
                     </td>
-                    
+                    @endif
+
                     <td>
                      @if(auth()->id() == $publisher)
                      <span class="@if(\Carbon\Carbon::parse($article->writing_deadline)->isPast() && $article->publishing_status !=1) text-danger @endif">
