@@ -293,13 +293,16 @@ class ArticleController extends MemberBaseController
      */
     public function store(Request $request)
     {
-        if (Writer::find($request->self ? $request->self : $request->assignee)->hasRole($this->inhouseWriterRole) || $request->self != null) {
+        $userId = $request->self ? $request->self : $request->assignee;
+        $writer = Writer::find($userId);
+        $writer || abort(404);
+
+        if ($writer->hasRole($this->inhouseWriterRole) || $request->self) {
             $writerRate = 0;
+        } elseif (!$writer->rate) {
+            return Reply::error("Please update writer's rate for this writer!");
         } else {
-            if (Writer::find($request->self ? $request->self : $request->assignee)->rate == null) {
-                return Reply::error("Please update writer's rate for this writer!");
-            }
-            $writerRate = Writer::find($request->assignee)->rate->rate;
+            $writerRate = $writer->rate->rate;
         }
 
         $count = count($request->title);
@@ -310,18 +313,10 @@ class ArticleController extends MemberBaseController
         }
 
         for ($i = 0; $i < $count; $i++) {
-            if (isset($request->publishing[$i])) {
-                $publishing = 1;
-            } else {
-                $publishing = 0;
-            }
-            if ($request->parent != null) {
-                $parent_task = $request->parent_task;
-            } else {
-                $parent_task = null;
-            }
+            $publishing = isset($request->publishing[$i]) ? 1 : 0;
+            $parent_task = $request->parent_task;
 
-            $article = new Article([
+            $article = Article::create([
                 'title' => $request->title[$i],
                 'type' => $request->type[$i],
                 'word_count' => $request->word_count[$i],
@@ -332,12 +327,10 @@ class ArticleController extends MemberBaseController
                 'parent_task' => $parent_task,
                 'writing_deadline' => $request->writing_deadline[$i],
                 'writing_status' => 0,
-                'assignee' => $request->self ? $request->self : $request->assignee,
+                'assignee' => $writer->id,
                 'creator' => auth()->id(),
                 'priority' => $request->priority
-
             ]);
-            $article->save();
 
             //Store in log
             ArticleActivityLog::create([
@@ -355,7 +348,9 @@ class ArticleController extends MemberBaseController
             $article_id[] = $article->id;
         }
 
-        return  Reply::successWithData('Article assigned, checking attachements!', ['articles' => implode(',', $article_id)]);
+        return  Reply::successWithData('Article assigned, checking attachements!', [
+            'articles' => implode(',', $article_id)
+        ]);
     }
 
     /**
