@@ -11,7 +11,7 @@ use Modules\Article\Entities\ArticleType;
 use App\EmailNotificationSetting;
 use App\User;
 
-class ArticleReviewReturn extends Notification
+class ArticleReviewReturn extends Notification implements ShouldQueue
 {
     use Queueable;
 

@@ -11,7 +11,7 @@ use Modules\Article\Entities\Writer;
 use App\EmailNotificationSetting;
 use App\User;
 
-class WriterUnavailability extends Notification
+class WriterUnavailability extends Notification implements ShouldQueue
 {
     use Queueable;
 

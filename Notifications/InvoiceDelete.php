@@ -10,7 +10,7 @@ use Modules\Article\Entities\Invoice;
 use App\EmailNotificationSetting;
 use App\User;
 
-class InvoiceDelete extends Notification
+class InvoiceDelete extends Notification implements ShouldQueue
 {
     use Queueable;
 

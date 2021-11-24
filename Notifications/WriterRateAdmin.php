@@ -11,7 +11,7 @@ use Modules\Article\Entities\Writer;
 use App\EmailNotificationSetting;
 use App\User;
 
-class WriterRateAdmin extends Notification
+class WriterRateAdmin extends Notification implements ShouldQueue
 {
     use Queueable;
 

@@ -12,7 +12,7 @@ use Modules\Article\Entities\ArticleComment as Comment;
 use App\EmailNotificationSetting;
 use App\User;
 
-class ArticleComment extends Notification
+class ArticleComment extends Notification implements ShouldQueue
 {
     use Queueable;
 

@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Modules\Article\Entities\WriterLeave;
 use App\User;
 
-class LeaveGranted extends Notification
+class LeaveGranted extends Notification implements ShouldQueue
 {
     use Queueable;
 

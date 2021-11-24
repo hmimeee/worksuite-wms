@@ -11,7 +11,7 @@ use Modules\Article\Entities\ArticleType;
 use App\EmailNotificationSetting;
 use App\User;
 
-class ArticleDelete extends Notification
+class ArticleDelete extends Notification implements ShouldQueue
 {
     use Queueable;
 

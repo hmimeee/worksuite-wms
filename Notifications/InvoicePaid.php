@@ -10,7 +10,7 @@ use Modules\Article\Entities\Invoice;
 use App\EmailNotificationSetting;
 use App\User;
 
-class InvoicePaid extends Notification
+class InvoicePaid extends Notification implements ShouldQueue
 {
     use Queueable;
 
