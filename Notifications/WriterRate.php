@@ -21,10 +21,13 @@ class WriterRate extends Notification implements ShouldQueue
      * @return void
      */
     private $writer;
+    private $user;
+
     public function __construct($old_rate)
     {
         $this->old_rate = $old_rate;
         $this->emailSetting = EmailNotificationSetting::where('slug', 'user-assign-to-task')->first();
+        $this->user = user();
     }
 
     /**
@@ -54,8 +57,8 @@ class WriterRate extends Notification implements ShouldQueue
         $this->main_message = "Congratulations, your article writing rate has been chaged from $this->old_rate to $this->new_rate per 1000 words. Keep up the good work!";
         return (new MailMessage)
         ->subject($this->headmessage . ' - ' . config('app.name') . '!')
-        ->from(config('mail.from.address'), auth()->user()->name .' via '. config('app.name'))
-        ->markdown('article::mail.templateWriterRate', ['writer' => $this->writer, 'url' => $this->url, 'main_message' => $this->main_message, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => auth()->user()]);
+        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
+        ->markdown('article::mail.templateWriterRate', ['writer' => $this->writer, 'url' => $this->url, 'main_message' => $this->main_message, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
     }
 

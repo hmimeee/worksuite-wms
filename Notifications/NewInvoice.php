@@ -20,10 +20,13 @@ class NewInvoice extends Notification implements ShouldQueue
      * @return void
      */
     private $invoice;
+    private $user;
+
     public function __construct(Invoice $invoice)
     {
         $this->invoice = $invoice;
         $this->emailSetting = EmailNotificationSetting::where('slug', 'user-assign-to-task')->first();
+        $this->user = user();
     }
 
     /**
@@ -47,13 +50,13 @@ class NewInvoice extends Notification implements ShouldQueue
     {
         $this->url = route('member.article.invoices').'?view-invoice='.$this->invoice->id;
         $this->paymentTo = User::find($this->invoice->paid_to);
-        $this->creator = auth()->user();
+        $this->creator = $this->user;
         $this->headmessage = "New payslip created";
         $this->bodymessage = "created a new payslip.";
         return (new MailMessage)
         ->subject($this->headmessage . ' ' . $this->invoice->name . ' - ' . config('app.name') . '!')
-        ->from(config('mail.from.address'), auth()->user()->name .' via '. config('app.name'))
-        ->markdown('article::mail.templateInvoice', ['invoice' => $this->invoice, 'url' => $this->url, 'paymentTo' => $this->paymentTo, 'creator' => $this->creator, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => auth()->user()]);
+        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
+        ->markdown('article::mail.templateInvoice', ['invoice' => $this->invoice, 'url' => $this->url, 'paymentTo' => $this->paymentTo, 'creator' => $this->creator, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
     }
 

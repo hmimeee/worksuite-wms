@@ -20,10 +20,13 @@ class InvoiceDelete extends Notification implements ShouldQueue
      * @return void
      */
     private $invoice;
+    private $user;
+
     public function __construct(Invoice $invoice)
     {
         $this->invoice = $invoice;
         $this->emailSetting = EmailNotificationSetting::where('slug', 'user-assign-to-task')->first();
+        $this->user = user();
     }
 
     /**
@@ -46,13 +49,13 @@ class InvoiceDelete extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         $this->paymentTo = User::find($this->invoice->paid_to);
-        $this->creator = auth()->user();
+        $this->creator = $this->user;
         $this->headmessage = "Payslip deleted!";
         $this->bodymessage = "deletd a payslip.";
         return (new MailMessage)
         ->subject($this->headmessage . ' ' . $this->invoice->name . ' - ' . config('app.name') . '!')
-        ->from(config('mail.from.address'), auth()->user()->name .' via '. config('app.name'))
-        ->markdown('article::mail.templateInvoice', ['invoice' => $this->invoice, 'paymentTo' => $this->paymentTo, 'creator' => $this->creator, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => auth()->user()]);
+        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
+        ->markdown('article::mail.templateInvoice', ['invoice' => $this->invoice, 'paymentTo' => $this->paymentTo, 'creator' => $this->creator, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
     }
 

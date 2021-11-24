@@ -21,10 +21,13 @@ class ArticleReminder extends Notification implements ShouldQueue
      * @return void
      */
     private $article;
+    private $user;
+
     public function __construct(Article $article)
     {
         $this->article = $article;
         $this->emailSetting = EmailNotificationSetting::where('slug', 'user-assign-to-task')->first();
+        $this->user = user();
     }
 
     /**
@@ -53,8 +56,8 @@ class ArticleReminder extends Notification implements ShouldQueue
         $this->bodymessage = "remind you for an assigned article.";
         return (new MailMessage)
         ->subject($this->headmessage . ' #' . $this->article->id . ' - ' . config('app.name') . '!')
-        ->from(config('mail.from.address'), auth()->user()->name .' via '. config('app.name'))
-        ->markdown('article::mail.template', ['article' => $this->article, 'url' => $this->url, 'assignee' => $this->assignee, 'creator' => $this->creator, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => auth()->user()]);
+        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
+        ->markdown('article::mail.template', ['article' => $this->article, 'url' => $this->url, 'assignee' => $this->assignee, 'creator' => $this->creator, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
     }
 

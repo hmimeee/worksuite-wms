@@ -22,11 +22,14 @@ class WriterRateAdmin extends Notification implements ShouldQueue
      */
     private $writer;
     private $old_rate;
+    private $user;
+
     public function __construct($writer, $old_rate)
     {
         $this->old_rate = $old_rate;
         $this->writer = Writer::find($writer);
         $this->emailSetting = EmailNotificationSetting::where('slug', 'user-assign-to-task')->first();
+        $this->user = user();
     }
 
     /**
@@ -54,8 +57,8 @@ class WriterRateAdmin extends Notification implements ShouldQueue
         $this->bodymessage = "updated article writing rate of an user.";
         return (new MailMessage)
         ->subject($this->headmessage . ' - ' . config('app.name') . '!')
-        ->from(config('mail.from.address'), auth()->user()->name .' via '. config('app.name'))
-        ->markdown('article::mail.templateWriterRateAdmin', ['writer' => $this->writer, 'url' => $this->url, 'new_rate' => $this->new_rate, 'old_rate' => $this->old_rate, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => auth()->user()]);
+        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
+        ->markdown('article::mail.templateWriterRateAdmin', ['writer' => $this->writer, 'url' => $this->url, 'new_rate' => $this->new_rate, 'old_rate' => $this->old_rate, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
     }
 

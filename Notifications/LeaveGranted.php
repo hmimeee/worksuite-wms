@@ -19,9 +19,12 @@ class LeaveGranted extends Notification implements ShouldQueue
      * @return void
      */
     private $leave;
+    private $user;
+
     public function __construct(WriterLeave $leave)
     {
         $this->leave = $leave;
+        $this->user = user();
     }
 
     /**
@@ -49,8 +52,8 @@ class LeaveGranted extends Notification implements ShouldQueue
         $this->bodymessage = "granted your leave application.";
         return (new MailMessage)
         ->subject($this->headmessage . ' - ' . config('app.name'))
-        ->from(config('mail.from.address'), auth()->user()->name .' via '. config('app.name'))
-        ->markdown('article::mail.leave', ['leave' => $this->leave, 'url' => $this->url, 'writer' => $this->writer, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => auth()->user()]);
+        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
+        ->markdown('article::mail.leave', ['leave' => $this->leave, 'url' => $this->url, 'writer' => $this->writer, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
     }
 

@@ -21,10 +21,13 @@ class WriterUnavailability extends Notification implements ShouldQueue
      * @return void
      */
     private $writer;
+    private $user;
+
     public function __construct(Writer $writer)
     {
         $this->writer = $writer;
         $this->emailSetting = EmailNotificationSetting::where('slug', 'user-assign-to-task')->first();
+        $this->user = user();
     }
 
     /**
@@ -52,8 +55,8 @@ class WriterUnavailability extends Notification implements ShouldQueue
         $this->bodymessage = "updated article writing rate of an user.";
         return (new MailMessage)
         ->subject($this->headmessage . ' - ' . config('app.name') . '!')
-        ->from(config('mail.from.address'), auth()->user()->name .' via '. config('app.name'))
-        ->markdown('article::mail.templateWriterRateAdmin', ['writer' => $this->writer, 'url' => $this->url, 'new_rate' => $this->new_rate, 'old_rate' => $this->old_rate, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => auth()->user()]);
+        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
+        ->markdown('article::mail.templateWriterRateAdmin', ['writer' => $this->writer, 'url' => $this->url, 'new_rate' => $this->new_rate, 'old_rate' => $this->old_rate, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
     }
 
