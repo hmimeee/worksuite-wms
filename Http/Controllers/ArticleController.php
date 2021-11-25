@@ -747,7 +747,8 @@ class ArticleController extends MemberBaseController
 
 
         if ($status == 1) {
-            $notifyTo = User::find([$this->writerHead, $this->writerHeadAssistant]);
+            $notifiableIds = array_merge(explode(',', $this->writerHeadAssistant), explode(',', $this->writerHead));
+            $notifyTo = User::find($notifiableIds);
             Notification::send($notifyTo, new ArticleWritingComplete($article));
         } elseif ($status == 2) {
             $notifyTo = Writer::find($article->assignee);

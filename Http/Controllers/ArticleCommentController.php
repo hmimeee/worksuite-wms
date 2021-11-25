@@ -74,7 +74,7 @@ class ArticleCommentController extends Controller
 
         //Notify the creator
         $notifiableIds = array_merge(explode(',', $this->writerHeadAssistant), explode(',', $this->writerHead));
-        $notifiables = User::findMany($notifiableIds);
+        $notifiables = User::find($notifiableIds);
         Notification::send($notifiables, new ArticleCommentNotification($comment));
 
         //Notify the writer
