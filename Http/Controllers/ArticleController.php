@@ -73,10 +73,12 @@ class ArticleController extends MemberBaseController
     public function getInhouseWriters()
     {
         $this->roleName = ArticleSetting::where('type', 'inhouse_writer')->first()->value;
-        $this->writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
+        $this->writers = Writer::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
             ->join('roles', 'roles.id', '=', 'role_user.role_id')
             ->select('users.id', 'users.name', 'users.image', 'users.email', 'users.created_at')
-            ->where('roles.name', $this->roleName)->get();
+            ->where('roles.name', $this->roleName)
+            ->whereDoesntHave('unavailable')
+            ->get();
         return $this->writers;
     }
 
@@ -84,10 +86,12 @@ class ArticleController extends MemberBaseController
     public function getWriters()
     {
         $this->roleName = ArticleSetting::where('type', 'writer')->first()->value;
-        $this->writers = User::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
+        $this->writers = Writer::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
             ->join('roles', 'roles.id', '=', 'role_user.role_id')
             ->select('users.id', 'users.name', 'users.image', 'users.email', 'users.created_at')
-            ->where('roles.name', $this->roleName)->get();
+            ->where('roles.name', $this->roleName)
+            ->whereDoesntHave('unavailable')
+            ->get();
         $this->writers = $this->writers->merge($this->getInhouseWriters());
 
         return $this->writers;
@@ -900,7 +904,7 @@ class ArticleController extends MemberBaseController
         if ($request->status == 'Unavailable')
             $writers = $writers->whereHas('unavailable');
 
-        if ($request->status == 'Available')
+        if ($request->status == 'Available' || !$request->status)
             $writers = $writers->whereDoesntHave('unavailable');
 
         if ($request->type == 'Inhouse')

@@ -87,9 +87,9 @@ class AdminArticleController extends AdminBaseController
 
         //Editable articles
         $this->editable_articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-        ->select('articles.*', 'article_details.label', 'article_details.value')
-        ->where('articles.writing_status', 1)
-        ->where('article_details.label', 'article_review_writer');
+            ->select('articles.*', 'article_details.label', 'article_details.value')
+            ->where('articles.writing_status', 1)
+            ->where('article_details.label', 'article_review_writer');
 
         if ($request->startDate != null || $request->endDate != null) {
             $this->articles = $this->articles->whereBetween(\DB::raw('DATE(articles.`writing_deadline`)'), [$this->startDate, $this->endDate]);
@@ -199,8 +199,8 @@ class AdminArticleController extends AdminBaseController
 
         if ($request->type == 'edited') {
             $this->articles = Article::leftJoin('article_details', 'article_id', '=', 'articles.id')
-            ->select('articles.*', 'article_details.label', 'article_details.value')
-            ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
+                ->select('articles.*', 'article_details.label', 'article_details.value')
+                ->where('article_details.label', 'article_review_writer')->where('articles.writing_status', 2);
         }
 
         //Editable articles
@@ -249,23 +249,23 @@ class AdminArticleController extends AdminBaseController
     {
         $this->pageTitle = 'Article Writers';
         $this->pageIcon = 'ti-user';
-        $writers = Writer::whereHas('roles', function($q){
-                return $q->whereIn('name', [$this->inhouseWriterRole, $this->writerRole]);
-            });
+        $writers = Writer::whereHas('roles', function ($q) {
+            return $q->whereIn('name', [$this->inhouseWriterRole, $this->writerRole]);
+        });
 
         if ($request->status == 'Unavailable')
             $writers = $writers->whereHas('unavailable');
 
-        if ($request->status == 'Available')
+        if ($request->status == 'Available' || !$request->status)
             $writers = $writers->whereDoesntHave('unavailable');
 
         if ($request->type == 'Inhouse')
-            $writers = $writers->whereHas('roles', function($q){
+            $writers = $writers->whereHas('roles', function ($q) {
                 return $q->where('name', $this->inhouseWriterRole);
             });
 
         if ($request->type == 'Freelance')
-            $writers = $writers->whereHas('roles', function($q){
+            $writers = $writers->whereHas('roles', function ($q) {
                 return $q->where('name', $this->writerRole);
             });
 
