@@ -7,7 +7,6 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Modules\Article\Entities\Article;
-use Modules\Article\Entities\ArticleType;
 use App\EmailNotificationSetting;
 use App\User;
 
@@ -48,17 +47,25 @@ class ArticleReminder extends Notification implements ShouldQueue
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)
-    {
-        $this->url = route('member.article.index').'?view-article='.$this->article->id;
+    {        
+        $this->url = route('member.article.index') . '?view-article=' . $this->article->id;
         $this->assignee = User::find($this->article->assignee);
         $this->creator = User::find($this->article->creator);
         $this->headmessage = "Reminder for assigned article";
         $this->bodymessage = "remind you for an assigned article.";
-        return (new MailMessage)
-        ->subject($this->headmessage . ' #' . $this->article->id . ' - ' . config('app.name') . '!')
-        ->from(config('mail.from.address'), $this->user->name .' via '. config('app.name'))
-        ->markdown('article::mail.template', ['article' => $this->article, 'url' => $this->url, 'assignee' => $this->assignee, 'creator' => $this->creator, 'headmessage' => $this->headmessage, 'bodymessage' => $this->bodymessage, 'user' => $this->user]);
 
+        return (new MailMessage)
+            ->subject($this->headmessage . ' #' . $this->article->id . ' - ' . config('app.name') . '!')
+            ->from(config('mail.from.address'), $this->user->name . ' via ' . config('app.name'))
+            ->markdown('article::mail.template', [
+                'article' => $this->article,
+                'url' => $this->url,
+                'assignee' => $this->assignee,
+                'creator' => $this->creator,
+                'headmessage' => $this->headmessage,
+                'bodymessage' => $this->bodymessage,
+                'user' => $this->user
+            ]);
     }
 
     /**

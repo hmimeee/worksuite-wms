@@ -2,16 +2,17 @@
 
 namespace Modules\Article\Http\Controllers;
 
+use App\User;
+use App\Helper\Reply;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use App\Helper\Reply;
-use Modules\Article\Entities\ArticleComment;
 use Modules\Article\Entities\Article;
+use Illuminate\Support\Facades\Notification;
+use Modules\Article\Entities\ArticleComment;
+use Modules\Article\Entities\ArticleSetting;
 use Modules\Article\Entities\ArticleActivityLog;
 use Modules\Article\Notifications\ArticleComment as ArticleCommentNotification;
-use Illuminate\Support\Facades\Notification;
-use App\User;
 
 
 
@@ -20,6 +21,8 @@ class ArticleCommentController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->writerHead = ArticleSetting::where('type', 'writer_head')->first()->value ?? '';
+        $this->writerHeadAssistant = ArticleSetting::where('type', 'writer_head_assistant')->first()->value ?? '';
     }
     /**
      * Display a listing of the resource.
@@ -46,19 +49,19 @@ class ArticleCommentController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->comment ==null || $request->comment =='') {
+        if ($request->comment == null || $request->comment == '') {
             return Reply::error('Please write your comment!');
         }
-        
+
         $files = explode(',', $request->uploadedFiles);
 
         if (isset($request->uploadedFiles)) {
-            for($i = 0; $i < count($files); $i++) {
-                $getFile = public_path('user-uploads/temp/').$files[$i];
+            for ($i = 0; $i < count($files); $i++) {
+                $getFile = public_path('user-uploads/temp/') . $files[$i];
                 if (!file_exists(public_path('user-uploads/article-comment-files/'))) {
                     mkdir(public_path('user-uploads/article-comment-files/', '0777'));
                 }
-                rename($getFile, public_path('user-uploads/article-comment-files/').$files[$i]);
+                rename($getFile, public_path('user-uploads/article-comment-files/') . $files[$i]);
             }
         }
 
@@ -68,8 +71,17 @@ class ArticleCommentController extends Controller
             'article_id' => $request->article_id,
             'files' => $request->uploadedFiles
         ]);
-        $notifyTo = Article::find($request->article_id)->getCreator;
-        Notification::send($notifyTo, new ArticleCommentNotification($comment));
+
+        //Notify the creator
+        $notifiableIds = array_merge(explode(',', $this->writerHeadAssistant), explode(',', $this->writerHead));
+        $notifiables = User::findMany($notifiableIds);
+        Notification::send($notifiables, new ArticleCommentNotification($comment));
+
+        //Notify the writer
+        $writer = Article::find($request->article_id)->getAssignee;
+        if ($writer->id != auth()->id())
+            Notification::send($writer, new ArticleCommentNotification($comment));
+
         $comment->save();
 
         //Store in log
@@ -101,7 +113,7 @@ class ArticleCommentController extends Controller
             foreach ($files as $file) {
                 $filename = $file->getClientOriginalName();
                 $ext = strtolower(\File::extension($filename));
-                $hashname = str_replace('.'.$ext,'',$filename).'_'.date('dmys');
+                $hashname = str_replace('.' . $ext, '', $filename) . '_' . date('dmys');
                 $rename = $this->slugify($hashname) . '.' . $ext;
                 $file->move(public_path('user-uploads/temp/'), $rename);
                 $getFiles[] = $rename;
@@ -133,7 +145,7 @@ class ArticleCommentController extends Controller
      */
     public function download($file)
     {
-        $filePath = public_path('user-uploads/article-comment-files/'.$file);
+        $filePath = public_path('user-uploads/article-comment-files/' . $file);
         return file_exists($filePath) ? response()->download($filePath, $file) : abort(404);
     }
 
@@ -165,10 +177,10 @@ class ArticleCommentController extends Controller
      */
     public function destroy(ArticleComment $comment)
     {
-        if ($comment->files !=null) {
+        if ($comment->files != null) {
             $files = explode(',', $comment->files);
-            for ($i=0; $i < count($files); $i++) {
-                unlink(public_path('/user-uploads/article-comment-files/'.$files[$i]));
+            for ($i = 0; $i < count($files); $i++) {
+                unlink(public_path('/user-uploads/article-comment-files/' . $files[$i]));
             }
         }
 
