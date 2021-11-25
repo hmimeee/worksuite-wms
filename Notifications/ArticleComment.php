@@ -23,6 +23,7 @@ class ArticleComment extends Notification implements ShouldQueue
      */
     private $comment;
     private $user;
+    private $article;
 
     public function __construct(Comment $comment)
     {
