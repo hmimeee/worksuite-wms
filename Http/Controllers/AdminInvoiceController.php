@@ -118,7 +118,12 @@ class AdminInvoiceController extends AdminBaseController
      */
     public function data($writer)
     {
-        $this->articles = Article::where('assignee', $writer)->where('writing_status', 2)->where('invoice_id', null)->get();
+        $this->articles = Article::with('project')
+        ->where('assignee', $writer)
+        ->where('writing_status', 2)
+        ->whereNull('invoice_id')
+        ->whereNotNull('rate')
+        ->get();
         return Reply::dataOnly(['articles' => $this->articles, 'count' => count($this->articles)]);
     }
 

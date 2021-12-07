@@ -84,7 +84,7 @@ class InvoiceController extends MemberBaseController
      */
     public function create()
     {
-        $this->writers = $this->getWriters();
+        $this->writers = $this->getWriters()->whereDoesntHave('unavailable');
         return view('article::createInvoice', $this->data);
     }
 
@@ -176,7 +176,11 @@ class InvoiceController extends MemberBaseController
      */
     public function data($writer)
     {
-        $this->articles = Article::where('assignee', $writer)->where('writing_status', 2)->where('invoice_id', null)->with('project')->get();
+        $this->articles = Article::with('project')
+        ->where('assignee', $writer)
+        ->where('writing_status', 2)
+        ->whereNull('invoice_id')
+        ->get();
         $this->setting = Setting::first();
         return Reply::dataOnly(['articles' => $this->articles, 'count' => count($this->articles)]);
     }
