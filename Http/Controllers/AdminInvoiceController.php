@@ -17,7 +17,7 @@ class AdminInvoiceController extends AdminBaseController
 {
     public function __construct()
     {
-        $this->middleware(['auth','role:admin']);
+        $this->middleware(['auth', 'role:admin']);
         parent::__construct();
         $this->pageTitle = 'Article Payslips';
         $this->pageIcon = 'ti-receipt';
@@ -33,9 +33,9 @@ class AdminInvoiceController extends AdminBaseController
     {
         $this->roleName = ArticleSetting::where('type', 'writer')->first()->value;
         $this->writers = Writer::withoutGlobalScope('active')->with('unavailable')->join('role_user', 'role_user.user_id', '=', 'users.id')
-        ->join('roles', 'roles.id', '=', 'role_user.role_id')
-        ->select('users.id', 'users.name', 'users.image', 'users.email', 'users.created_at')
-        ->where('roles.name',$this->roleName)->get();
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->select('users.id', 'users.name', 'users.image', 'users.email', 'users.created_at')
+            ->where('roles.name', $this->roleName)->get();
         return $this->writers;
     }
 
@@ -84,12 +84,12 @@ class AdminInvoiceController extends AdminBaseController
         $amount = 0;
         $words = 0;
         foreach ($articles as $article) {
-            $amount += $article->rate/1000*$article->word_count;
+            $amount += $article->rate / 1000 * $article->word_count;
             $words += $article->word_count;
         }
 
         $writer = Writer::findOrFail($request->writer);
-        $name = 'Invoice_'.date('Y-m-d').'_'.$writer->id.'_('.$writer->name.')';
+        $name = 'Invoice_' . date('Y-m-d') . '_' . $writer->id . '_(' . $writer->name . ')';
         if (Invoice::where('name', $name)->first() != null) {
             return Reply::error("Payslip already generated today for this writer");
         }
@@ -119,11 +119,10 @@ class AdminInvoiceController extends AdminBaseController
     public function data($writer)
     {
         $this->articles = Article::with('project')
-        ->where('assignee', $writer)
-        ->where('writing_status', 2)
-        ->whereNull('invoice_id')
-        ->where('rate', '>', 0)
-        ->get();
+            ->where('assignee', $writer)
+            ->where('writing_status', 2)
+            ->whereNull('invoice_id')
+            ->get();
         return Reply::dataOnly(['articles' => $this->articles, 'count' => count($this->articles)]);
     }
 
@@ -140,7 +139,7 @@ class AdminInvoiceController extends AdminBaseController
         $this->amount = 0;
         foreach ($this->articles as $article) {
             $this->words += $article->word_count;
-            $this->amount += $article->rate/1000*$article->word_count;
+            $this->amount += $article->rate / 1000 * $article->word_count;
         }
         return view('article::showInvoice', $this->data);
     }
@@ -158,7 +157,7 @@ class AdminInvoiceController extends AdminBaseController
         $this->amount = 0;
         foreach ($this->articles as $article) {
             $this->words += $article->word_count;
-            $this->amount += $article->rate/1000*$article->word_count;
+            $this->amount += $article->rate / 1000 * $article->word_count;
         }
         return view('article::modalInvoice', $this->data);
     }
