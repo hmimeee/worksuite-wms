@@ -122,7 +122,7 @@ class AdminInvoiceController extends AdminBaseController
         ->where('assignee', $writer)
         ->where('writing_status', 2)
         ->whereNull('invoice_id')
-        ->whereNotNull('rate')
+        ->where('rate', '<>', 0)
         ->get();
         return Reply::dataOnly(['articles' => $this->articles, 'count' => count($this->articles)]);
     }
