@@ -32,7 +32,7 @@ class AdminInvoiceController extends AdminBaseController
     public function getWriters()
     {
         $this->roleName = ArticleSetting::where('type', 'writer')->first()->value;
-        $this->writers = Writer::withoutGlobalScope('active')->join('role_user', 'role_user.user_id', '=', 'users.id')
+        $this->writers = Writer::withoutGlobalScope('active')->with('unavailable')->join('role_user', 'role_user.user_id', '=', 'users.id')
         ->join('roles', 'roles.id', '=', 'role_user.role_id')
         ->select('users.id', 'users.name', 'users.image', 'users.email', 'users.created_at')
         ->where('roles.name',$this->roleName)->get();
@@ -69,7 +69,7 @@ class AdminInvoiceController extends AdminBaseController
      */
     public function create()
     {
-        $this->writers = $this->getWriters()->whereDoesntHave('unavailable');
+        $this->writers = $this->getWriters()->whereNotNull('unavailable');
         return view('article::createInvoice', $this->data);
     }
 
