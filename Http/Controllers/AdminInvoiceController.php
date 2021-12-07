@@ -69,7 +69,7 @@ class AdminInvoiceController extends AdminBaseController
      */
     public function create()
     {
-        $this->writers = $this->getWriters();
+        $this->writers = $this->getWriters()->whereDoesntHave('unavailable');
         return view('article::createInvoice', $this->data);
     }
 
