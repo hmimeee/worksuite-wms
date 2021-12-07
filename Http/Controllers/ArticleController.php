@@ -680,7 +680,7 @@ class ArticleController extends MemberBaseController
 
                 //Notify about update
                 $notifyTo = User::find($article->publisher);
-                Notification::send($notifyTo, new NewArticlePublishing($article));
+                $notifyTo->notify(new NewArticlePublishing($article));
             } else {
                 return Reply::error('Please fill up all the fields!');
             }
