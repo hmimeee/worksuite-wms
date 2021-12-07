@@ -180,7 +180,9 @@ class InvoiceController extends MemberBaseController
         ->where('assignee', $writer)
         ->where('writing_status', 2)
         ->whereNull('invoice_id')
+        ->where('rate', '!=', 0)
         ->get();
+        
         $this->setting = Setting::first();
         return Reply::dataOnly(['articles' => $this->articles, 'count' => count($this->articles)]);
     }
