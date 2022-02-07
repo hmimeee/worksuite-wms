@@ -442,16 +442,15 @@ class ArticleController extends MemberBaseController
         $assignee = $request->self ? $request->self : $request->assignee;
         $employee = Writer::find($assignee);
         if ($this->article->assignee != $assignee) {
-            if ($employee->is_inhouse_writer() || $employee->is_writer()) {
+            if ($employee->is_inhouse_writer()) {
                 $writerRate = 0;
-            } else {
-                if ($employee->rate == null) {
-                    return Reply::error("Please update writer's rate for this writer!");
-                }
+            } elseif ($employee->is_writer()) {
                 $writerRate = $employee->rate->rate;
+            } elseif ($employee->rate == null) {
+                return Reply::error("Please update writer's rate for this writer!");
             }
-            $this->article->rate = $writerRate;
 
+            $this->article->rate = $writerRate;
             $message = 'updated the details & changed the writer ' . $this->article->getAssignee->name . ' to ' . $employee->name;
             $this->article->assignee = $assignee;
         }
