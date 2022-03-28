@@ -288,7 +288,7 @@ a{
             <p><i class="icon-layers"></i> Project: <a style="font-weight: 400;" target="_blank" href="@if(auth()->user()->hasRole('admin')){{ route('admin.projects.show', $article->project->id) }}@else{{ route('member.projects.show', $article->project->id) }}@endif"> {{$article->project->project_name}} </a> </p>
             @endif
 
-            @if(!user()->is_writer() && $article->parent_task)
+            @if(!user()->is_writer() && $article->task)
             <p><i class="fa fa-tasks"></i> Parent Task: <a style="font-weight: 400;" href="javascript:;" onclick="parentTask('{{$article->parent_task}}')">{{$article->task->heading}} </a> </p>
             @endif
             <p><i class="ti-write"></i> @if($article->writing_status ==2) Word Count: @else Assigned Word: @endif {{$article->word_count}}</p>
