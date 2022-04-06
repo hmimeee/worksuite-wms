@@ -156,7 +156,7 @@ class ArticleController extends MemberBaseController
             $this->articles = $this->articles->where('assignee', auth()->id());
         }
 
-        if (user()->is_publisher()) {
+        if (user()->is_publisher() && !user()->is_outreach_member()) {
             $this->articles = $this->articles->where('publisher', auth()->id());
         }
 
