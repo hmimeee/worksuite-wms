@@ -127,9 +127,11 @@ class ArticleController extends MemberBaseController
             $this->editable_articles = $this->editable_articles->where('article_details.value', auth()->id())->where('article_details.label', 'article_review_writer');
         }
 
-        if (user()->is_outreach_member() && $this->outreachHead == auth()->id()) {
-            $this->articles = $this->articles->where('publisher', auth()->id());
-        } elseif (user()->is_outreach_member()) {
+        // if (user()->is_outreach_member() && $this->outreachHead == auth()->id()) {
+        //     $this->articles = $this->articles->where('publisher', auth()->id());
+        // } else
+        
+        if (user()->is_outreach_member()) {
             $cat = ArticleType::find($this->outreachCategory);
             $this->articles = $this->articles->where('type', $cat->name)->whereNotNull('publisher');
         }
