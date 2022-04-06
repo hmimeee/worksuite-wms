@@ -383,7 +383,7 @@
                         @if(auth()->id() == $publisher && $article->writing_status == 2 && $article->publishing == 1) {{$article->getAssignee->name}} @else {{$article->getAssignee->name}} @endif
                     </td>
                     <td>
-                        {{!is_null($article->reviewWriter) ? App\User::find($article->reviewWriter->value)->name : ''}}
+                        {{!is_null($article->reviewWriter) ? (App\User::find($article->reviewWriter->value)->name ?? '') : ''}}
                     </td>
 
                     @if(!user()->is_writer() && request()->type !='pendingAproval')

@@ -150,7 +150,7 @@
                     <tr role="row" class="odd">
                         <td>{{$article->id}}</td>
                         <td>
-                            <a target="_blank" href="{{route('admin.article.show',$article->id)}}">{{$article->title}}
+                            <a target="_blank" href="{{route('member.article.show',$article->id)}}">{{$article->title}}
                             </a>
                         </td>
                         <td>
